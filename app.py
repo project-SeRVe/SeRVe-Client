@@ -70,7 +70,7 @@ with col1:
         image.save(img_byte_arr, format=image.format)
         img_bytes = img_byte_arr.getvalue()
         
-        st.image(image, caption="Captured Image", use_container_width=True)
+        st.image(image, caption="Captured Image", width='stretch')
     else:
         st.info("이미지를 선택해주세요.")
 
