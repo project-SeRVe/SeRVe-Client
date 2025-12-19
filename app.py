@@ -50,7 +50,7 @@ def is_logged_in():
 # ==================== 서버 연결 화면 ====================
 if not st.session_state.server_connected:
     st.title("SeRVe: Zero-Trust Physical AI")
-    st.subheader("서버 연결 설정")
+    st.subheader("1단계: 보안 서버 연결")
 
     col1, col2 = st.columns([3, 1])
 
@@ -65,21 +65,31 @@ if not st.session_state.server_connected:
     with col2:
         st.write("")  # 간격 맞추기
         st.write("")
-        connect_button = st.button("서버 연결", type="primary", use_container_width=True)
+        connect_button = st.button("연결 및 핸드셰이크", type="primary", use_container_width=True)
 
     if connect_button:
-        with st.spinner("서버 연결 중..."):
+        with st.spinner("서버 연결 및 보안 채널 수립 중..."):
+            # 1. 서버 연결 확인
             success, msg = check_server_connection(server_url_input)
 
             if success:
-                st.session_state.server_connected = True
-                st.session_state.server_url = server_url_input
-                # ServeConnector의 SERVER_URL 업데이트
-                from config import SERVER_URL as original_url
+                # URL 업데이트 (Config 및 인스턴스)
+                st.session_state.serve_conn.server_url = server_url_input
                 import config
                 config.SERVER_URL = server_url_input
-                st.success(msg)
-                st.rerun()
+                st.session_state.server_url = server_url_input
+
+                # 2. 연결 즉시 핸드셰이크 시도
+                # 서버 SecurityConfig에서 /api/security/** 가 허용되어 있어야 함
+                h_success, h_msg = st.session_state.serve_conn.perform_handshake()
+                
+                if h_success:
+                    st.session_state.server_connected = True
+                    st.success(f"연결 및 핸드셰이크 성공!\nAES 키 교환 완료.")
+                    st.rerun() # 성공 시 새로고침하여 로그인 화면으로 이동
+                else:
+                    st.error(f"서버 연결은 되었으나 핸드셰이크에 실패했습니다.\n{h_msg}")
+                    st.info("서버의 SecurityConfig에서 /api/security/** 경로가 인증 예외 처리되어 있는지 확인하세요.")
             else:
                 st.error(msg)
 
@@ -112,14 +122,22 @@ elif not is_logged_in():
     # 상단에 서버 연결 상태 표시
     with st.sidebar:
         st.header("서버 연결 상태")
-        st.success(f"연결됨: {st.session_state.server_url}")
+        
+        # 핸드셰이크가 되어 있으면(aes_handle 존재) 보안 연결 표시
+        if st.session_state.serve_conn.aes_handle:
+            st.success(f"보안 연결됨 (AES-GCM)\nServer: {st.session_state.server_url}")
+        else:
+            # 데모 모드 등 핸드셰이크가 안 된 경우
+            st.warning(f"연결됨 (보안 미적용): {st.session_state.server_url}")
+
         if st.button("서버 연결 변경"):
             st.session_state.server_connected = False
+            st.session_state.serve_conn.logout() # 로그아웃 처리
             st.rerun()
         st.divider()
 
     st.title("SeRVe: Zero-Trust Physical AI")
-    st.subheader("로그인 또는 회원가입")
+    st.subheader("2단계: 사용자 인증")
 
     tab1, tab2 = st.tabs(["로그인", "회원가입"])
 
