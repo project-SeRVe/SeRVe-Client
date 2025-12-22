@@ -4,7 +4,8 @@
 - 실제 사용 시나리오 테스트
 """
 import pytest
-from serve_connector import ServeConnector
+from serve_sdk import ServeClient
+from config import SERVER_URL
 
 
 class TestIntegration:
@@ -16,28 +17,23 @@ class TestIntegration:
         1. 회원가입
         2. 로그인
         3. 저장소 생성
-        4. 핸드셰이크
-        5. 문서 업로드
-        6. 문서 다운로드 및 복호화
-        7. 멤버 초대
-        8. 멤버 목록 조회
-        9. 로그아웃
+        4. 문서 업로드
+        5. 문서 다운로드 및 복호화
+        6. 멤버 초대
+        7. 멤버 목록 조회
+        8. 로그아웃
         """
         import uuid
 
         # 사용자 1 (Admin)
-        admin = ServeConnector()
+        admin = ServeClient(SERVER_URL)
         admin_email = f"admin_{uuid.uuid4()}@example.com"
 
         print("=== Full Workflow Test ===\n")
 
         # 1. 회원가입
         print("1. Admin signup...")
-        success, msg = admin.signup(
-            admin_email, "admin_pass",
-            f"pub_key_{admin_email}",
-            f"enc_priv_key_{admin_email}"
-        )
+        success, msg = admin.signup(admin_email, "admin_pass")
         print(f"   {msg}\n")
 
         # 2. 로그인
@@ -45,60 +41,46 @@ class TestIntegration:
         success, msg = admin.login(admin_email, "admin_pass")
         print(f"   {msg}")
         if success:
-            print(f"   User ID: {admin.user_id}\n")
+            print(f"   User ID: {admin.session.user_id}\n")
 
         # 3. 저장소 생성
         print("3. Create repository...")
         repo_id, msg = admin.create_repository(
             "Integration Test Repo",
-            "Full workflow test repository",
-            "team_key_integration"
+            "Full workflow test repository"
         )
         print(f"   {msg}")
         if repo_id:
             print(f"   Repo ID: {repo_id}\n")
 
-        # 4. 핸드셰이크
-        print("4. Handshake...")
-        success, msg = admin.perform_handshake()
-        print(f"   {msg}\n")
-
-        # 5. 문서 업로드
-        print("5. Upload document...")
+        # 4. 문서 업로드
+        print("4. Upload document...")
         test_content = "Integration test: Confidential data about hydraulic system. Max pressure: 600bar."
-        doc_id, msg = admin.upload_secure_document(test_content, repo_id)
+        doc_id, msg = admin.upload_document(test_content, repo_id)
         print(f"   {msg}")
         if doc_id:
             print(f"   Document ID: {doc_id}\n")
 
-            # 6. 문서 다운로드
-            print("6. Download document...")
-            decrypted_content, msg = admin.get_secure_document(doc_id)
+            # 5. 문서 다운로드
+            print("5. Download document...")
+            decrypted_content, msg = admin.download_document(int(doc_id), repo_id)
             print(f"   {msg}")
             if decrypted_content:
                 print(f"   Content matches: {decrypted_content == test_content}\n")
 
-        # 7. 멤버 초대
-        print("7. Invite member...")
+        # 6. 멤버 초대
+        print("6. Invite member...")
         member_email = f"member_{uuid.uuid4()}@example.com"
 
         # 멤버 계정 생성
-        member = ServeConnector()
-        member.signup(
-            member_email, "member_pass",
-            f"pub_key_{member_email}",
-            f"enc_priv_key_{member_email}"
-        )
+        member = ServeClient(SERVER_URL)
+        member.signup(member_email, "member_pass")
 
-        success, msg = admin.invite_member(
-            repo_id,
-            member_email,
-            f"team_key_for_{member_email}"
-        )
+        success, msg = admin.invite_member(repo_id, member_email)
         print(f"   {msg}\n")
 
-        # 8. 멤버 목록 조회
-        print("8. Get member list...")
+        # 7. 멤버 목록 조회
+        print("7. Get member list...")
         members, msg = admin.get_members(repo_id)
         print(f"   {msg}")
         if members:
@@ -106,11 +88,11 @@ class TestIntegration:
                 print(f"   - {m['email']} ({m['role']})")
             print()
 
-        # 9. 로그아웃
-        print("9. Admin logout...")
+        # 8. 로그아웃
+        print("8. Admin logout...")
         success, msg = admin.logout()
         print(f"   {msg}")
-        print(f"   Token cleared: {admin.access_token is None}\n")
+        print(f"   Token cleared: {admin.session.access_token is None}\n")
 
         print("=== Workflow Complete ===")
 
@@ -121,16 +103,15 @@ class TestIntegration:
         """
         import uuid
 
-        user = ServeConnector()
+        user = ServeClient(SERVER_URL)
         user_email = f"multi_repo_{uuid.uuid4()}@example.com"
 
         print("=== Multiple Repositories Scenario ===\n")
 
         # Setup
         print("Setup: Signup & Login...")
-        user.signup(user_email, "password", "pub_key", "enc_priv_key")
+        user.signup(user_email, "password")
         user.login(user_email, "password")
-        user.perform_handshake()
         print("   Ready\n")
 
         # 여러 저장소 생성
@@ -139,8 +120,7 @@ class TestIntegration:
             print(f"Creating repository {i+1}...")
             repo_id, msg = user.create_repository(
                 f"Repo {i+1}",
-                f"Test repository number {i+1}",
-                f"team_key_{i+1}"
+                f"Test repository number {i+1}"
             )
             if repo_id:
                 repos.append(repo_id)
@@ -148,7 +128,7 @@ class TestIntegration:
 
                 # 각 저장소에 문서 업로드
                 print(f"   Uploading document to Repo {i+1}...")
-                doc_id, msg = user.upload_secure_document(
+                doc_id, msg = user.upload_document(
                     f"Document for Repo {i+1}: Secret data {i+1}",
                     repo_id
                 )
@@ -160,7 +140,7 @@ class TestIntegration:
         if repo_list:
             print(f"   Found {len(repo_list)} repositories:")
             for repo in repo_list:
-                print(f"   - {repo['name']} (ID: {repo['id']})")
+                print(f"   - {repo['name']} (ID: {repo['teamid']})")
 
         print("\n=== Scenario Complete ===")
 
@@ -176,35 +156,30 @@ class TestIntegration:
         print("=== Team Collaboration Scenario ===\n")
 
         # Admin
-        admin = ServeConnector()
+        admin = ServeClient(SERVER_URL)
         admin_email = f"team_admin_{uuid.uuid4()}@example.com"
 
         print("1. Admin setup...")
-        admin.signup(admin_email, "admin_pass", "pub_admin", "enc_admin")
+        admin.signup(admin_email, "admin_pass")
         admin.login(admin_email, "admin_pass")
 
         repo_id, _ = admin.create_repository(
             "Team Project",
-            "Collaborative repository",
-            "team_shared_key"
+            "Collaborative repository"
         )
         print(f"   Repository created: ID {repo_id}\n")
 
         # Members
         members = []
         for i in range(3):
-            member = ServeConnector()
+            member = ServeClient(SERVER_URL)
             member_email = f"team_member_{i}_{uuid.uuid4()}@example.com"
 
             print(f"2.{i+1} Member {i+1} setup...")
-            member.signup(member_email, "member_pass", f"pub_{i}", f"enc_{i}")
+            member.signup(member_email, "member_pass")
 
             # Admin이 멤버 초대
-            success, msg = admin.invite_member(
-                repo_id,
-                member_email,
-                f"team_key_for_member_{i}"
-            )
+            success, msg = admin.invite_member(repo_id, member_email)
             print(f"   Invited: {member_email} - {msg}\n")
 
             members.append((member, member_email))

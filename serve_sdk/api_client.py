@@ -152,12 +152,13 @@ class ApiClient:
 
     # ==================== 저장소 API ====================
 
-    def create_repository(self, name: str, description: str, owner_id: int,
+    def create_repository(self, name: str, description: str, owner_id: str,
                          encrypted_team_key: str, access_token: str) -> Tuple[bool, Any]:
         """
         저장소 생성
 
         Args:
+            owner_id: 소유자 ID (UUID 문자열)
             encrypted_team_key: 내 공개키로 래핑된 팀 키
         """
         try:
@@ -175,7 +176,7 @@ class ApiClient:
         except Exception as e:
             return False, f"저장소 생성 오류: {str(e)}"
 
-    def get_my_repositories(self, user_id: int, access_token: str) -> Tuple[bool, Optional[List]]:
+    def get_my_repositories(self, user_id: str, access_token: str) -> Tuple[bool, Optional[List]]:
         """내 저장소 목록 조회"""
         try:
             resp = self.session.get(
@@ -187,9 +188,13 @@ class ApiClient:
         except Exception as e:
             return False, f"저장소 목록 조회 오류: {str(e)}"
 
-    def get_team_key(self, repo_id: int, user_id: int, access_token: str) -> Tuple[bool, Optional[str]]:
+    def get_team_key(self, repo_id: str, user_id: str, access_token: str) -> Tuple[bool, Optional[str]]:
         """
         내가 가진 저장소의 암호화된 팀 키 조회
+
+        Args:
+            repo_id: 저장소 ID (UUID 문자열)
+            user_id: 사용자 ID (UUID 문자열)
 
         Returns:
             (성공 여부, Base64 암호화된 팀 키 또는 에러 메시지)
@@ -204,7 +209,7 @@ class ApiClient:
         except Exception as e:
             return False, f"팀 키 조회 오류: {str(e)}"
 
-    def delete_repository(self, repo_id: int, user_id: int, access_token: str) -> Tuple[bool, str]:
+    def delete_repository(self, repo_id: str, user_id: str, access_token: str) -> Tuple[bool, str]:
         """저장소 삭제"""
         try:
             resp = self.session.delete(
@@ -219,12 +224,13 @@ class ApiClient:
 
     # ==================== 멤버 관리 API ====================
 
-    def invite_member(self, repo_id: int, email: str, encrypted_team_key: str,
+    def invite_member(self, repo_id: str, email: str, encrypted_team_key: str,
                      access_token: str) -> Tuple[bool, str]:
         """
         멤버 초대
 
         Args:
+            repo_id: 저장소 ID (UUID 문자열)
             encrypted_team_key: 초대할 사람의 공개키로 래핑된 팀 키
         """
         try:
@@ -241,7 +247,7 @@ class ApiClient:
         except Exception as e:
             return False, f"멤버 초대 오류: {str(e)}"
 
-    def get_members(self, repo_id: int, access_token: str) -> Tuple[bool, Optional[List]]:
+    def get_members(self, repo_id: str, access_token: str) -> Tuple[bool, Optional[List]]:
         """멤버 목록 조회"""
         try:
             resp = self.session.get(
@@ -252,7 +258,7 @@ class ApiClient:
         except Exception as e:
             return False, f"멤버 목록 조회 오류: {str(e)}"
 
-    def kick_member(self, repo_id: int, target_user_id: int, admin_id: int,
+    def kick_member(self, repo_id: str, target_user_id: str, admin_id: str,
                    access_token: str) -> Tuple[bool, str]:
         """멤버 강퇴"""
         try:
@@ -266,7 +272,7 @@ class ApiClient:
         except Exception as e:
             return False, f"멤버 강퇴 오류: {str(e)}"
 
-    def update_member_role(self, repo_id: int, target_user_id: int, admin_id: int,
+    def update_member_role(self, repo_id: str, target_user_id: str, admin_id: str,
                           new_role: str, access_token: str) -> Tuple[bool, str]:
         """멤버 권한 변경"""
         try:
@@ -283,13 +289,14 @@ class ApiClient:
 
     # ==================== 문서 API ====================
 
-    def upload_document(self, encrypted_content: str, repo_id: int,
+    def upload_document(self, encrypted_content: str, repo_id: str,
                        access_token: str) -> Tuple[bool, Any]:
         """
         암호화된 문서 업로드
 
         Args:
             encrypted_content: 이미 팀 키로 암호화된 내용
+            repo_id: 저장소 ID (UUID 문자열)
 
         Returns:
             (성공 여부, 문서 ID 또는 에러 메시지)

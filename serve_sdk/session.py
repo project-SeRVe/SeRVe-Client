@@ -31,7 +31,7 @@ class Session:
     def _initialize(self):
         """세션 초기화"""
         self.access_token: Optional[str] = None
-        self.user_id: Optional[int] = None
+        self.user_id: Optional[str] = None  # UUID 문자열
         self.email: Optional[str] = None
 
         # 복호화된 내 개인키 (KeysetHandle 객체)
@@ -43,8 +43,8 @@ class Session:
         self.public_key_handle = None
 
         # 현재 작업 중인 저장소들의 팀 키 캐시
-        # {repo_id: aes_keyset_handle} 형태
-        self.team_keys: Dict[int, any] = {}
+        # {repo_id (UUID 문자열): aes_keyset_handle} 형태
+        self.team_keys: Dict[str, any] = {}
 
     def is_authenticated(self) -> bool:
         """로그인 상태 확인"""
@@ -54,10 +54,10 @@ class Session:
         """개인키가 복구되었는지 확인"""
         return self.private_key_handle is not None
 
-    def set_user_credentials(self, access_token: str, user_id: int, email: str):
+    def set_user_credentials(self, access_token: str, user_id: str, email: str):
         """로그인 성공 시 사용자 정보 저장"""
         self.access_token = access_token
-        self.user_id = user_id
+        self.user_id = user_id  # UUID 문자열
         self.email = email
 
     def set_key_pair(self, private_handle, public_handle):
@@ -77,11 +77,11 @@ class Session:
             raise RuntimeError("공개키가 로드되지 않았습니다. 먼저 로그인하세요.")
         return self.public_key_handle
 
-    def cache_team_key(self, repo_id: int, aes_handle):
+    def cache_team_key(self, repo_id: str, aes_handle):
         """저장소의 팀 키를 메모리에 캐싱"""
         self.team_keys[repo_id] = aes_handle
 
-    def get_cached_team_key(self, repo_id: int) -> Optional[any]:
+    def get_cached_team_key(self, repo_id: str) -> Optional[any]:
         """캐시된 팀 키 조회 (없으면 None)"""
         return self.team_keys.get(repo_id)
 

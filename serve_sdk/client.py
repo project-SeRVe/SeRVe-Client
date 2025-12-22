@@ -44,7 +44,7 @@ class ServeClient:
         if not self.session.is_authenticated():
             raise RuntimeError("로그인이 필요합니다.")
 
-    def _ensure_team_key(self, repo_id: int):
+    def _ensure_team_key(self, repo_id: str):
         """
         팀 키 Lazy Loading (핵심 로직!)
 
@@ -54,7 +54,7 @@ class ServeClient:
         3. Session에 캐싱
 
         Args:
-            repo_id: 저장소 ID
+            repo_id: 저장소 ID (UUID 문자열)
 
         Returns:
             KeysetHandle: 복호화된 팀 키
@@ -188,7 +188,7 @@ class ServeClient:
 
     # ==================== 저장소 API ====================
 
-    def create_repository(self, name: str, description: str = "") -> Tuple[Optional[int], str]:
+    def create_repository(self, name: str, description: str = "") -> Tuple[Optional[str], str]:
         """
         저장소 생성
 
@@ -203,7 +203,7 @@ class ServeClient:
             description: 설명
 
         Returns:
-            (저장소 ID, 메시지)
+            (저장소 ID (UUID 문자열), 메시지)
         """
         self._ensure_authenticated()
 
@@ -227,8 +227,8 @@ class ServeClient:
             if not success:
                 return None, data
 
-            # 4. 응답에서 repo_id 추출
-            repo_id = int(data) if isinstance(data, (int, str)) else data.get('id')
+            # 4. 응답에서 repo_id 추출 (UUID 문자열)
+            repo_id = str(data) if isinstance(data, str) else data.get('id')
 
             # 5. 원본 팀 키를 Session에 캐싱
             self.session.cache_team_key(repo_id, team_key)
@@ -247,7 +247,7 @@ class ServeClient:
         )
         return (data, "조회 성공") if success else (None, data)
 
-    def delete_repository(self, repo_id: int) -> Tuple[bool, str]:
+    def delete_repository(self, repo_id: str) -> Tuple[bool, str]:
         """저장소 삭제"""
         self._ensure_authenticated()
         success, msg = self.api.delete_repository(
@@ -262,7 +262,7 @@ class ServeClient:
 
     # ==================== 멤버 관리 API ====================
 
-    def invite_member(self, repo_id: int, email: str) -> Tuple[bool, str]:
+    def invite_member(self, repo_id: str, email: str) -> Tuple[bool, str]:
         """
         멤버 초대
 
@@ -272,7 +272,7 @@ class ServeClient:
         3. 서버에 전송
 
         Args:
-            repo_id: 저장소 ID
+            repo_id: 저장소 ID (UUID 문자열)
             email: 초대할 사람의 이메일
 
         Returns:
@@ -310,13 +310,13 @@ class ServeClient:
         except Exception as e:
             return False, f"멤버 초대 오류: {str(e)}"
 
-    def get_members(self, repo_id: int) -> Tuple[Optional[List], str]:
+    def get_members(self, repo_id: str) -> Tuple[Optional[List], str]:
         """멤버 목록 조회"""
         self._ensure_authenticated()
         success, data = self.api.get_members(repo_id, self.session.access_token)
         return (data, "조회 성공") if success else (None, data)
 
-    def kick_member(self, repo_id: int, target_user_id: int) -> Tuple[bool, str]:
+    def kick_member(self, repo_id: str, target_user_id: str) -> Tuple[bool, str]:
         """멤버 강퇴"""
         self._ensure_authenticated()
         return self.api.kick_member(
@@ -326,7 +326,7 @@ class ServeClient:
             self.session.access_token
         )
 
-    def update_member_role(self, repo_id: int, target_user_id: int, new_role: str) -> Tuple[bool, str]:
+    def update_member_role(self, repo_id: str, target_user_id: str, new_role: str) -> Tuple[bool, str]:
         """멤버 권한 변경"""
         self._ensure_authenticated()
         return self.api.update_member_role(
@@ -339,7 +339,7 @@ class ServeClient:
 
     # ==================== 문서 API ====================
 
-    def upload_document(self, plaintext: str, repo_id: int) -> Tuple[Optional[str], str]:
+    def upload_document(self, plaintext: str, repo_id: str) -> Tuple[Optional[str], str]:
         """
         문서 업로드
 
@@ -350,7 +350,7 @@ class ServeClient:
 
         Args:
             plaintext: 평문 내용
-            repo_id: 저장소 ID
+            repo_id: 저장소 ID (UUID 문자열)
 
         Returns:
             (문서 ID, 메시지)
@@ -376,7 +376,7 @@ class ServeClient:
         except Exception as e:
             return None, f"업로드 오류: {str(e)}"
 
-    def download_document(self, doc_id: int, repo_id: int) -> Tuple[Optional[str], str]:
+    def download_document(self, doc_id: int, repo_id: str) -> Tuple[Optional[str], str]:
         """
         문서 다운로드
 
@@ -387,7 +387,7 @@ class ServeClient:
 
         Args:
             doc_id: 문서 ID
-            repo_id: 저장소 ID (팀 키 조회용)
+            repo_id: 저장소 ID (UUID 문자열, 팀 키 조회용)
 
         Returns:
             (평문 내용, 메시지)
