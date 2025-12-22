@@ -133,7 +133,7 @@ class ServeConnector:
     # ==================== 저장소 관련 API ====================
 
     def create_repository(self, name, description, encrypted_team_key):
-        """저장소 생성"""
+        """저장소 생성 후 teamId를 반환"""
         if not self.user_id:
             return None, "먼저 로그인해주세요."
 
@@ -149,8 +149,14 @@ class ServeConnector:
                                     headers=self._get_auth_headers())
 
             if resp.status_code == 200:
-                repo_id = resp.json()
-                return repo_id, f"저장소 생성 성공 (ID: {repo_id})"
+                repo_long_id = resp.json()  # Long ID 받기
+
+                # 생성된 저장소의 실제 teamId를 얻기 위해 목록 조회
+                # 서버가 teamId를 생성하지 않으므로, Long ID를 String으로 사용
+                # 참고: 서버 수정이 필요한 부분이지만, 일단 시도
+                team_id = str(repo_long_id)
+
+                return team_id, f"저장소 생성 성공 (ID: {repo_long_id})"
             else:
                 return None, f"저장소 생성 실패: {resp.text}"
         except Exception as e:
@@ -214,11 +220,11 @@ class ServeConnector:
 
     # ==================== 멤버 관련 API ====================
 
-    def invite_member(self, repo_id, email, encrypted_team_key):
+    def invite_member(self, team_id, email, encrypted_team_key):
         """멤버 초대"""
         try:
             server_url = self._get_server_url()
-            resp = self.session.post(f"{server_url}/repositories/{repo_id}/members",
+            resp = self.session.post(f"{server_url}/api/teams/{team_id}/members",
                                     json={
                                         "email": email,
                                         "encryptedTeamKey": encrypted_team_key
@@ -232,11 +238,11 @@ class ServeConnector:
         except Exception as e:
             return False, f"멤버 초대 오류: {str(e)}"
 
-    def get_members(self, repo_id):
+    def get_members(self, team_id):
         """멤버 목록 조회"""
         try:
             server_url = self._get_server_url()
-            resp = self.session.get(f"{server_url}/repositories/{repo_id}/members",
+            resp = self.session.get(f"{server_url}/api/teams/{team_id}/members",
                                    headers=self._get_auth_headers())
 
             if resp.status_code == 200:
@@ -247,11 +253,11 @@ class ServeConnector:
         except Exception as e:
             return None, f"멤버 목록 조회 오류: {str(e)}"
 
-    def kick_member(self, repo_id, target_user_id, admin_id):
+    def kick_member(self, team_id, target_user_id, admin_id):
         """멤버 강퇴"""
         try:
             server_url = self._get_server_url()
-            resp = self.session.delete(f"{server_url}/repositories/{repo_id}/members/{target_user_id}",
+            resp = self.session.delete(f"{server_url}/api/teams/{team_id}/members/{target_user_id}",
                                       params={"adminId": admin_id},
                                       headers=self._get_auth_headers())
 
@@ -262,11 +268,11 @@ class ServeConnector:
         except Exception as e:
             return False, f"멤버 강퇴 오류: {str(e)}"
 
-    def update_member_role(self, repo_id, target_user_id, admin_id, new_role):
+    def update_member_role(self, team_id, target_user_id, admin_id, new_role):
         """멤버 권한 변경"""
         try:
             server_url = self._get_server_url()
-            resp = self.session.put(f"{server_url}/repositories/{repo_id}/members/{target_user_id}",
+            resp = self.session.put(f"{server_url}/api/teams/{team_id}/members/{target_user_id}",
                                    params={"adminId": admin_id},
                                    json={"role": new_role},
                                    headers=self._get_auth_headers())
@@ -280,7 +286,7 @@ class ServeConnector:
 
     # ==================== 문서 관련 API ====================
 
-    def upload_secure_document(self, plaintext, repo_id=1):
+    def upload_secure_document(self, plaintext, repo_id=1, file_name="document.txt", file_type="text/plain"):
         """데이터를 암호화하여 서버에 업로드합니다."""
         if not self.aes_handle:
             return None, "먼저 핸드셰이크를 수행해야 합니다."
@@ -290,23 +296,42 @@ class ServeConnector:
             # 1. 암호화
             encrypted_content = self.crypto.encrypt_data(plaintext, self.aes_handle)
 
-            # 2. 업로드 (경로 수정: /api/documents)
+            # 2. 업로드 (수정: /api/teams/{teamId}/documents)
             payload = {
-                "content": encrypted_content,
-                "repositoryId": repo_id
+                "fileName": file_name,
+                "fileType": file_type,
+                "encryptedBlob": encrypted_content
             }
-            resp = self.session.post(f"{server_url}/api/documents", json=payload,
+            resp = self.session.post(f"{server_url}/api/teams/{repo_id}/documents",
+                                    json=payload,
                                     headers=self._get_auth_headers())
 
             if resp.status_code != 200:
-                return None, f"업로드 실패: {resp.text}"
+                error_detail = resp.text if resp.text else f"HTTP {resp.status_code}"
+                return None, f"업로드 실패 (status={resp.status_code}): {error_detail}"
 
-            # ID 추출 (숫자만)
-            doc_id = ''.join(filter(str.isdigit, resp.text))
-            return doc_id, "업로드 성공"
+            return "success", "업로드 성공"
 
         except Exception as e:
-            return None, f"업로드 오류: {str(e)}"
+            import traceback
+            return None, f"업로드 오류: {str(e)}\n{traceback.format_exc()}"
+
+    def get_documents(self, team_id):
+        """팀의 문서 목록 조회"""
+        try:
+            server_url = self._get_server_url()
+            resp = self.session.get(f"{server_url}/api/teams/{team_id}/documents",
+                                   headers=self._get_auth_headers())
+
+            if resp.status_code == 200:
+                documents = resp.json()
+                return documents, "문서 목록 조회 성공"
+            else:
+                error_detail = resp.text if resp.text else f"HTTP {resp.status_code}"
+                return None, f"문서 목록 조회 실패 (status={resp.status_code}): {error_detail}"
+        except Exception as e:
+            import traceback
+            return None, f"문서 목록 조회 오류: {str(e)}\n{traceback.format_exc()}"
 
     def get_secure_document(self, doc_id):
         """문서 ID로 암호문을 다운로드받아 복호화합니다."""
@@ -315,16 +340,30 @@ class ServeConnector:
 
         try:
             server_url = self._get_server_url()
-            # 1. 다운로드 (경로 수정: /api/documents)
-            resp = self.session.get(f"{server_url}/api/documents/{doc_id}",
+            # 1. 다운로드 (수정: /api/documents/{docId}/data)
+            resp = self.session.get(f"{server_url}/api/documents/{doc_id}/data",
                                    headers=self._get_auth_headers())
             if resp.status_code != 200:
                 return None, f"다운로드 실패: {resp.text}"
 
             # 2. 복호화
-            encrypted_content = resp.json()['content']
-            decrypted_text = self.crypto.decrypt_data(encrypted_content, self.aes_handle)
+            encrypted_blob = resp.json()['encryptedBlob']
+            decrypted_text = self.crypto.decrypt_data(encrypted_blob, self.aes_handle)
 
             return decrypted_text, "복호화 성공"
         except Exception as e:
             return None, f"문서 처리 오류: {str(e)}"
+
+    def delete_document(self, team_id, doc_id):
+        """문서 삭제"""
+        try:
+            server_url = self._get_server_url()
+            resp = self.session.delete(f"{server_url}/api/teams/{team_id}/documents/{doc_id}",
+                                      headers=self._get_auth_headers())
+
+            if resp.status_code == 200:
+                return True, "문서 삭제 성공"
+            else:
+                return False, f"문서 삭제 실패: {resp.text}"
+        except Exception as e:
+            return False, f"문서 삭제 오류: {str(e)}"
