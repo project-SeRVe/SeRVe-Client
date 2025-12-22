@@ -1,0 +1,353 @@
+"""
+API Client - HTTP 통신 전담
+
+순수 HTTP 요청/응답만 처리. 암호화 로직은 일절 모름.
+Session에서 토큰을 받아와 인증 헤더에 사용.
+"""
+
+import requests
+from typing import Optional, Dict, Any, List, Tuple
+
+
+class ApiClient:
+    """
+    서버와의 HTTP 통신을 담당하는 클라이언트
+
+    책임:
+    - REST API 호출
+    - 인증 헤더 관리
+    - 응답 파싱 및 에러 처리
+
+    책임이 아닌 것:
+    - 암호화/복호화 (CryptoUtils가 담당)
+    - 상태 관리 (Session이 담당)
+    - 비즈니스 로직 (ServeClient가 담당)
+    """
+
+    def __init__(self, server_url: str):
+        """
+        Args:
+            server_url: 서버 기본 URL (예: http://localhost:8080)
+        """
+        self.server_url = server_url.rstrip('/')
+        self.session = requests.Session()
+
+    def _get_headers(self, access_token: Optional[str] = None) -> Dict[str, str]:
+        """인증 헤더 생성"""
+        headers = {"Content-Type": "application/json"}
+        if access_token:
+            headers["Authorization"] = f"Bearer {access_token}"
+        return headers
+
+    def _handle_response(self, response: requests.Response) -> Tuple[bool, Any]:
+        """
+        응답 처리 헬퍼
+
+        Returns:
+            (성공 여부, 데이터 또는 에러 메시지)
+        """
+        if response.status_code in [200, 201]:
+            try:
+                return True, response.json()
+            except:
+                # JSON 파싱 실패 시 텍스트 반환
+                return True, response.text
+        else:
+            return False, f"HTTP {response.status_code}: {response.text}"
+
+    # ==================== 인증 API ====================
+
+    def signup(self, email: str, password: str, public_key: str,
+               encrypted_private_key: str) -> Tuple[bool, str]:
+        """
+        회원가입
+
+        Args:
+            email: 사용자 이메일
+            password: 비밀번호
+            public_key: JSON 형식의 공개키
+            encrypted_private_key: 비밀번호로 암호화된 개인키
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        try:
+            resp = self.session.post(
+                f"{self.server_url}/auth/signup",
+                json={
+                    "email": email,
+                    "password": password,
+                    "publicKey": public_key,
+                    "encryptedPrivateKey": encrypted_private_key
+                }
+            )
+            success, data = self._handle_response(resp)
+            return success, "회원가입 성공" if success else data
+        except Exception as e:
+            return False, f"회원가입 오류: {str(e)}"
+
+    def login(self, email: str, password: str) -> Tuple[bool, Optional[Dict]]:
+        """
+        로그인
+
+        Returns:
+            (성공 여부, 사용자 데이터 또는 에러 메시지)
+            사용자 데이터: {accessToken, userId, email, encryptedPrivateKey}
+        """
+        try:
+            resp = self.session.post(
+                f"{self.server_url}/auth/login",
+                json={"email": email, "password": password}
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"로그인 오류: {str(e)}"
+
+    def reset_password(self, email: str, new_password: str) -> Tuple[bool, str]:
+        """비밀번호 재설정"""
+        try:
+            resp = self.session.post(
+                f"{self.server_url}/auth/reset-password",
+                json={"email": email, "newPassword": new_password}
+            )
+            success, _ = self._handle_response(resp)
+            return success, "비밀번호 재설정 성공" if success else "비밀번호 재설정 실패"
+        except Exception as e:
+            return False, f"비밀번호 재설정 오류: {str(e)}"
+
+    def withdraw(self, access_token: str) -> Tuple[bool, str]:
+        """회원 탈퇴"""
+        try:
+            resp = self.session.delete(
+                f"{self.server_url}/auth/me",
+                headers=self._get_headers(access_token)
+            )
+            success, _ = self._handle_response(resp)
+            return success, "회원 탈퇴 성공" if success else "회원 탈퇴 실패"
+        except Exception as e:
+            return False, f"회원 탈퇴 오류: {str(e)}"
+
+    # ==================== 사용자 정보 API ====================
+
+    def get_user_public_key(self, email: str, access_token: str) -> Tuple[bool, Optional[str]]:
+        """
+        다른 사용자의 공개키 조회 (멤버 초대 시 사용)
+
+        Args:
+            email: 조회할 사용자 이메일
+            access_token: 인증 토큰
+
+        Returns:
+            (성공 여부, JSON 형식의 공개키 또는 에러 메시지)
+        """
+        try:
+            resp = self.session.get(
+                f"{self.server_url}/auth/public-key",
+                params={"email": email},
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"공개키 조회 오류: {str(e)}"
+
+    # ==================== 저장소 API ====================
+
+    def create_repository(self, name: str, description: str, owner_id: int,
+                         encrypted_team_key: str, access_token: str) -> Tuple[bool, Any]:
+        """
+        저장소 생성
+
+        Args:
+            encrypted_team_key: 내 공개키로 래핑된 팀 키
+        """
+        try:
+            resp = self.session.post(
+                f"{self.server_url}/api/repositories",
+                json={
+                    "name": name,
+                    "description": description,
+                    "ownerId": owner_id,
+                    "encryptedTeamKey": encrypted_team_key
+                },
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"저장소 생성 오류: {str(e)}"
+
+    def get_my_repositories(self, user_id: int, access_token: str) -> Tuple[bool, Optional[List]]:
+        """내 저장소 목록 조회"""
+        try:
+            resp = self.session.get(
+                f"{self.server_url}/api/repositories",
+                params={"userId": user_id},
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"저장소 목록 조회 오류: {str(e)}"
+
+    def get_team_key(self, repo_id: int, user_id: int, access_token: str) -> Tuple[bool, Optional[str]]:
+        """
+        내가 가진 저장소의 암호화된 팀 키 조회
+
+        Returns:
+            (성공 여부, Base64 암호화된 팀 키 또는 에러 메시지)
+        """
+        try:
+            resp = self.session.get(
+                f"{self.server_url}/api/repositories/{repo_id}/keys",
+                params={"userId": user_id},
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"팀 키 조회 오류: {str(e)}"
+
+    def delete_repository(self, repo_id: int, user_id: int, access_token: str) -> Tuple[bool, str]:
+        """저장소 삭제"""
+        try:
+            resp = self.session.delete(
+                f"{self.server_url}/api/repositories/{repo_id}",
+                params={"userId": user_id},
+                headers=self._get_headers(access_token)
+            )
+            success, _ = self._handle_response(resp)
+            return success, "저장소 삭제 성공" if success else "저장소 삭제 실패"
+        except Exception as e:
+            return False, f"저장소 삭제 오류: {str(e)}"
+
+    # ==================== 멤버 관리 API ====================
+
+    def invite_member(self, repo_id: int, email: str, encrypted_team_key: str,
+                     access_token: str) -> Tuple[bool, str]:
+        """
+        멤버 초대
+
+        Args:
+            encrypted_team_key: 초대할 사람의 공개키로 래핑된 팀 키
+        """
+        try:
+            resp = self.session.post(
+                f"{self.server_url}/repositories/{repo_id}/members",
+                json={
+                    "email": email,
+                    "encryptedTeamKey": encrypted_team_key
+                },
+                headers=self._get_headers(access_token)
+            )
+            success, _ = self._handle_response(resp)
+            return success, "멤버 초대 성공" if success else "멤버 초대 실패"
+        except Exception as e:
+            return False, f"멤버 초대 오류: {str(e)}"
+
+    def get_members(self, repo_id: int, access_token: str) -> Tuple[bool, Optional[List]]:
+        """멤버 목록 조회"""
+        try:
+            resp = self.session.get(
+                f"{self.server_url}/repositories/{repo_id}/members",
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"멤버 목록 조회 오류: {str(e)}"
+
+    def kick_member(self, repo_id: int, target_user_id: int, admin_id: int,
+                   access_token: str) -> Tuple[bool, str]:
+        """멤버 강퇴"""
+        try:
+            resp = self.session.delete(
+                f"{self.server_url}/repositories/{repo_id}/members/{target_user_id}",
+                params={"adminId": admin_id},
+                headers=self._get_headers(access_token)
+            )
+            success, _ = self._handle_response(resp)
+            return success, "멤버 강퇴 성공" if success else "멤버 강퇴 실패"
+        except Exception as e:
+            return False, f"멤버 강퇴 오류: {str(e)}"
+
+    def update_member_role(self, repo_id: int, target_user_id: int, admin_id: int,
+                          new_role: str, access_token: str) -> Tuple[bool, str]:
+        """멤버 권한 변경"""
+        try:
+            resp = self.session.put(
+                f"{self.server_url}/repositories/{repo_id}/members/{target_user_id}",
+                params={"adminId": admin_id},
+                json={"role": new_role},
+                headers=self._get_headers(access_token)
+            )
+            success, _ = self._handle_response(resp)
+            return success, "권한 변경 성공" if success else "권한 변경 실패"
+        except Exception as e:
+            return False, f"권한 변경 오류: {str(e)}"
+
+    # ==================== 문서 API ====================
+
+    def upload_document(self, encrypted_content: str, repo_id: int,
+                       access_token: str) -> Tuple[bool, Any]:
+        """
+        암호화된 문서 업로드
+
+        Args:
+            encrypted_content: 이미 팀 키로 암호화된 내용
+
+        Returns:
+            (성공 여부, 문서 ID 또는 에러 메시지)
+        """
+        try:
+            resp = self.session.post(
+                f"{self.server_url}/api/documents",
+                json={
+                    "content": encrypted_content,
+                    "repositoryId": repo_id
+                },
+                headers=self._get_headers(access_token)
+            )
+            success, data = self._handle_response(resp)
+            if success:
+                # ID 추출 (숫자만)
+                doc_id = ''.join(filter(str.isdigit, str(data)))
+                return True, doc_id
+            return False, data
+        except Exception as e:
+            return False, f"문서 업로드 오류: {str(e)}"
+
+    def get_document(self, doc_id: int, access_token: str) -> Tuple[bool, Optional[Dict]]:
+        """
+        문서 다운로드
+
+        Returns:
+            (성공 여부, {content: 암호화된 내용, ...} 또는 에러 메시지)
+        """
+        try:
+            resp = self.session.get(
+                f"{self.server_url}/api/documents/{doc_id}",
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"문서 다운로드 오류: {str(e)}"
+
+    # ==================== 보안 API ====================
+
+    def handshake(self, public_key_json: str) -> Tuple[bool, Optional[str]]:
+        """
+        서버와 핸드셰이크 (세션 키 교환)
+
+        주의: 이 API는 Zero-Trust 모드에서는 사용하지 않을 수도 있음
+        (팀 키만 사용하는 경우)
+
+        Returns:
+            (성공 여부, 암호화된 AES 키 또는 에러 메시지)
+        """
+        try:
+            resp = self.session.post(
+                f"{self.server_url}/api/security/handshake",
+                json={"publicKeyJson": public_key_json}
+            )
+            success, data = self._handle_response(resp)
+            if success:
+                return True, data.get('encryptedAesKey')
+            return False, data
+        except Exception as e:
+            return False, f"핸드셰이크 오류: {str(e)}"
