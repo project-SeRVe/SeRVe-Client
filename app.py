@@ -80,7 +80,7 @@ if not st.session_state.server_connected:
     with col2:
         st.write("")  # 간격 맞추기
         st.write("")
-        connect_button = st.button("연결 및 핸드셰이크", type="primary", width="stretch")
+        connect_button = st.button("서버 연결", type="primary", width="stretch")
 
     if connect_button:
         with st.spinner("서버 연결 및 보안 채널 수립 중..."):

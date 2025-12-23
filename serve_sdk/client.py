@@ -457,34 +457,6 @@ class ServeClient:
         self._ensure_authenticated()
         return self.api.delete_document(repo_id, doc_id, self.session.access_token)
 
-    # ==================== 레거시 호환 (선택적) ====================
-
-    def perform_handshake(self) -> Tuple[bool, str]:
-        """
-        서버와 세션 키 교환 (레거시)
-
-        주의: Zero-Trust 모드에서는 팀 키만 사용하므로 이 메서드는 사용하지 않음.
-        기존 코드 호환성을 위해 유지.
-        """
-        try:
-            # 임시 키 쌍 생성
-            temp_key_pair = self.crypto.generate_key_pair()
-            public_key_json = self.crypto.get_public_key_json(temp_key_pair)
-
-            # 핸드셰이크
-            success, encrypted_aes_key = self.api.handshake(public_key_json)
-
-            if not success:
-                return False, encrypted_aes_key
-
-            # AES 키 복호화 (사용하지 않지만 검증용)
-            _ = self.crypto.unwrap_aes_key(encrypted_aes_key, temp_key_pair)
-
-            return True, "핸드셰이크 성공 (레거시)"
-
-        except Exception as e:
-            return False, f"핸드셰이크 오류: {str(e)}"
-
     # ==================== 디버그 유틸 ====================
 
     def get_session_info(self) -> Dict[str, Any]:

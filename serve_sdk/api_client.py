@@ -387,26 +387,3 @@ class ApiClient:
         except Exception as e:
             return False, f"문서 삭제 오류: {str(e)}"
 
-    # ==================== 보안 API ====================
-
-    def handshake(self, public_key_json: str) -> Tuple[bool, Optional[str]]:
-        """
-        서버와 핸드셰이크 (세션 키 교환)
-
-        주의: 이 API는 Zero-Trust 모드에서는 사용하지 않을 수도 있음
-        (팀 키만 사용하는 경우)
-
-        Returns:
-            (성공 여부, 암호화된 AES 키 또는 에러 메시지)
-        """
-        try:
-            resp = self.session.post(
-                f"{self.server_url}/api/security/handshake",
-                json={"publicKeyJson": public_key_json}
-            )
-            success, data = self._handle_response(resp)
-            if success:
-                return True, data.get('encryptedAesKey')
-            return False, data
-        except Exception as e:
-            return False, f"핸드셰이크 오류: {str(e)}"
