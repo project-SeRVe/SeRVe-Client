@@ -114,6 +114,48 @@ Question: What is this object based on the context above? Provide technical deta
         except Exception as e:
             return f"RAG 분석 실패: {str(e)}"
 
+    def analyze_with_vectorstore(
+        self,
+        image_bytes,
+        vectorstore: Chroma,
+        top_k=3,
+        query="Describe technical specifications and safety information"
+    ):
+        """
+        [RAG 기반] 기존 벡터 스토어를 활용하여 이미지를 분석합니다.
+
+        Args:
+            image_bytes: 이미지 바이트 데이터
+            vectorstore: 기존 Chroma 벡터 스토어
+            top_k: 검색할 관련 청크 수
+            query: 검색 쿼리 (기본값: 기술 사양 및 안전 정보)
+
+        Returns:
+            str: AI 분석 결과
+        """
+        try:
+            # 1. Semantic Search from existing vector store
+            relevant_docs = vectorstore.similarity_search(query, k=top_k)
+
+            # 2. Construct RAG Prompt
+            retrieved_context = "\n\n".join([doc.page_content for doc in relevant_docs])
+
+            rag_prompt = f"""You are a secure industrial AI assistant.
+Analyze the provided image based strictly on the following secure context document.
+
+[SECURE CONTEXT START]
+{retrieved_context}
+[SECURE CONTEXT END]
+
+Question: What is this object based on the context above? Provide technical details if available.
+"""
+
+            # 3. Call LLM with image
+            return self.analyze_image(image_bytes, rag_prompt)
+
+        except Exception as e:
+            return f"벡터스토어 RAG 분석 실패: {str(e)}"
+
     # ==================== Phase 2: Vector Store Management ====================
 
     def create_vector_store(
