@@ -235,7 +235,7 @@ class ApiClient:
         """
         try:
             resp = self.session.post(
-                f"{self.server_url}/repositories/{repo_id}/members",
+                f"{self.server_url}/api/teams/{repo_id}/members",
                 json={
                     "email": email,
                     "encryptedTeamKey": encrypted_team_key
@@ -251,7 +251,7 @@ class ApiClient:
         """멤버 목록 조회"""
         try:
             resp = self.session.get(
-                f"{self.server_url}/repositories/{repo_id}/members",
+                f"{self.server_url}/api/teams/{repo_id}/members",
                 headers=self._get_headers(access_token)
             )
             return self._handle_response(resp)
@@ -263,7 +263,7 @@ class ApiClient:
         """멤버 강퇴"""
         try:
             resp = self.session.delete(
-                f"{self.server_url}/repositories/{repo_id}/members/{target_user_id}",
+                f"{self.server_url}/api/teams/{repo_id}/members/{target_user_id}",
                 params={"adminId": admin_id},
                 headers=self._get_headers(access_token)
             )
@@ -277,7 +277,7 @@ class ApiClient:
         """멤버 권한 변경"""
         try:
             resp = self.session.put(
-                f"{self.server_url}/repositories/{repo_id}/members/{target_user_id}",
+                f"{self.server_url}/api/teams/{repo_id}/members/{target_user_id}",
                 params={"adminId": admin_id},
                 json={"role": new_role},
                 headers=self._get_headers(access_token)
@@ -303,7 +303,7 @@ class ApiClient:
         """
         try:
             resp = self.session.post(
-                f"{self.server_url}/api/documents",
+                f"{self.server_url}/api/teams/{repo_id}/documents",
                 json={
                     "content": encrypted_content,
                     "repositoryId": repo_id
@@ -328,12 +328,52 @@ class ApiClient:
         """
         try:
             resp = self.session.get(
-                f"{self.server_url}/api/documents/{doc_id}",
+                f"{self.server_url}/api/documents/{doc_id}/data",
                 headers=self._get_headers(access_token)
             )
             return self._handle_response(resp)
         except Exception as e:
             return False, f"문서 다운로드 오류: {str(e)}"
+
+    def get_documents(self, repo_id: str, access_token: str) -> Tuple[bool, Optional[List]]:
+        """
+        문서 목록 조회
+
+        Args:
+            repo_id: 저장소 ID (UUID 문자열)
+
+        Returns:
+            (성공 여부, 문서 목록 또는 에러 메시지)
+        """
+        try:
+            resp = self.session.get(
+                f"{self.server_url}/api/teams/{repo_id}/documents",
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"문서 목록 조회 오류: {str(e)}"
+
+    def delete_document(self, repo_id: str, doc_id: str, access_token: str) -> Tuple[bool, str]:
+        """
+        문서 삭제
+
+        Args:
+            repo_id: 저장소 ID (UUID 문자열)
+            doc_id: 문서 ID
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        try:
+            resp = self.session.delete(
+                f"{self.server_url}/api/teams/{repo_id}/documents/{doc_id}",
+                headers=self._get_headers(access_token)
+            )
+            success, _ = self._handle_response(resp)
+            return success, "문서 삭제 성공" if success else "문서 삭제 실패"
+        except Exception as e:
+            return False, f"문서 삭제 오류: {str(e)}"
 
     # ==================== 보안 API ====================
 

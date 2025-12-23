@@ -325,6 +325,68 @@ else:
         if not st.session_state.current_repo:
             st.warning("먼저 저장소를 선택해주세요. (저장소 관리 탭)")
         else:
+            # 문서 목록 표시
+            st.write("### 문서 목록")
+            col_list1, col_list2 = st.columns([3, 1])
+
+            with col_list1:
+                st.info(f"**저장소:** {st.session_state.current_repo['name']}")
+
+            with col_list2:
+                if st.button("문서 목록 새로고침"):
+                    repo_id = get_current_repo_id()
+                    docs, msg = st.session_state.serve_client.get_documents(repo_id)
+                    if docs is not None:
+                        st.session_state.current_documents = docs
+                        st.success(msg)
+                    else:
+                        st.error(msg)
+
+            # 문서 목록 표시
+            if 'current_documents' in st.session_state and st.session_state.current_documents:
+                for doc in st.session_state.current_documents:
+                    doc_id = doc.get('id')
+                    created_at = doc.get('createdAt', 'N/A')
+
+                    with st.expander(f"📄 문서 ID: {doc_id} (생성: {created_at})"):
+                        col_a, col_b, col_c = st.columns([2, 1, 1])
+
+                        with col_a:
+                            st.write(f"**저장소 ID:** {doc.get('repositoryId', 'N/A')}")
+
+                        with col_b:
+                            if st.button("다운로드", key=f"download_{doc_id}"):
+                                repo_id = get_current_repo_id()
+                                content, msg = st.session_state.serve_client.download_document(
+                                    int(doc_id), repo_id
+                                )
+                                if content:
+                                    st.success(msg)
+                                    st.text_area("복호화된 내용", content, height=150, key=f"content_{doc_id}")
+                                else:
+                                    st.error(msg)
+
+                        with col_c:
+                            if st.button("삭제", key=f"delete_doc_{doc_id}"):
+                                repo_id = get_current_repo_id()
+                                success, msg = st.session_state.serve_client.delete_document(
+                                    repo_id, str(doc_id)
+                                )
+                                if success:
+                                    st.success(msg)
+                                    # 문서 목록 새로고침
+                                    docs, _ = st.session_state.serve_client.get_documents(repo_id)
+                                    if docs is not None:
+                                        st.session_state.current_documents = docs
+                                    st.rerun()
+                                else:
+                                    st.error(msg)
+            else:
+                st.info("문서가 없거나 목록을 불러오지 않았습니다. '문서 목록 새로고침' 버튼을 클릭하세요.")
+
+            st.divider()
+
+            # 문서 업로드 / 다운로드
             col1, col2 = st.columns(2)
 
             with col1:
@@ -343,11 +405,15 @@ else:
                             st.session_state.last_doc_id = int(doc_id)
                         except (ValueError, TypeError):
                             st.session_state.last_doc_id = doc_id
+                        # 문서 목록 자동 새로고침
+                        docs, _ = st.session_state.serve_client.get_documents(repo_id)
+                        if docs is not None:
+                            st.session_state.current_documents = docs
                     else:
                         st.error(msg)
 
             with col2:
-                st.write("### 문서 다운로드")
+                st.write("### 문서 다운로드 (ID로 직접 조회)")
                 doc_id = st.number_input("문서 ID", min_value=1, value=st.session_state.get('last_doc_id', 1))
 
                 if st.button("다운로드 및 복호화"):

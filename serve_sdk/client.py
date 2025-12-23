@@ -417,6 +417,34 @@ class ServeClient:
         except Exception as e:
             return None, f"다운로드 오류: {str(e)}"
 
+    def get_documents(self, repo_id: str) -> Tuple[Optional[List], str]:
+        """
+        문서 목록 조회
+
+        Args:
+            repo_id: 저장소 ID (UUID 문자열)
+
+        Returns:
+            (문서 목록, 메시지)
+        """
+        self._ensure_authenticated()
+        success, data = self.api.get_documents(repo_id, self.session.access_token)
+        return (data, "조회 성공") if success else (None, data)
+
+    def delete_document(self, repo_id: str, doc_id: str) -> Tuple[bool, str]:
+        """
+        문서 삭제
+
+        Args:
+            repo_id: 저장소 ID (UUID 문자열)
+            doc_id: 문서 ID
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        self._ensure_authenticated()
+        return self.api.delete_document(repo_id, doc_id, self.session.access_token)
+
     # ==================== 레거시 호환 (선택적) ====================
 
     def perform_handshake(self) -> Tuple[bool, str]:
