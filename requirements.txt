@@ -3,6 +3,8 @@ cryptography>=41.0.0
 requests>=2.31.0
 langchain
 langchain-community
+langchain-ollama
 streamlit
 ollama
 httpx
+chromadb>=0.5.23
