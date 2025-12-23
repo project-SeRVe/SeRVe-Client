@@ -457,6 +457,254 @@ class ServeClient:
         self._ensure_authenticated()
         return self.api.delete_document(repo_id, doc_id, self.session.access_token)
 
+    # ==================== 벡터 청크 API ====================
+
+    def upload_chunks_to_document(self, doc_id: str, repo_id: str, chunks_data: List[Dict[str, Any]]) -> Tuple[bool, str]:
+        """
+        벡터 청크 배치 업로드 (암호화 포함)
+
+        Args:
+            doc_id: 문서 ID (UUID 문자열)
+            repo_id: 저장소 ID (팀 키 조회용)
+            chunks_data: 청크 데이터 목록 [{"chunkIndex": int, "data": str (평문)}, ...]
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        self._ensure_authenticated()
+
+        try:
+            # 1. 팀 키 가져오기
+            team_key = self._ensure_team_key(repo_id)
+
+            # 2. 각 청크 암호화
+            encrypted_chunks = []
+            for chunk in chunks_data:
+                chunk_index = chunk["chunkIndex"]
+                plaintext_data = chunk["data"]
+
+                # 암호화
+                encrypted_blob = self.crypto.encrypt_data(plaintext_data, team_key)
+
+                encrypted_chunks.append({
+                    "chunkIndex": chunk_index,
+                    "encryptedBlob": encrypted_blob
+                })
+
+            # 3. 서버에 업로드
+            return self.api.upload_chunks(
+                doc_id,
+                encrypted_chunks,
+                self.session.access_token
+            )
+
+        except Exception as e:
+            return False, f"청크 업로드 오류: {str(e)}"
+
+    def download_chunks_from_document(self, doc_id: str, repo_id: str) -> Tuple[Optional[List[Dict]], str]:
+        """
+        문서의 모든 청크 다운로드 (복호화 포함)
+
+        Args:
+            doc_id: 문서 ID (UUID 문자열)
+            repo_id: 저장소 ID (팀 키 조회용)
+
+        Returns:
+            (청크 목록, 메시지)
+            청크 형식: [{"chunkIndex": int, "data": str (복호화된 평문), "version": int}, ...]
+        """
+        self._ensure_authenticated()
+
+        try:
+            # 1. 서버에서 암호화된 청크들 다운로드
+            success, chunks = self.api.download_chunks(doc_id, self.session.access_token)
+
+            if not success:
+                return None, chunks
+
+            # 2. 팀 키 가져오기
+            team_key = self._ensure_team_key(repo_id)
+
+            # 3. 각 청크 복호화
+            decrypted_chunks = []
+            for chunk in chunks:
+                chunk_index = chunk["chunkIndex"]
+                encrypted_blob = chunk["encryptedBlob"]
+                version = chunk["version"]
+
+                # byte[] → Base64 변환 (필요시)
+                if isinstance(encrypted_blob, list):
+                    import base64
+                    encrypted_blob = base64.b64encode(bytes(encrypted_blob)).decode('utf-8')
+
+                # 복호화
+                plaintext = self.crypto.decrypt_data(encrypted_blob, team_key)
+
+                decrypted_chunks.append({
+                    "chunkIndex": chunk_index,
+                    "data": plaintext,
+                    "version": version
+                })
+
+            # chunkIndex로 정렬
+            decrypted_chunks.sort(key=lambda x: x["chunkIndex"])
+
+            return decrypted_chunks, "청크 다운로드 및 복호화 성공"
+
+        except Exception as e:
+            return None, f"청크 다운로드 오류: {str(e)}"
+
+    def delete_chunk_from_document(self, doc_id: str, chunk_index: int) -> Tuple[bool, str]:
+        """
+        특정 청크 삭제
+
+        Args:
+            doc_id: 문서 ID (UUID 문자열)
+            chunk_index: 청크 인덱스
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        self._ensure_authenticated()
+        return self.api.delete_chunk(doc_id, chunk_index, self.session.access_token)
+
+    def sync_document_chunks(self, doc_id: str, repo_id: str, last_version: int = 0) -> Tuple[Optional[List[Dict]], str]:
+        """
+        문서별 증분 청크 동기화 (복호화 포함)
+
+        Args:
+            doc_id: 문서 ID (UUID 문자열)
+            repo_id: 저장소 ID (팀 키 조회용)
+            last_version: 마지막으로 알려진 버전 (기본값: 0)
+
+        Returns:
+            (변경된 청크 목록, 메시지)
+            청크 형식: [{"chunkIndex": int, "data": str (복호화된 평문), "version": int, "isDeleted": bool}, ...]
+        """
+        self._ensure_authenticated()
+
+        try:
+            # 1. 서버에서 변경된 청크들 조회
+            success, chunks = self.api.sync_document_chunks(
+                doc_id, last_version, self.session.access_token
+            )
+
+            if not success:
+                return None, chunks
+
+            if not chunks:
+                return [], "변경사항 없음"
+
+            # 2. 팀 키 가져오기
+            team_key = self._ensure_team_key(repo_id)
+
+            # 3. 각 청크 복호화 (삭제되지 않은 경우에만)
+            decrypted_chunks = []
+            for chunk in chunks:
+                chunk_index = chunk["chunkIndex"]
+                version = chunk["version"]
+                is_deleted = chunk.get("isDeleted", False)
+
+                result_chunk = {
+                    "chunkIndex": chunk_index,
+                    "version": version,
+                    "isDeleted": is_deleted
+                }
+
+                # 삭제되지 않은 청크만 복호화
+                if not is_deleted:
+                    encrypted_blob = chunk["encryptedBlob"]
+
+                    # byte[] → Base64 변환 (필요시)
+                    if isinstance(encrypted_blob, list):
+                        import base64
+                        encrypted_blob = base64.b64encode(bytes(encrypted_blob)).decode('utf-8')
+
+                    # 복호화
+                    plaintext = self.crypto.decrypt_data(encrypted_blob, team_key)
+                    result_chunk["data"] = plaintext
+                else:
+                    result_chunk["data"] = None
+
+                decrypted_chunks.append(result_chunk)
+
+            return decrypted_chunks, f"{len(decrypted_chunks)}개 청크 동기화 완료"
+
+        except Exception as e:
+            return None, f"청크 동기화 오류: {str(e)}"
+
+    def sync_team_chunks(self, repo_id: str, last_version: int = 0) -> Tuple[Optional[Dict[str, List[Dict]]], str]:
+        """
+        팀 전체 증분 청크 동기화 (복호화 포함)
+
+        Args:
+            repo_id: 저장소 ID (UUID 문자열)
+            last_version: 마지막으로 알려진 버전 (기본값: 0)
+
+        Returns:
+            (문서별 청크 딕셔너리, 메시지)
+            형식: {
+                "doc-id-1": [{"chunkIndex": int, "data": str, "version": int, "isDeleted": bool}, ...],
+                "doc-id-2": [...]
+            }
+        """
+        self._ensure_authenticated()
+
+        try:
+            # 1. 서버에서 팀 전체 변경된 청크들 조회
+            success, chunks = self.api.sync_team_chunks(
+                repo_id, last_version, self.session.access_token
+            )
+
+            if not success:
+                return None, chunks
+
+            if not chunks:
+                return {}, "변경사항 없음"
+
+            # 2. 팀 키 가져오기
+            team_key = self._ensure_team_key(repo_id)
+
+            # 3. 문서별로 그룹핑하면서 복호화
+            documents_chunks = {}
+            for chunk in chunks:
+                doc_id = chunk["documentId"]
+                chunk_index = chunk["chunkIndex"]
+                version = chunk["version"]
+                is_deleted = chunk.get("isDeleted", False)
+
+                result_chunk = {
+                    "chunkIndex": chunk_index,
+                    "version": version,
+                    "isDeleted": is_deleted
+                }
+
+                # 삭제되지 않은 청크만 복호화
+                if not is_deleted:
+                    encrypted_blob = chunk["encryptedBlob"]
+
+                    # byte[] → Base64 변환 (필요시)
+                    if isinstance(encrypted_blob, list):
+                        import base64
+                        encrypted_blob = base64.b64encode(bytes(encrypted_blob)).decode('utf-8')
+
+                    # 복호화
+                    plaintext = self.crypto.decrypt_data(encrypted_blob, team_key)
+                    result_chunk["data"] = plaintext
+                else:
+                    result_chunk["data"] = None
+
+                # 문서별로 그룹핑
+                if doc_id not in documents_chunks:
+                    documents_chunks[doc_id] = []
+                documents_chunks[doc_id].append(result_chunk)
+
+            total_chunks = sum(len(chunks) for chunks in documents_chunks.values())
+            return documents_chunks, f"{len(documents_chunks)}개 문서, 총 {total_chunks}개 청크 동기화 완료"
+
+        except Exception as e:
+            return None, f"팀 청크 동기화 오류: {str(e)}"
+
     # ==================== 디버그 유틸 ====================
 
     def get_session_info(self) -> Dict[str, Any]:

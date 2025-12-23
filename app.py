@@ -19,7 +19,6 @@ if 'serve_client' not in st.session_state:
     st.session_state.server_url = SERVER_URL
     st.session_state.success_message = None  # 성공 메시지 표시용
     st.session_state.local_vectorstore = None  # 로컬 벡터DB
-    st.session_state.vectorstore_info = None  # 벡터DB 메타정보
 
 # 서버 연결 확인 함수
 def check_server_connection(url):
@@ -233,20 +232,6 @@ else:
 
         st.divider()
 
-        # 가상 카메라 (이미지 폴더 로드)
-        st.header("Virtual Camera")
-        image_folder = "test_images"
-        if not os.path.exists(image_folder):
-            os.makedirs(image_folder)
-            st.warning(f"'{image_folder}' 폴더에 테스트 이미지를 넣어주세요.")
-
-        image_files = [f for f in os.listdir(image_folder) if f.endswith(('jpg', 'png', 'jpeg'))]
-        if image_files:
-            selected_image = st.selectbox("이미지 선택", image_files)
-        else:
-            selected_image = None
-            st.info("이미지 파일이 없습니다.")
-
     # 메인 탭
     tab1, tab2, tab3, tab4 = st.tabs(["저장소 관리", "문서 관리", "멤버 관리", "추론"])
 
@@ -345,11 +330,10 @@ else:
         if st.session_state.local_vectorstore:
             col_status1, col_status2 = st.columns([3, 1])
             with col_status1:
-                st.success(f"✓ 로컬 벡터DB 활성화됨: {st.session_state.vectorstore_info}")
+                st.success(f"✓ 로컬 벡터DB 활성화됨")
             with col_status2:
                 if st.button("🗑️ 초기화", help="벡터DB를 삭제하고 새로 시작합니다"):
                     st.session_state.local_vectorstore = None
-                    st.session_state.vectorstore_info = None
                     st.success("로컬 벡터DB가 초기화되었습니다.")
                     st.rerun()
         else:
@@ -358,7 +342,7 @@ else:
         st.divider()
 
         # ========== 1. 벡터DB 생성 ==========
-        st.write("## 1️⃣ 로컬 벡터DB 생성")
+        st.write("## 1️⃣ 로컬 저장소(벡터DB) 생성")
 
         # 청크 설정 (공통)
         col_chunk1, col_chunk2 = st.columns(2)
@@ -371,16 +355,23 @@ else:
 
         with col_create1:
             st.write("### 텍스트로 생성")
+            vector_text_name = st.text_input(
+                "문서 이름",
+                "Hydraulic Valve Manual",
+                key="vector_text_name"
+            )
             vector_text_input = st.text_area(
                 "문서 내용",
                 "This is a hydraulic valve (Type-K). Pressure limit: 500bar. Use only with certified hydraulic fluids.",
-                height=150,
+                height=120,
                 key="vector_text_input"
             )
 
             if st.button("텍스트로 벡터DB 생성", type="primary", disabled=st.session_state.local_vectorstore is not None):
                 if not vector_text_input:
                     st.warning("문서 내용을 입력해주세요.")
+                elif not vector_text_name:
+                    st.warning("문서 이름을 입력해주세요.")
                 else:
                     try:
                         vision = VisionEngine()
@@ -390,17 +381,17 @@ else:
                                 collection_name="serve_local_rag",
                                 persist_directory=None,
                                 chunk_size=chunk_size,
-                                chunk_overlap=chunk_overlap
+                                chunk_overlap=chunk_overlap,
+                                document_name=vector_text_name
                             )
                             st.session_state.local_vectorstore = vectorstore
-                            st.session_state.vectorstore_info = f"{len(vector_text_input)} chars"
                             st.success("✓ 로컬 벡터DB가 생성되었습니다!")
                             st.rerun()
                     except Exception as e:
                         st.error(f"벡터DB 생성 실패: {str(e)}")
 
             if st.session_state.local_vectorstore:
-                st.info("💡 벡터DB가 이미 존재합니다. 새로 생성하려면 먼저 초기화하세요.")
+                st.info("💡 벡터DB가 생성되었습니다. 새로 생성하려면 먼저 초기화하세요.")
 
         with col_create2:
             st.write("### 파일로 생성")
@@ -413,32 +404,41 @@ else:
             if uploaded_file_create:
                 st.info(f"파일: {uploaded_file_create.name} ({uploaded_file_create.size} bytes)")
 
+            vector_file_name = st.text_input(
+                "문서 이름",
+                value=uploaded_file_create.name if uploaded_file_create else "",
+                key="vector_file_name"
+            )
+
             if st.button("파일로 벡터DB 생성", type="primary", disabled=st.session_state.local_vectorstore is not None or uploaded_file_create is None):
-                try:
-                    file_content = uploaded_file_create.read().decode('utf-8')
-                    vision = VisionEngine()
-                    with st.spinner("파일 처리 및 벡터 생성 중..."):
-                        vectorstore = vision.create_vector_store(
-                            text_content=file_content,
-                            collection_name="serve_local_rag",
-                            persist_directory=None,
-                            chunk_size=chunk_size,
-                            chunk_overlap=chunk_overlap
-                        )
-                        st.session_state.local_vectorstore = vectorstore
-                        st.session_state.vectorstore_info = f"{uploaded_file_create.name}"
-                        st.success(f"✓ '{uploaded_file_create.name}'로부터 벡터DB가 생성되었습니다!")
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"파일 처리 실패: {str(e)}")
+                if not vector_file_name:
+                    st.warning("문서 이름을 입력해주세요.")
+                else:
+                    try:
+                        file_content = uploaded_file_create.read().decode('utf-8')
+                        vision = VisionEngine()
+                        with st.spinner("파일 처리 및 벡터 생성 중..."):
+                            vectorstore = vision.create_vector_store(
+                                text_content=file_content,
+                                collection_name="serve_local_rag",
+                                persist_directory=None,
+                                chunk_size=chunk_size,
+                                chunk_overlap=chunk_overlap,
+                                document_name=vector_file_name
+                            )
+                            st.session_state.local_vectorstore = vectorstore
+                            st.success(f"✓ '{vector_file_name}'로부터 벡터DB가 생성되었습니다!")
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"파일 처리 실패: {str(e)}")
 
             if st.session_state.local_vectorstore:
-                st.info("💡 벡터DB가 이미 존재합니다. 새로 생성하려면 먼저 초기화하세요.")
+                st.info("💡 벡터DB가 생성되었습니다. 새로 생성하려면 먼저 초기화하세요.")
 
         st.divider()
 
         # ========== 2. 벡터DB에 문서 추가 ==========
-        st.write("## 2️⃣ 로컬 벡터DB에 문서 추가")
+        st.write("## 2️⃣ 로컬 저장소(벡터DB)에 문서 추가")
 
         if not st.session_state.local_vectorstore:
             st.warning("먼저 위에서 로컬 벡터DB를 생성해주세요.")
@@ -447,16 +447,23 @@ else:
 
             with col_add1:
                 st.write("### 텍스트 추가")
+                add_text_name = st.text_input(
+                    "문서 이름",
+                    "Safety Warning",
+                    key="add_text_name"
+                )
                 add_text_input = st.text_area(
                     "추가할 문서 내용",
                     "Safety Warning: Maximum temperature: 80°C. Do not exceed rated pressure.",
-                    height=120,
+                    height=90,
                     key="add_text_input"
                 )
 
                 if st.button("텍스트를 벡터DB에 추가", type="secondary"):
                     if not add_text_input:
                         st.warning("추가할 내용을 입력해주세요.")
+                    elif not add_text_name:
+                        st.warning("문서 이름을 입력해주세요.")
                     else:
                         try:
                             vision = VisionEngine()
@@ -465,7 +472,8 @@ else:
                                     st.session_state.local_vectorstore,
                                     add_text_input,
                                     chunk_size=chunk_size,
-                                    chunk_overlap=chunk_overlap
+                                    chunk_overlap=chunk_overlap,
+                                    document_name=add_text_name
                                 )
                                 st.success("✓ 텍스트가 벡터DB에 추가되었습니다!")
                         except Exception as e:
@@ -482,72 +490,497 @@ else:
                 if uploaded_file_add:
                     st.info(f"파일: {uploaded_file_add.name} ({uploaded_file_add.size} bytes)")
 
+                add_file_name = st.text_input(
+                    "문서 이름",
+                    value=uploaded_file_add.name if uploaded_file_add else "",
+                    key="add_file_name"
+                )
+
+                if uploaded_file_add:
                     if st.button("파일을 벡터DB에 추가", type="secondary"):
-                        try:
-                            file_content = uploaded_file_add.read().decode('utf-8')
-                            vision = VisionEngine()
-                            with st.spinner("파일 처리 및 벡터 추가 중..."):
-                                vision.add_to_vector_store(
-                                    st.session_state.local_vectorstore,
-                                    file_content,
-                                    chunk_size=chunk_size,
-                                    chunk_overlap=chunk_overlap
-                                )
-                                st.success(f"✓ '{uploaded_file_add.name}' 파일이 벡터DB에 추가되었습니다!")
-                        except Exception as e:
-                            st.error(f"파일 추가 실패: {str(e)}")
+                        if not add_file_name:
+                            st.warning("문서 이름을 입력해주세요.")
+                        else:
+                            try:
+                                file_content = uploaded_file_add.read().decode('utf-8')
+                                vision = VisionEngine()
+                                with st.spinner("파일 처리 및 벡터 추가 중..."):
+                                    vision.add_to_vector_store(
+                                        st.session_state.local_vectorstore,
+                                        file_content,
+                                        chunk_size=chunk_size,
+                                        chunk_overlap=chunk_overlap,
+                                        document_name=add_file_name
+                                    )
+                                    st.success(f"✓ '{add_file_name}' 파일이 벡터DB에 추가되었습니다!")
+                            except Exception as e:
+                                st.error(f"파일 추가 실패: {str(e)}")
 
         st.divider()
 
-        # ========== 3. SeRVe 서버에 업로드 ==========
-        st.write("## 3️⃣ SeRVe 서버에 업로드")
+        # ========== 3. 청크 관리 (로컬 & 원격) ==========
+        st.write("## 3️⃣ 청크 관리(업로드, 다운로드, 삭제)")
 
-        if not st.session_state.local_vectorstore:
-            st.warning("업로드할 로컬 벡터DB가 없습니다. 먼저 벡터DB를 생성하세요.")
-        elif not st.session_state.current_repo:
+        if not st.session_state.current_repo:
             st.warning("먼저 저장소를 선택해주세요. (저장소 관리 탭)")
         else:
-            st.info(f"**저장소:** {st.session_state.current_repo['name']}")
+            col_local, col_remote = st.columns(2)
 
-            upload_file_name = st.text_input(
-                "서버에 저장할 파일명",
-                value="vector_db.json",
-                key="upload_vector_filename"
-            )
+            # ========== 왼쪽: 로컬 벡터 DB 청크 목록 ==========
+            with col_local:
+                st.write("### 📊 로컬 저장소(벡터DB)")
 
-            if st.button("🚀 로컬 벡터DB → SeRVe 서버 업로드", type="primary"):
-                if not upload_file_name:
-                    st.warning("파일명을 입력해주세요.")
+                if not st.session_state.local_vectorstore:
+                    st.info("로컬 벡터DB가 없습니다.")
                 else:
-                    try:
-                        vision = VisionEngine()
-                        with st.spinner("벡터 추출 중..."):
-                            # 벡터 추출
+                    if st.button("🔄 로컬 청크 목록 새로고침", key="refresh_local_chunks"):
+                        try:
+                            vision = VisionEngine()
                             vector_data = vision.extract_vectors(st.session_state.local_vectorstore)
 
-                            # JSON으로 직렬화
-                            import json
-                            vector_json = json.dumps(vector_data)
+                            # 세션에 저장
+                            st.session_state.local_chunks_data = vector_data
+                            st.success(f"✓ {len(vector_data['ids'])}개 청크 로드")
+                        except Exception as e:
+                            st.error(f"청크 추출 실패: {str(e)}")
 
-                            st.info(f"추출된 벡터 개수: {len(vector_data['ids'])}")
+                    # 로컬 청크 표시
+                    if 'local_chunks_data' in st.session_state:
+                        vector_data = st.session_state.local_chunks_data
+                        num_chunks = len(vector_data['ids'])
 
-                        with st.spinner("암호화 및 업로드 중..."):
-                            # SeRVe 서버에 업로드
-                            repo_id = get_current_repo_id()
-                            success, msg = st.session_state.serve_client.upload_document(
-                                vector_json,
-                                repo_id,
-                                upload_file_name,
-                                "application/json"
+                        # 문서별로 청크 그룹화
+                        docs_by_name = {}
+                        for i in range(num_chunks):
+                            metadata = vector_data['metadatas'][i] if vector_data['metadatas'] else {}
+                            doc_name = metadata.get('document_name', 'Unnamed Document')
+
+                            if doc_name not in docs_by_name:
+                                docs_by_name[doc_name] = []
+                            docs_by_name[doc_name].append(i)
+
+                        st.info(f"**문서 수:** {len(docs_by_name)}, **총 청크:** {num_chunks}")
+
+                        # 청크 선택 상태 초기화
+                        if 'selected_local_chunks' not in st.session_state:
+                            st.session_state.selected_local_chunks = set()
+
+                        # 전체 선택 체크박스 상태 초기화
+                        if "select_all_local_chunks" not in st.session_state:
+                            st.session_state.select_all_local_chunks = False
+
+                        select_all_local = st.checkbox("전체 선택", key="select_all_local_chunks")
+
+                        # 전체 선택/해제 처리
+                        all_selected = len(st.session_state.selected_local_chunks) == num_chunks
+                        if select_all_local and not all_selected:
+                            st.session_state.selected_local_chunks = set(range(num_chunks))
+                            # 각 개별 체크박스의 위젯 상태도 업데이트
+                            for i in range(num_chunks):
+                                st.session_state[f"local_chunk_{i}"] = True
+                            # 문서 전체 선택 체크박스도 업데이트
+                            for doc_name in docs_by_name.keys():
+                                st.session_state[f"select_doc_{doc_name}"] = True
+                            st.rerun()
+                        elif not select_all_local and all_selected:
+                            st.session_state.selected_local_chunks = set()
+                            # 각 개별 체크박스의 위젯 상태도 업데이트
+                            for i in range(num_chunks):
+                                st.session_state[f"local_chunk_{i}"] = False
+                            # 문서 전체 선택 체크박스도 업데이트
+                            for doc_name in docs_by_name.keys():
+                                st.session_state[f"select_doc_{doc_name}"] = False
+                            st.rerun()
+
+                        # 청크 목록 표시 (문서별로 그룹화, 스크롤 가능)
+                        with st.container(height=300):
+                            for doc_name, chunk_indices in docs_by_name.items():
+                                # 문서별 expander
+                                with st.expander(f"📄 {doc_name} ({len(chunk_indices)}개 청크)", expanded=True):
+                                    # 문서 전체 선택 체크박스 상태 초기화
+                                    doc_select_key = f"select_doc_{doc_name}"
+                                    if doc_select_key not in st.session_state:
+                                        st.session_state[doc_select_key] = False
+
+                                    select_doc = st.checkbox(
+                                        f"문서 전체 선택",
+                                        key=doc_select_key
+                                    )
+
+                                    # 문서 전체 선택/해제 처리
+                                    doc_all_selected = all(idx in st.session_state.selected_local_chunks for idx in chunk_indices)
+                                    if select_doc and not doc_all_selected:
+                                        # 모든 청크 선택
+                                        for idx in chunk_indices:
+                                            st.session_state.selected_local_chunks.add(idx)
+                                            st.session_state[f"local_chunk_{idx}"] = True
+                                        st.rerun()
+                                    elif not select_doc and doc_all_selected:
+                                        # 모든 청크 선택 해제
+                                        for idx in chunk_indices:
+                                            st.session_state.selected_local_chunks.discard(idx)
+                                            st.session_state[f"local_chunk_{idx}"] = False
+                                        st.rerun()
+
+                                    # 청크 목록
+                                    for i in chunk_indices:
+                                        chunk_doc = vector_data['documents'][i] if vector_data['documents'] else ""
+                                        chunk_preview = chunk_doc[:40] + "..." if len(chunk_doc) > 40 else chunk_doc
+
+                                        # 청크 체크박스 상태 초기화
+                                        if f"local_chunk_{i}" not in st.session_state:
+                                            st.session_state[f"local_chunk_{i}"] = i in st.session_state.selected_local_chunks
+
+                                        is_selected = st.checkbox(
+                                            f"Chunk {i}: {chunk_preview}",
+                                            key=f"local_chunk_{i}"
+                                        )
+
+                                        if is_selected:
+                                            st.session_state.selected_local_chunks.add(i)
+                                        else:
+                                            st.session_state.selected_local_chunks.discard(i)
+
+                        st.write(f"**선택된 청크:** {len(st.session_state.selected_local_chunks)}개")
+
+                        # 업로드/삭제 버튼
+                        st.divider()
+
+                        col_upload, col_delete = st.columns(2)
+
+                        with col_upload:
+                            st.write("**청크 업로드**")
+                            upload_to_doc = st.text_input(
+                                "문서 이름",
+                                value="local_chunks",
+                                key="upload_local_chunks_docname"
                             )
 
-                            if success:
-                                st.success(f"✓ 벡터DB가 SeRVe 서버에 업로드되었습니다!")
-                                st.info(msg)
-                            else:
-                                st.error(msg)
+                            if st.button("⬆️ 선택한 청크 업로드", type="primary", key="upload_selected_local"):
+                                if len(st.session_state.selected_local_chunks) == 0:
+                                    st.warning("업로드할 청크를 선택해주세요.")
+                                elif not upload_to_doc:
+                                    st.warning("문서 이름을 입력해주세요.")
+                                else:
+                                    try:
+                                        import json
+                                        repo_id = get_current_repo_id()
+
+                                        # 선택된 청크만 추출
+                                        selected_indices = sorted(list(st.session_state.selected_local_chunks))
+                                        chunks_data = []
+                                        for idx, chunk_idx in enumerate(selected_indices):
+                                            chunk_content = {
+                                                'id': vector_data['ids'][chunk_idx],
+                                                'embedding': vector_data['embeddings'][chunk_idx] if vector_data['embeddings'] else None,
+                                                'document': vector_data['documents'][chunk_idx] if vector_data['documents'] else None,
+                                                'metadata': vector_data['metadatas'][chunk_idx] if vector_data['metadatas'] else None
+                                            }
+                                            chunks_data.append({
+                                                "chunkIndex": idx,  # 새 인덱스 (0부터 시작)
+                                                "data": json.dumps(chunk_content)
+                                            })
+
+                                        with st.spinner("문서 생성 중..."):
+                                            # 문서 메타데이터 생성
+                                            success, msg = st.session_state.serve_client.upload_document(
+                                                f"Local chunks upload: {len(chunks_data)} chunks",
+                                                repo_id,
+                                                upload_to_doc,
+                                                "application/json"
+                                            )
+
+                                            if not success:
+                                                st.error(f"문서 생성 실패: {msg}")
+                                            else:
+                                                # 문서 ID 조회
+                                                docs, _ = st.session_state.serve_client.get_documents(repo_id)
+                                                if docs and len(docs) > 0:
+                                                    latest_doc = docs[-1]
+                                                    doc_id = latest_doc.get('docId')
+
+                                                    # 청크 업로드
+                                                    with st.spinner(f"청크 업로드 중... ({len(chunks_data)}개)"):
+                                                        success, msg = st.session_state.serve_client.upload_chunks_to_document(
+                                                            doc_id, repo_id, chunks_data
+                                                        )
+
+                                                        if success:
+                                                            st.success(f"✓ {len(chunks_data)}개 청크 업로드 완료!")
+                                                            # 선택 초기화
+                                                            st.session_state.selected_local_chunks = set()
+                                                            st.session_state.select_all_local_chunks = False
+                                                            # 모든 청크 체크박스 상태 초기화
+                                                            for i in range(num_chunks):
+                                                                if f"local_chunk_{i}" in st.session_state:
+                                                                    del st.session_state[f"local_chunk_{i}"]
+                                                            # 문서 전체 선택 체크박스 초기화
+                                                            for doc_name in docs_by_name.keys():
+                                                                if f"select_doc_{doc_name}" in st.session_state:
+                                                                    del st.session_state[f"select_doc_{doc_name}"]
+                                                        else:
+                                                            st.error(f"청크 업로드 실패: {msg}")
+
+                                    except Exception as e:
+                                        st.error(f"업로드 오류: {str(e)}")
+                                        import traceback
+                                        st.code(traceback.format_exc())
+
+                        with col_delete:
+                            st.write("**청크 삭제**")
+                            st.write("")  # 간격 맞추기
+                            st.write("")  # 간격 맞추기
+
+                            if st.button("🗑️ 선택한 청크 삭제", type="secondary", key="delete_selected_local"):
+                                if len(st.session_state.selected_local_chunks) == 0:
+                                    st.warning("삭제할 청크를 선택해주세요.")
+                                else:
+                                    try:
+                                        # 선택된 청크의 ID 수집
+                                        selected_indices = sorted(list(st.session_state.selected_local_chunks))
+                                        ids_to_delete = [vector_data['ids'][idx] for idx in selected_indices]
+
+                                        with st.spinner(f"{len(ids_to_delete)}개 청크 삭제 중..."):
+                                            # 벡터DB에서 삭제
+                                            st.session_state.local_vectorstore.delete(ids=ids_to_delete)
+
+                                            st.success(f"✓ {len(ids_to_delete)}개 청크가 로컬 벡터DB에서 삭제되었습니다!")
+
+                                            # 선택 초기화
+                                            st.session_state.selected_local_chunks = set()
+                                            st.session_state.select_all_local_chunks = False
+                                            # 삭제된 청크의 위젯 상태 초기화
+                                            for idx in selected_indices:
+                                                if f"local_chunk_{idx}" in st.session_state:
+                                                    del st.session_state[f"local_chunk_{idx}"]
+                                            # 문서 전체 선택 체크박스 초기화
+                                            for doc_name in docs_by_name.keys():
+                                                if f"select_doc_{doc_name}" in st.session_state:
+                                                    del st.session_state[f"select_doc_{doc_name}"]
+
+                                            # 벡터 데이터 새로고침 필요 알림
+                                            st.info("목록을 새로고침하세요.")
+
+                                    except Exception as e:
+                                        st.error(f"삭제 오류: {str(e)}")
+                                        import traceback
+                                        st.code(traceback.format_exc())
+
+            # ========== 오른쪽: 원격 저장소 청크 목록 ==========
+            with col_remote:
+                st.write("### 🌐 원격 저장소")
+
+                if st.button("🔄 원격 청크 목록 새로고침", key="refresh_remote_chunks"):
+                    try:
+                        repo_id = get_current_repo_id()
+                        docs, msg = st.session_state.serve_client.get_documents(repo_id)
+
+                        if docs is not None:
+                            # 각 문서의 청크 조회
+                            remote_chunks_by_doc = {}
+                            for doc in docs:
+                                doc_id = doc.get('docId')
+                                doc_name = doc.get('fileName', 'Unknown')
+
+                                chunks, chunk_msg = st.session_state.serve_client.download_chunks_from_document(
+                                    doc_id, repo_id
+                                )
+
+                                if chunks is not None:
+                                    remote_chunks_by_doc[doc_id] = {
+                                        'name': doc_name,
+                                        'chunks': chunks
+                                    }
+
+                            st.session_state.remote_chunks_by_doc = remote_chunks_by_doc
+                            total_chunks = sum(len(info['chunks']) for info in remote_chunks_by_doc.values())
+                            st.success(f"✓ {len(remote_chunks_by_doc)}개 문서, {total_chunks}개 청크 로드")
+                        else:
+                            st.error(msg)
+
                     except Exception as e:
-                        st.error(f"업로드 실패: {str(e)}")
+                        st.error(f"청크 조회 실패: {str(e)}")
+
+                # 원격 청크 표시
+                if 'remote_chunks_by_doc' in st.session_state:
+                    remote_chunks = st.session_state.remote_chunks_by_doc
+
+                    if len(remote_chunks) == 0:
+                        st.info("원격 저장소에 청크가 없습니다.")
+                    else:
+                        total_chunks = sum(len(info['chunks']) for info in remote_chunks.values())
+                        st.info(f"**문서 수:** {len(remote_chunks)}, **총 청크:** {total_chunks}")
+
+                        # 선택 상태 초기화
+                        if 'selected_remote_chunks' not in st.session_state:
+                            st.session_state.selected_remote_chunks = {}  # {doc_id: set(chunk_indices)}
+
+                        # 문서별 청크 표시 (스크롤 가능)
+                        with st.container(height=300):
+                            for doc_id, doc_info in remote_chunks.items():
+                                doc_name = doc_info['name']
+                                chunks = doc_info['chunks']
+
+                                # 문서 전체 선택 체크박스
+                                with st.expander(f"📄 {doc_name} ({len(chunks)}개 청크)", expanded=True):
+                                    # 문서별 선택 상태 초기화
+                                    if doc_id not in st.session_state.selected_remote_chunks:
+                                        st.session_state.selected_remote_chunks[doc_id] = set()
+
+                                    # 문서 전체 선택 체크박스 상태 초기화
+                                    if f"select_all_doc_{doc_id}" not in st.session_state:
+                                        st.session_state[f"select_all_doc_{doc_id}"] = False
+
+                                    select_all_doc = st.checkbox(
+                                        f"전체 선택",
+                                        key=f"select_all_doc_{doc_id}"
+                                    )
+
+                                    # 전체 선택/해제 처리
+                                    doc_all_selected_remote = len(st.session_state.selected_remote_chunks[doc_id]) == len(chunks)
+                                    if select_all_doc and not doc_all_selected_remote:
+                                        st.session_state.selected_remote_chunks[doc_id] = set(range(len(chunks)))
+                                        # 각 개별 체크박스의 위젯 상태도 업데이트
+                                        for i in range(len(chunks)):
+                                            st.session_state[f"remote_chunk_{doc_id}_{i}"] = True
+                                        st.rerun()
+                                    elif not select_all_doc and doc_all_selected_remote:
+                                        st.session_state.selected_remote_chunks[doc_id] = set()
+                                        # 각 개별 체크박스의 위젯 상태도 업데이트
+                                        for i in range(len(chunks)):
+                                            st.session_state[f"remote_chunk_{doc_id}_{i}"] = False
+                                        st.rerun()
+
+                                    # 청크 목록
+                                    for i, chunk in enumerate(chunks):
+                                        chunk_idx = chunk['chunkIndex']
+                                        chunk_data = chunk.get('data', '')
+                                        chunk_preview = chunk_data[:40] + "..." if len(chunk_data) > 40 else chunk_data
+                                        chunk_version = chunk.get('version', 'N/A')
+
+                                        # 청크 체크박스 상태 초기화
+                                        if f"remote_chunk_{doc_id}_{i}" not in st.session_state:
+                                            st.session_state[f"remote_chunk_{doc_id}_{i}"] = i in st.session_state.selected_remote_chunks[doc_id]
+
+                                        is_selected = st.checkbox(
+                                            f"Chunk {chunk_idx} (v{chunk_version}): {chunk_preview}",
+                                            key=f"remote_chunk_{doc_id}_{i}"
+                                        )
+
+                                        if is_selected:
+                                            st.session_state.selected_remote_chunks[doc_id].add(i)
+                                        else:
+                                            st.session_state.selected_remote_chunks[doc_id].discard(i)
+
+                        # 선택된 청크 수 계산
+                        total_selected = sum(len(indices) for indices in st.session_state.selected_remote_chunks.values())
+                        st.write(f"**선택된 청크:** {total_selected}개")
+
+                        # 다운로드/삭제 버튼
+                        st.divider()
+                        col_download, col_delete = st.columns(2)
+
+                        with col_download:
+                            st.write("**청크 다운로드**")
+                            if st.button("⬇️ 선택한 청크 다운로드", type="primary", key="download_selected_remote"):
+                                if total_selected == 0:
+                                    st.warning("다운로드할 청크를 선택해주세요.")
+                                else:
+                                    try:
+                                        vision = VisionEngine()
+                                        downloaded_chunks = []
+
+                                        for doc_id, selected_indices in st.session_state.selected_remote_chunks.items():
+                                            if len(selected_indices) > 0:
+                                                doc_info = remote_chunks[doc_id]
+                                                for idx in selected_indices:
+                                                    chunk = doc_info['chunks'][idx]
+                                                    downloaded_chunks.append({
+                                                        'doc_name': doc_info['name'],
+                                                        'chunk_index': chunk['chunkIndex'],
+                                                        'data': chunk['data'],
+                                                        'version': chunk['version']
+                                                    })
+
+                                        # 다운로드된 청크를 로컬 벡터DB에 추가
+                                        with st.spinner(f"{len(downloaded_chunks)}개 청크 다운로드 중..."):
+                                            if not st.session_state.local_vectorstore:
+                                                st.warning("로컬 벡터DB가 없습니다. 먼저 벡터DB를 생성하세요.")
+                                            else:
+                                                import json
+                                                for chunk in downloaded_chunks:
+                                                    try:
+                                                        chunk_content = json.loads(chunk['data'])
+                                                        document_text = chunk_content.get('document', '')
+
+                                                        if document_text:
+                                                            vision.add_to_vector_store(
+                                                                st.session_state.local_vectorstore,
+                                                                document_text
+                                                            )
+                                                    except Exception as e:
+                                                        st.warning(f"청크 {chunk['chunk_index']} 추가 실패: {str(e)}")
+
+                                                st.success(f"✓ {len(downloaded_chunks)}개 청크를 로컬 벡터DB에 추가했습니다!")
+                                                # 선택 초기화
+                                                st.session_state.selected_remote_chunks = {}
+                                                # 모든 원격 청크 체크박스 상태 초기화
+                                                for doc_id, doc_info in remote_chunks.items():
+                                                    if f"select_all_doc_{doc_id}" in st.session_state:
+                                                        del st.session_state[f"select_all_doc_{doc_id}"]
+                                                    for i in range(len(doc_info['chunks'])):
+                                                        if f"remote_chunk_{doc_id}_{i}" in st.session_state:
+                                                            del st.session_state[f"remote_chunk_{doc_id}_{i}"]
+
+                                    except Exception as e:
+                                        st.error(f"다운로드 오류: {str(e)}")
+
+                        with col_delete:
+                            st.write("**청크 삭제**")
+                            if st.button("🗑️ 선택한 청크 삭제", type="secondary", key="delete_selected_remote"):
+                                if total_selected == 0:
+                                    st.warning("삭제할 청크를 선택해주세요.")
+                                else:
+                                    try:
+                                        deleted_count = 0
+                                        failed_count = 0
+
+                                        with st.spinner("청크 삭제 중..."):
+                                            for doc_id, selected_indices in st.session_state.selected_remote_chunks.items():
+                                                if len(selected_indices) > 0:
+                                                    doc_info = remote_chunks[doc_id]
+                                                    for idx in selected_indices:
+                                                        chunk = doc_info['chunks'][idx]
+                                                        chunk_index = chunk['chunkIndex']
+
+                                                        success, msg = st.session_state.serve_client.delete_chunk_from_document(
+                                                            doc_id, chunk_index
+                                                        )
+
+                                                        if success:
+                                                            deleted_count += 1
+                                                        else:
+                                                            failed_count += 1
+
+                                        if deleted_count > 0:
+                                            st.success(f"✓ {deleted_count}개 청크 삭제 완료!")
+                                        if failed_count > 0:
+                                            st.error(f"✗ {failed_count}개 청크 삭제 실패")
+
+                                        # 선택 초기화
+                                        st.session_state.selected_remote_chunks = {}
+                                        # 모든 원격 청크 체크박스 상태 초기화
+                                        for doc_id, doc_info in remote_chunks.items():
+                                            if f"select_all_doc_{doc_id}" in st.session_state:
+                                                del st.session_state[f"select_all_doc_{doc_id}"]
+                                            for i in range(len(doc_info['chunks'])):
+                                                if f"remote_chunk_{doc_id}_{i}" in st.session_state:
+                                                    del st.session_state[f"remote_chunk_{doc_id}_{i}"]
+                                        # 목록 새로고침 필요 알림
+                                        st.info("목록을 새로고침하세요.")
+
+                                    except Exception as e:
+                                        st.error(f"삭제 오류: {str(e)}")
 
     # ==================== 탭 3: 멤버 관리 ====================
     with tab3:
@@ -641,23 +1074,63 @@ else:
     with tab4:
         st.subheader("Edge AI Analysis")
 
+        # 이미지 선택 섹션
+        st.write("### 이미지 선택")
+
+        image_source = st.radio(
+            "이미지 소스",
+            ["기본 이미지", "파일 업로드"],
+            horizontal=True
+        )
+
+        selected_image = None
+        image = None
+        img_bytes = None
+
+        if image_source == "기본 이미지":
+            # 가상 카메라 (이미지 폴더 로드)
+            image_folder = "test_images"
+            if not os.path.exists(image_folder):
+                os.makedirs(image_folder)
+                st.warning(f"'{image_folder}' 폴더에 테스트 이미지를 넣어주세요.")
+
+            image_files = [f for f in os.listdir(image_folder) if f.endswith(('jpg', 'png', 'jpeg'))]
+            if image_files:
+                selected_image = st.selectbox("이미지 선택", image_files)
+                if selected_image:
+                    img_path = os.path.join(image_folder, selected_image)
+                    image = Image.open(img_path)
+            else:
+                st.info("이미지 파일이 없습니다.")
+
+        else:  # 파일 업로드
+            uploaded_file = st.file_uploader(
+                "이미지를 드래그 앤 드롭하거나 클릭하여 선택하세요",
+                type=['jpg', 'png', 'jpeg'],
+                help="분석할 이미지를 업로드하세요"
+            )
+
+            if uploaded_file:
+                image = Image.open(uploaded_file)
+                selected_image = uploaded_file.name
+
+        # 이미지가 선택되었으면 바이트로 변환
+        if image:
+            img_byte_arr = io.BytesIO()
+            image.save(img_byte_arr, format=image.format if hasattr(image, 'format') and image.format else 'PNG')
+            img_bytes = img_byte_arr.getvalue()
+
+        st.divider()
+
         col1, col2 = st.columns(2)
 
         # 왼쪽: 로봇의 시야 (카메라)
         with col1:
             st.write("### Robot View")
-            if selected_image:
-                img_path = os.path.join(image_folder, selected_image)
-                image = Image.open(img_path)
-
-                # 이미지를 바이트로 변환 (Ollama 전송용)
-                img_byte_arr = io.BytesIO()
-                image.save(img_byte_arr, format=image.format)
-                img_bytes = img_byte_arr.getvalue()
-
-                st.image(image, caption="Captured Image", width="stretch")
+            if image:
+                st.image(image, caption=f"Selected: {selected_image}", use_container_width=True)
             else:
-                st.info("이미지를 선택해주세요. (사이드바)")
+                st.info("위에서 이미지를 선택해주세요.")
 
         # 오른쪽: AI의 판단 (RAG vs No-RAG)
         with col2:
@@ -670,19 +1143,19 @@ else:
             # Tab A: 일반 추론 (보안 DB 없이 그냥 보기)
             with tab_a:
                 if st.button("분석 (컨텍스트 없음)", type="primary"):
-                    if selected_image:
+                    if img_bytes:
                         with st.spinner("Analyzing..."):
                             result = vision.analyze_image(img_bytes, "What is this object? Describe it.")
                             st.write(result)
                     else:
-                        st.warning("이미지가 없습니다.")
+                        st.warning("위에서 이미지를 선택해주세요.")
 
             # Tab B: 로컬 벡터DB를 사용한 RAG 추론
             with tab_b:
                 if not st.session_state.local_vectorstore:
                     st.warning("로컬 벡터DB가 없습니다. 먼저 '문서 관리' 탭에서 벡터DB를 생성하거나 다운로드하세요.")
                 else:
-                    st.info(f"✓ 사용 중인 벡터DB: {st.session_state.vectorstore_info}")
+                    st.info(f"✓ 로컬 벡터DB가 생성되어 있습니다.")
 
                     # 검색 파라미터 설정
                     col_param1, col_param2 = st.columns(2)
@@ -698,8 +1171,8 @@ else:
                     )
 
                     if st.button("분석 (로컬 벡터DB 활용)", type="primary"):
-                        if not selected_image:
-                            st.warning("이미지가 없습니다.")
+                        if not img_bytes:
+                            st.warning("위에서 이미지를 선택해주세요.")
                         else:
                             with st.spinner("로컬 벡터DB에서 관련 문맥 검색 중..."):
                                 try:

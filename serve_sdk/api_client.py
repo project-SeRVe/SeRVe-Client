@@ -387,3 +387,122 @@ class ApiClient:
         except Exception as e:
             return False, f"문서 삭제 오류: {str(e)}"
 
+    # ==================== 벡터 청크 API ====================
+
+    def upload_chunks(self, doc_id: str, chunks: List[Dict[str, Any]],
+                     access_token: str) -> Tuple[bool, str]:
+        """
+        벡터 청크 배치 업로드
+
+        Args:
+            doc_id: 문서 ID (UUID 문자열)
+            chunks: 청크 목록 [{"chunkIndex": int, "encryptedBlob": str (Base64)}, ...]
+            access_token: 인증 토큰
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        try:
+            resp = self.session.post(
+                f"{self.server_url}/api/documents/{doc_id}/chunks",
+                json={"chunks": chunks},
+                headers=self._get_headers(access_token)
+            )
+            success, _ = self._handle_response(resp)
+            return success, "청크 업로드 성공" if success else "청크 업로드 실패"
+        except Exception as e:
+            return False, f"청크 업로드 오류: {str(e)}"
+
+    def download_chunks(self, doc_id: str, access_token: str) -> Tuple[bool, Optional[List[Dict]]]:
+        """
+        문서의 모든 청크 다운로드
+
+        Args:
+            doc_id: 문서 ID (UUID 문자열)
+            access_token: 인증 토큰
+
+        Returns:
+            (성공 여부, 청크 목록 또는 에러 메시지)
+            청크 형식: [{"chunkId": str, "chunkIndex": int, "encryptedBlob": bytes, "version": int}, ...]
+        """
+        try:
+            resp = self.session.get(
+                f"{self.server_url}/api/documents/{doc_id}/chunks",
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"청크 다운로드 오류: {str(e)}"
+
+    def delete_chunk(self, doc_id: str, chunk_index: int, access_token: str) -> Tuple[bool, str]:
+        """
+        특정 청크 삭제 (논리적 삭제)
+
+        Args:
+            doc_id: 문서 ID (UUID 문자열)
+            chunk_index: 청크 인덱스
+            access_token: 인증 토큰
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        try:
+            resp = self.session.delete(
+                f"{self.server_url}/api/documents/{doc_id}/chunks/{chunk_index}",
+                headers=self._get_headers(access_token)
+            )
+            success, _ = self._handle_response(resp)
+            return success, "청크 삭제 성공" if success else "청크 삭제 실패"
+        except Exception as e:
+            return False, f"청크 삭제 오류: {str(e)}"
+
+    def sync_document_chunks(self, doc_id: str, last_version: int,
+                            access_token: str) -> Tuple[bool, Optional[List[Dict]]]:
+        """
+        문서별 증분 청크 동기화
+
+        Args:
+            doc_id: 문서 ID (UUID 문자열)
+            last_version: 마지막으로 알려진 버전 번호
+            access_token: 인증 토큰
+
+        Returns:
+            (성공 여부, 변경된 청크 목록 또는 에러 메시지)
+            청크 형식: [{"documentId": str, "chunkId": str, "chunkIndex": int,
+                        "encryptedBlob": bytes, "version": int, "isDeleted": bool}, ...]
+        """
+        try:
+            resp = self.session.get(
+                f"{self.server_url}/api/documents/{doc_id}/chunks/sync",
+                params={"lastVersion": last_version},
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"청크 동기화 오류: {str(e)}"
+
+    def sync_team_chunks(self, team_id: str, last_version: int,
+                        access_token: str) -> Tuple[bool, Optional[List[Dict]]]:
+        """
+        팀 전체 증분 청크 동기화
+
+        Args:
+            team_id: 팀/저장소 ID (UUID 문자열)
+            last_version: 마지막으로 알려진 버전 번호
+            access_token: 인증 토큰
+
+        Returns:
+            (성공 여부, 변경된 청크 목록 또는 에러 메시지)
+            청크 형식: [{"documentId": str, "chunkId": str, "chunkIndex": int,
+                        "encryptedBlob": bytes, "version": int, "isDeleted": bool}, ...]
+        """
+        try:
+            resp = self.session.get(
+                f"{self.server_url}/api/sync/chunks",
+                params={"teamId": team_id, "lastVersion": last_version},
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"팀 청크 동기화 오류: {str(e)}"
+

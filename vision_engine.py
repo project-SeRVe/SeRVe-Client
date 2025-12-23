@@ -102,7 +102,8 @@ Question: What is this object based on the context above? Provide technical deta
         collection_name: str = "serve_rag",
         persist_directory: Optional[str] = None,
         chunk_size: int = 500,
-        chunk_overlap: int = 50
+        chunk_overlap: int = 50,
+        document_name: Optional[str] = None
     ) -> Chroma:
         """
         Create and optionally persist a vector store from text content
@@ -113,6 +114,7 @@ Question: What is this object based on the context above? Provide technical deta
             persist_directory: 저장 디렉토리 (None이면 in-memory)
             chunk_size: 청크 크기
             chunk_overlap: 청크 오버랩
+            document_name: 문서 이름 (메타데이터에 저장)
 
         Returns:
             Chroma: Vector store 인스턴스
@@ -123,7 +125,10 @@ Question: What is this object based on the context above? Provide technical deta
             chunk_overlap=chunk_overlap
         )
         chunks = text_splitter.split_text(text_content)
-        documents = [Document(page_content=chunk) for chunk in chunks]
+
+        # Create documents with metadata
+        metadata = {"document_name": document_name} if document_name else {}
+        documents = [Document(page_content=chunk, metadata=metadata.copy()) for chunk in chunks]
 
         # Create vector store
         vectorstore = Chroma.from_documents(
@@ -154,7 +159,8 @@ Question: What is this object based on the context above? Provide technical deta
         vectorstore: Chroma,
         text_content: str,
         chunk_size: int = 500,
-        chunk_overlap: int = 50
+        chunk_overlap: int = 50,
+        document_name: Optional[str] = None
     ) -> Chroma:
         """
         기존 벡터 스토어에 새 텍스트를 추가합니다.
@@ -164,6 +170,7 @@ Question: What is this object based on the context above? Provide technical deta
             text_content: 추가할 텍스트
             chunk_size: 청크 크기
             chunk_overlap: 청크 오버랩
+            document_name: 문서 이름 (메타데이터에 저장)
 
         Returns:
             Chroma: 업데이트된 vector store (동일한 인스턴스)
@@ -174,7 +181,10 @@ Question: What is this object based on the context above? Provide technical deta
             chunk_overlap=chunk_overlap
         )
         chunks = text_splitter.split_text(text_content)
-        documents = [Document(page_content=chunk) for chunk in chunks]
+
+        # Create documents with metadata
+        metadata = {"document_name": document_name} if document_name else {}
+        documents = [Document(page_content=chunk, metadata=metadata.copy()) for chunk in chunks]
 
         # Add to existing vector store
         vectorstore.add_documents(documents)
