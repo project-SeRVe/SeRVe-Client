@@ -153,8 +153,18 @@ elif not is_logged_in():
                 try:
                     success, msg = st.session_state.serve_client.login(login_email, login_password)
                     if success:
-                        st.success(msg)
+                        # 로그인 성공 시 이전 세션 데이터 초기화
                         st.session_state.is_logged_in = True
+                        st.session_state.current_repo = None
+                        st.session_state.success_message = None
+                        # 기존 데이터 초기화
+                        if 'my_repos' in st.session_state:
+                            del st.session_state.my_repos
+                        if 'current_documents' in st.session_state:
+                            del st.session_state.current_documents
+                        if 'current_members' in st.session_state:
+                            del st.session_state.current_members
+                        st.success(msg)
                         st.rerun()
                     else:
                         st.error(msg)
@@ -247,6 +257,12 @@ else:
             st.success(st.session_state.success_message)
             st.session_state.success_message = None  # 메시지 초기화
 
+        # 탭 진입 시 자동 새로고침
+        if 'my_repos' not in st.session_state:
+            repos, msg = st.session_state.serve_client.get_my_repositories()
+            if repos is not None:
+                st.session_state.my_repos = repos
+
         col1, col2 = st.columns(2)
 
         with col1:
@@ -325,6 +341,13 @@ else:
         if not st.session_state.current_repo:
             st.warning("먼저 저장소를 선택해주세요. (저장소 관리 탭)")
         else:
+            # 탭 진입 시 자동 새로고침 (저장소가 선택된 경우에만)
+            if 'current_documents' not in st.session_state:
+                repo_id = get_current_repo_id()
+                docs, msg = st.session_state.serve_client.get_documents(repo_id)
+                if docs is not None:
+                    st.session_state.current_documents = docs
+
             # 문서 목록 표시
             st.write("### 문서 목록")
             col_list1, col_list2 = st.columns([3, 1])
@@ -446,9 +469,21 @@ else:
     with tab3:
         st.subheader("멤버 관리")
 
+        # 성공 메시지 표시 (rerun 후)
+        if st.session_state.success_message:
+            st.success(st.session_state.success_message)
+            st.session_state.success_message = None  # 메시지 초기화
+
         if not st.session_state.current_repo:
             st.warning("먼저 저장소를 선택해주세요. (저장소 관리 탭)")
         else:
+            # 탭 진입 시 자동 새로고침 (저장소가 선택된 경우에만)
+            if 'current_members' not in st.session_state:
+                repo_id = get_current_repo_id()
+                members, msg = st.session_state.serve_client.get_members(repo_id)
+                if members is not None:
+                    st.session_state.current_members = members
+
             st.info(f"**저장소:** {st.session_state.current_repo['name']}")
 
             col1, col2 = st.columns(2)
@@ -476,7 +511,12 @@ else:
                                     repo_id, member['userId']
                                 )
                                 if success:
-                                    st.success(msg)
+                                    # 멤버 목록 새로고침
+                                    members, _ = st.session_state.serve_client.get_members(repo_id)
+                                    if members is not None:
+                                        st.session_state.current_members = members
+                                    # 성공 메시지를 세션에 저장하고 rerun
+                                    st.session_state.success_message = f"멤버가 성공적으로 강퇴되었습니다: {msg}"
                                     st.rerun()
                                 else:
                                     st.error(msg)
