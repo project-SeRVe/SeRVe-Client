@@ -1,6 +1,6 @@
 import ollama
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import json
 
 from langchain_ollama import OllamaEmbeddings
@@ -51,68 +51,6 @@ class VisionEngine:
         except Exception as e:
             return f"AI 분석 실패: {str(e)}"
 
-    def analyze_with_context(
-        self,
-        image_bytes,
-        context_text,
-        top_k=3,
-        chunk_size=500,
-        chunk_overlap=50
-    ):
-        """
-        [RAG 기반] 복호화된 보안 문서(Context)를 참고하여 이미지를 분석합니다.
-
-        Args:
-            image_bytes: 이미지 바이트 데이터
-            context_text: 컨텍스트 텍스트 (전체 문서)
-            top_k: 검색할 관련 청크 수
-            chunk_size: 청크 크기
-            chunk_overlap: 청크 오버랩
-
-        Returns:
-            str: AI 분석 결과
-        """
-        try:
-            # 1. Text Splitting
-            text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap,
-                separators=["\n\n", "\n", ". ", " ", ""]
-            )
-            chunks = text_splitter.split_text(context_text)
-
-            # 2. Create Documents
-            documents = [Document(page_content=chunk) for chunk in chunks]
-
-            # 3. Create Vector Store (in-memory)
-            vectorstore = Chroma.from_documents(
-                documents=documents,
-                embedding=self._get_embeddings(),
-                collection_name="temp_rag_context"
-            )
-
-            # 4. Semantic Search
-            query = "Describe technical specifications and safety information"
-            relevant_docs = vectorstore.similarity_search(query, k=top_k)
-
-            # 5. Construct RAG Prompt
-            retrieved_context = "\n\n".join([doc.page_content for doc in relevant_docs])
-
-            rag_prompt = f"""You are a secure industrial AI assistant.
-Analyze the provided image based strictly on the following secure context document.
-
-[SECURE CONTEXT START]
-{retrieved_context}
-[SECURE CONTEXT END]
-
-Question: What is this object based on the context above? Provide technical details if available.
-"""
-
-            # 6. Call LLM with image
-            return self.analyze_image(image_bytes, rag_prompt)
-
-        except Exception as e:
-            return f"RAG 분석 실패: {str(e)}"
 
     def analyze_with_vectorstore(
         self,
@@ -197,7 +135,7 @@ Question: What is this object based on the context above? Provide technical deta
 
         return vectorstore
 
-    def extract_vectors(self, vectorstore: Chroma) -> dict:
+    def extract_vectors(self, vectorstore: Chroma) -> Dict[str, Any]:
         """
         Extract vectors from ChromaDB collection for encryption/sharing
 
@@ -211,54 +149,34 @@ Question: What is this object based on the context above? Provide technical deta
         result = collection.get(include=["embeddings", "documents", "metadatas"])
         return result
 
-    def reconstruct_vector_store(
+    def add_to_vector_store(
         self,
-        vector_data: dict,
-        collection_name: str = "serve_rag_shared",
-        persist_directory: Optional[str] = None
+        vectorstore: Chroma,
+        text_content: str,
+        chunk_size: int = 500,
+        chunk_overlap: int = 50
     ) -> Chroma:
         """
-        Reconstruct vector store from extracted vector data
+        기존 벡터 스토어에 새 텍스트를 추가합니다.
 
         Args:
-            vector_data: extract_vectors()로 추출된 데이터
-            collection_name: 컬렉션 이름
-            persist_directory: 저장 디렉토리
+            vectorstore: 기존 Chroma 벡터 스토어
+            text_content: 추가할 텍스트
+            chunk_size: 청크 크기
+            chunk_overlap: 청크 오버랩
 
         Returns:
-            Chroma: 재구성된 vector store
+            Chroma: 업데이트된 vector store (동일한 인스턴스)
         """
-        import chromadb
-        from chromadb.config import Settings
-
-        # Create client
-        if persist_directory:
-            client = chromadb.Client(Settings(
-                persist_directory=persist_directory,
-                anonymized_telemetry=False
-            ))
-        else:
-            client = chromadb.Client()
-
-        # Create or get collection
-        collection = client.get_or_create_collection(
-            name=collection_name,
-            embedding_function=None  # We already have embeddings
+        # Text splitting
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
         )
+        chunks = text_splitter.split_text(text_content)
+        documents = [Document(page_content=chunk) for chunk in chunks]
 
-        # Add vectors
-        collection.add(
-            ids=vector_data['ids'],
-            embeddings=vector_data['embeddings'],
-            documents=vector_data['documents'],
-            metadatas=vector_data['metadatas'] if vector_data['metadatas'] else None
-        )
-
-        # Wrap in Langchain Chroma
-        vectorstore = Chroma(
-            client=client,
-            collection_name=collection_name,
-            embedding_function=self._get_embeddings()
-        )
+        # Add to existing vector store
+        vectorstore.add_documents(documents)
 
         return vectorstore

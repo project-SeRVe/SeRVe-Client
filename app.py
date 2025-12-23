@@ -338,41 +338,47 @@ else:
 
     # ==================== 탭 2: 문서 관리 ====================
     with tab2:
-        st.subheader("문서 관리 (로컬 벡터DB + SeRVe 서버)")
+        st.subheader("로컬 벡터DB 관리")
 
-        # ========== 1. 로컬 벡터DB 관리 ==========
-        st.write("## 1️⃣ 로컬 벡터 DB 관리")
-
-        # 로컬 벡터DB 상태 표시
+        # ========== 로컬 벡터DB 상태 표시 ==========
+        st.write("## 📊 벡터DB 상태")
         if st.session_state.local_vectorstore:
-            st.success(f"✓ 로컬 벡터DB 활성화됨 ({st.session_state.vectorstore_info})")
-            if st.button("로컬 벡터DB 초기화"):
-                st.session_state.local_vectorstore = None
-                st.session_state.vectorstore_info = None
-                st.success("로컬 벡터DB가 초기화되었습니다.")
-                st.rerun()
+            col_status1, col_status2 = st.columns([3, 1])
+            with col_status1:
+                st.success(f"✓ 로컬 벡터DB 활성화됨: {st.session_state.vectorstore_info}")
+            with col_status2:
+                if st.button("🗑️ 초기화", help="벡터DB를 삭제하고 새로 시작합니다"):
+                    st.session_state.local_vectorstore = None
+                    st.session_state.vectorstore_info = None
+                    st.success("로컬 벡터DB가 초기화되었습니다.")
+                    st.rerun()
         else:
-            st.info("로컬 벡터DB가 없습니다. 아래에서 문서를 추가하여 생성하세요.")
+            st.info("로컬 벡터DB가 없습니다. 아래에서 새로 생성하세요.")
 
-        col_local1, col_local2 = st.columns(2)
+        st.divider()
 
-        with col_local1:
-            st.write("### 텍스트로 벡터DB 생성")
+        # ========== 1. 벡터DB 생성 ==========
+        st.write("## 1️⃣ 로컬 벡터DB 생성")
+
+        # 청크 설정 (공통)
+        col_chunk1, col_chunk2 = st.columns(2)
+        with col_chunk1:
+            chunk_size = st.number_input("청크 크기", value=500, min_value=100, max_value=2000, key="chunk_size")
+        with col_chunk2:
+            chunk_overlap = st.number_input("청크 오버랩", value=50, min_value=0, max_value=500, key="chunk_overlap")
+
+        col_create1, col_create2 = st.columns(2)
+
+        with col_create1:
+            st.write("### 텍스트로 생성")
             vector_text_input = st.text_area(
                 "문서 내용",
                 "This is a hydraulic valve (Type-K). Pressure limit: 500bar. Use only with certified hydraulic fluids.",
                 height=150,
                 key="vector_text_input"
             )
-            collection_name = st.text_input("컬렉션 이름", value="serve_local_rag", key="collection_name")
 
-            col_chunk1, col_chunk2 = st.columns(2)
-            with col_chunk1:
-                chunk_size = st.number_input("청크 크기", value=500, min_value=100, max_value=2000, key="chunk_size")
-            with col_chunk2:
-                chunk_overlap = st.number_input("청크 오버랩", value=50, min_value=0, max_value=500, key="chunk_overlap")
-
-            if st.button("로컬 벡터DB 생성/업데이트", type="primary"):
+            if st.button("텍스트로 벡터DB 생성", type="primary", disabled=st.session_state.local_vectorstore is not None):
                 if not vector_text_input:
                     st.warning("문서 내용을 입력해주세요.")
                 else:
@@ -381,205 +387,167 @@ else:
                         with st.spinner("벡터 생성 중..."):
                             vectorstore = vision.create_vector_store(
                                 text_content=vector_text_input,
-                                collection_name=collection_name,
-                                persist_directory=None,  # In-memory
-                                chunk_size=chunk_size,
-                                chunk_overlap=chunk_overlap
-                            )
-                            st.session_state.local_vectorstore = vectorstore
-                            st.session_state.vectorstore_info = f"{collection_name} ({len(vector_text_input)} chars)"
-                            st.success("✓ 로컬 벡터DB가 생성되었습니다!")
-                            st.rerun()
-                    except Exception as e:
-                        st.error(f"벡터DB 생성 실패: {str(e)}")
-
-        with col_local2:
-            st.write("### 파일 업로드로 벡터DB 생성")
-            uploaded_file = st.file_uploader(
-                "텍스트 파일 선택",
-                type=['txt', 'md', 'json'],
-                key="vector_file_upload"
-            )
-
-            if uploaded_file:
-                st.info(f"파일: {uploaded_file.name} ({uploaded_file.size} bytes)")
-
-                if st.button("파일에서 벡터DB 생성", type="primary"):
-                    try:
-                        file_content = uploaded_file.read().decode('utf-8')
-                        vision = VisionEngine()
-                        with st.spinner("파일 처리 및 벡터 생성 중..."):
-                            vectorstore = vision.create_vector_store(
-                                text_content=file_content,
-                                collection_name=collection_name,
+                                collection_name="serve_local_rag",
                                 persist_directory=None,
                                 chunk_size=chunk_size,
                                 chunk_overlap=chunk_overlap
                             )
                             st.session_state.local_vectorstore = vectorstore
-                            st.session_state.vectorstore_info = f"{uploaded_file.name} ({len(file_content)} chars)"
-                            st.success(f"✓ '{uploaded_file.name}'로부터 벡터DB가 생성되었습니다!")
+                            st.session_state.vectorstore_info = f"{len(vector_text_input)} chars"
+                            st.success("✓ 로컬 벡터DB가 생성되었습니다!")
                             st.rerun()
                     except Exception as e:
-                        st.error(f"파일 처리 실패: {str(e)}")
+                        st.error(f"벡터DB 생성 실패: {str(e)}")
+
+            if st.session_state.local_vectorstore:
+                st.info("💡 벡터DB가 이미 존재합니다. 새로 생성하려면 먼저 초기화하세요.")
+
+        with col_create2:
+            st.write("### 파일로 생성")
+            uploaded_file_create = st.file_uploader(
+                "텍스트 파일 선택",
+                type=['txt', 'md', 'json'],
+                key="vector_file_create"
+            )
+
+            if uploaded_file_create:
+                st.info(f"파일: {uploaded_file_create.name} ({uploaded_file_create.size} bytes)")
+
+            if st.button("파일로 벡터DB 생성", type="primary", disabled=st.session_state.local_vectorstore is not None or uploaded_file_create is None):
+                try:
+                    file_content = uploaded_file_create.read().decode('utf-8')
+                    vision = VisionEngine()
+                    with st.spinner("파일 처리 및 벡터 생성 중..."):
+                        vectorstore = vision.create_vector_store(
+                            text_content=file_content,
+                            collection_name="serve_local_rag",
+                            persist_directory=None,
+                            chunk_size=chunk_size,
+                            chunk_overlap=chunk_overlap
+                        )
+                        st.session_state.local_vectorstore = vectorstore
+                        st.session_state.vectorstore_info = f"{uploaded_file_create.name}"
+                        st.success(f"✓ '{uploaded_file_create.name}'로부터 벡터DB가 생성되었습니다!")
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"파일 처리 실패: {str(e)}")
+
+            if st.session_state.local_vectorstore:
+                st.info("💡 벡터DB가 이미 존재합니다. 새로 생성하려면 먼저 초기화하세요.")
 
         st.divider()
 
-        # ========== 2. SeRVe 서버에 업로드 ==========
-        st.write("## 2️⃣ SeRVe 서버에 업로드")
+        # ========== 2. 벡터DB에 문서 추가 ==========
+        st.write("## 2️⃣ 로컬 벡터DB에 문서 추가")
 
-        if not st.session_state.current_repo:
+        if not st.session_state.local_vectorstore:
+            st.warning("먼저 위에서 로컬 벡터DB를 생성해주세요.")
+        else:
+            col_add1, col_add2 = st.columns(2)
+
+            with col_add1:
+                st.write("### 텍스트 추가")
+                add_text_input = st.text_area(
+                    "추가할 문서 내용",
+                    "Safety Warning: Maximum temperature: 80°C. Do not exceed rated pressure.",
+                    height=120,
+                    key="add_text_input"
+                )
+
+                if st.button("텍스트를 벡터DB에 추가", type="secondary"):
+                    if not add_text_input:
+                        st.warning("추가할 내용을 입력해주세요.")
+                    else:
+                        try:
+                            vision = VisionEngine()
+                            with st.spinner("벡터 추가 중..."):
+                                vision.add_to_vector_store(
+                                    st.session_state.local_vectorstore,
+                                    add_text_input,
+                                    chunk_size=chunk_size,
+                                    chunk_overlap=chunk_overlap
+                                )
+                                st.success("✓ 텍스트가 벡터DB에 추가되었습니다!")
+                        except Exception as e:
+                            st.error(f"텍스트 추가 실패: {str(e)}")
+
+            with col_add2:
+                st.write("### 파일 추가")
+                uploaded_file_add = st.file_uploader(
+                    "추가할 파일 선택",
+                    type=['txt', 'md', 'json'],
+                    key="vector_file_add"
+                )
+
+                if uploaded_file_add:
+                    st.info(f"파일: {uploaded_file_add.name} ({uploaded_file_add.size} bytes)")
+
+                    if st.button("파일을 벡터DB에 추가", type="secondary"):
+                        try:
+                            file_content = uploaded_file_add.read().decode('utf-8')
+                            vision = VisionEngine()
+                            with st.spinner("파일 처리 및 벡터 추가 중..."):
+                                vision.add_to_vector_store(
+                                    st.session_state.local_vectorstore,
+                                    file_content,
+                                    chunk_size=chunk_size,
+                                    chunk_overlap=chunk_overlap
+                                )
+                                st.success(f"✓ '{uploaded_file_add.name}' 파일이 벡터DB에 추가되었습니다!")
+                        except Exception as e:
+                            st.error(f"파일 추가 실패: {str(e)}")
+
+        st.divider()
+
+        # ========== 3. SeRVe 서버에 업로드 ==========
+        st.write("## 3️⃣ SeRVe 서버에 업로드")
+
+        if not st.session_state.local_vectorstore:
+            st.warning("업로드할 로컬 벡터DB가 없습니다. 먼저 벡터DB를 생성하세요.")
+        elif not st.session_state.current_repo:
             st.warning("먼저 저장소를 선택해주세요. (저장소 관리 탭)")
         else:
             st.info(f"**저장소:** {st.session_state.current_repo['name']}")
 
-            if not st.session_state.local_vectorstore:
-                st.warning("업로드할 로컬 벡터DB가 없습니다. 먼저 위에서 벡터DB를 생성하세요.")
-            else:
-                upload_file_name = st.text_input(
-                    "서버에 저장할 파일명",
-                    value="vector_db.json",
-                    key="upload_vector_filename"
-                )
+            upload_file_name = st.text_input(
+                "서버에 저장할 파일명",
+                value="vector_db.json",
+                key="upload_vector_filename"
+            )
 
-                if st.button("로컬 벡터DB → SeRVe 서버 업로드", type="primary"):
-                    if not upload_file_name:
-                        st.warning("파일명을 입력해주세요.")
-                    else:
-                        try:
-                            vision = VisionEngine()
-                            with st.spinner("벡터 추출 중..."):
-                                # 벡터 추출
-                                vector_data = vision.extract_vectors(st.session_state.local_vectorstore)
+            if st.button("🚀 로컬 벡터DB → SeRVe 서버 업로드", type="primary"):
+                if not upload_file_name:
+                    st.warning("파일명을 입력해주세요.")
+                else:
+                    try:
+                        vision = VisionEngine()
+                        with st.spinner("벡터 추출 중..."):
+                            # 벡터 추출
+                            vector_data = vision.extract_vectors(st.session_state.local_vectorstore)
 
-                                # JSON으로 직렬화
-                                import json
-                                vector_json = json.dumps(vector_data)
+                            # JSON으로 직렬화
+                            import json
+                            vector_json = json.dumps(vector_data)
 
-                                st.info(f"추출된 벡터 개수: {len(vector_data['ids'])}")
+                            st.info(f"추출된 벡터 개수: {len(vector_data['ids'])}")
 
-                            with st.spinner("암호화 및 업로드 중..."):
-                                # SeRVe 서버에 업로드
-                                repo_id = get_current_repo_id()
-                                success, msg = st.session_state.serve_client.upload_document(
-                                    vector_json,
-                                    repo_id,
-                                    upload_file_name,
-                                    "application/json"
-                                )
+                        with st.spinner("암호화 및 업로드 중..."):
+                            # SeRVe 서버에 업로드
+                            repo_id = get_current_repo_id()
+                            success, msg = st.session_state.serve_client.upload_document(
+                                vector_json,
+                                repo_id,
+                                upload_file_name,
+                                "application/json"
+                            )
 
-                                if success:
-                                    st.success(f"✓ 벡터DB가 SeRVe 서버에 업로드되었습니다: {msg}")
-                                    # 문서 목록 자동 새로고침
-                                    docs, _ = st.session_state.serve_client.get_documents(repo_id)
-                                    if docs is not None:
-                                        st.session_state.current_documents = docs
-                                        if docs:
-                                            st.session_state.last_doc_id = docs[-1].get('docId', '')
-                                else:
-                                    st.error(msg)
-                        except Exception as e:
-                            st.error(f"업로드 실패: {str(e)}")
-
-        st.divider()
-
-        # ========== 3. SeRVe 서버에서 다운로드 ==========
-        st.write("## 3️⃣ SeRVe 서버에서 다운로드")
-
-        if not st.session_state.current_repo:
-            st.warning("먼저 저장소를 선택해주세요. (저장소 관리 탭)")
-        else:
-            # 탭 진입 시 자동 새로고침
-            if 'current_documents' not in st.session_state:
-                repo_id = get_current_repo_id()
-                docs, msg = st.session_state.serve_client.get_documents(repo_id)
-                if docs is not None:
-                    st.session_state.current_documents = docs
-
-            col_server1, col_server2 = st.columns([3, 1])
-
-            with col_server1:
-                st.info(f"**저장소:** {st.session_state.current_repo['name']}")
-
-            with col_server2:
-                if st.button("문서 목록 새로고침"):
-                    repo_id = get_current_repo_id()
-                    docs, msg = st.session_state.serve_client.get_documents(repo_id)
-                    if docs is not None:
-                        st.session_state.current_documents = docs
-                        st.success(msg)
-                    else:
-                        st.error(msg)
-
-            # 문서 목록 표시
-            if 'current_documents' in st.session_state and st.session_state.current_documents:
-                for doc in st.session_state.current_documents:
-                    doc_id = doc.get('docId')
-                    file_name = doc.get('fileName', 'N/A')
-                    file_type = doc.get('fileType', 'N/A')
-                    uploader_id = doc.get('uploaderId', 'N/A')
-                    created_at = doc.get('createdAt', 'N/A')
-
-                    with st.expander(f"📄 {file_name} (ID: {doc_id})"):
-                        col_a, col_b, col_c = st.columns([2, 1, 1])
-
-                        with col_a:
-                            st.write(f"**파일 타입:** {file_type}")
-                            st.write(f"**업로더:** {uploader_id}")
-                            st.write(f"**생성 시간:** {created_at}")
-
-                        with col_b:
-                            if st.button("벡터DB로 다운로드", key=f"download_vector_{doc_id}"):
-                                repo_id = get_current_repo_id()
-                                content, msg = st.session_state.serve_client.download_document(
-                                    doc_id, repo_id
-                                )
-                                if content:
-                                    try:
-                                        import json
-                                        vision = VisionEngine()
-
-                                        # JSON 파싱
-                                        vector_data = json.loads(content)
-
-                                        with st.spinner("벡터스토어 재구성 중..."):
-                                            # 벡터스토어 재구성
-                                            vectorstore = vision.reconstruct_vector_store(
-                                                vector_data=vector_data,
-                                                collection_name="serve_downloaded",
-                                                persist_directory=None
-                                            )
-
-                                            st.session_state.local_vectorstore = vectorstore
-                                            st.session_state.vectorstore_info = f"{file_name} (다운로드)"
-
-                                            st.success(f"✓ 벡터DB가 로컬에 로드되었습니다: {msg}")
-                                            st.info(f"벡터 개수: {len(vector_data['ids'])}")
-                                            st.rerun()
-                                    except json.JSONDecodeError:
-                                        st.error("벡터 데이터 형식이 올바르지 않습니다.")
-                                    except Exception as e:
-                                        st.error(f"벡터스토어 재구성 실패: {str(e)}")
-                                else:
-                                    st.error(msg)
-
-                        with col_c:
-                            if st.button("삭제", key=f"delete_doc_{doc_id}"):
-                                repo_id = get_current_repo_id()
-                                success, msg = st.session_state.serve_client.delete_document(
-                                    repo_id, str(doc_id)
-                                )
-                                if success:
-                                    st.success(msg)
-                                    # 문서 목록 새로고침
-                                    docs, _ = st.session_state.serve_client.get_documents(repo_id)
-                                    if docs is not None:
-                                        st.session_state.current_documents = docs
-                                    st.rerun()
-                                else:
-                                    st.error(msg)
-            else:
-                st.info("문서가 없거나 목록을 불러오지 않았습니다. '문서 목록 새로고침' 버튼을 클릭하세요.")
+                            if success:
+                                st.success(f"✓ 벡터DB가 SeRVe 서버에 업로드되었습니다!")
+                                st.info(msg)
+                            else:
+                                st.error(msg)
+                    except Exception as e:
+                        st.error(f"업로드 실패: {str(e)}")
 
     # ==================== 탭 3: 멤버 관리 ====================
     with tab3:
