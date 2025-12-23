@@ -339,7 +339,9 @@ class ServeClient:
 
     # ==================== 문서 API ====================
 
-    def upload_document(self, plaintext: str, repo_id: str) -> Tuple[Optional[str], str]:
+    def upload_document(self, plaintext: str, repo_id: str,
+                       file_name: str = "document.txt",
+                       file_type: str = "text/plain") -> Tuple[bool, str]:
         """
         문서 업로드
 
@@ -351,9 +353,11 @@ class ServeClient:
         Args:
             plaintext: 평문 내용
             repo_id: 저장소 ID (UUID 문자열)
+            file_name: 파일명 (기본값: document.txt)
+            file_type: 파일 타입 (기본값: text/plain)
 
         Returns:
-            (문서 ID, 메시지)
+            (성공 여부, 메시지)
         """
         self._ensure_authenticated()
 
@@ -365,18 +369,20 @@ class ServeClient:
             encrypted_content = self.crypto.encrypt_data(plaintext, team_key)
 
             # 3. 업로드
-            success, data = self.api.upload_document(
+            success, msg = self.api.upload_document(
                 encrypted_content,
                 repo_id,
-                self.session.access_token
+                self.session.access_token,
+                file_name,
+                file_type
             )
 
-            return (data, "업로드 성공") if success else (None, data)
+            return success, msg
 
         except Exception as e:
-            return None, f"업로드 오류: {str(e)}"
+            return False, f"업로드 오류: {str(e)}"
 
-    def download_document(self, doc_id: int, repo_id: str) -> Tuple[Optional[str], str]:
+    def download_document(self, doc_id: str, repo_id: str) -> Tuple[Optional[str], str]:
         """
         문서 다운로드
 
@@ -386,7 +392,7 @@ class ServeClient:
         3. 암호문을 팀 키로 복호화
 
         Args:
-            doc_id: 문서 ID
+            doc_id: 문서 ID (UUID 문자열)
             repo_id: 저장소 ID (UUID 문자열, 팀 키 조회용)
 
         Returns:
@@ -401,15 +407,21 @@ class ServeClient:
             if not success:
                 return None, data
 
-            # 2. 암호문 추출
-            encrypted_content = data.get('content')
+            # 2. 암호문 추출 (서버는 encryptedBlob 필드로 반환)
+            encrypted_content = data.get('encryptedBlob')
             if not encrypted_content:
                 return None, "암호문이 없습니다"
 
-            # 3. 팀 키 가져오기 (lazy loading)
+            # 3. byte[] -> Base64 문자열 변환 (JSON 직렬화 시 자동 처리되지만 명시적 확인)
+            if isinstance(encrypted_content, list):
+                # byte[] 배열이 JSON으로 직렬화되면 숫자 배열로 올 수 있음
+                import base64
+                encrypted_content = base64.b64encode(bytes(encrypted_content)).decode('utf-8')
+
+            # 4. 팀 키 가져오기 (lazy loading)
             team_key = self._ensure_team_key(repo_id)
 
-            # 4. 복호화
+            # 5. 복호화
             plaintext = self.crypto.decrypt_data(encrypted_content, team_key)
 
             return plaintext, "복호화 성공"

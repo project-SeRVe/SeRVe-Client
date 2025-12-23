@@ -345,20 +345,25 @@ else:
             # 문서 목록 표시
             if 'current_documents' in st.session_state and st.session_state.current_documents:
                 for doc in st.session_state.current_documents:
-                    doc_id = doc.get('id')
+                    doc_id = doc.get('docId')
+                    file_name = doc.get('fileName', 'N/A')
+                    file_type = doc.get('fileType', 'N/A')
+                    uploader_id = doc.get('uploaderId', 'N/A')
                     created_at = doc.get('createdAt', 'N/A')
 
-                    with st.expander(f"📄 문서 ID: {doc_id} (생성: {created_at})"):
+                    with st.expander(f"📄 {file_name} (ID: {doc_id})"):
                         col_a, col_b, col_c = st.columns([2, 1, 1])
 
                         with col_a:
-                            st.write(f"**저장소 ID:** {doc.get('repositoryId', 'N/A')}")
+                            st.write(f"**파일 타입:** {file_type}")
+                            st.write(f"**업로더:** {uploader_id}")
+                            st.write(f"**생성 시간:** {created_at}")
 
                         with col_b:
                             if st.button("다운로드", key=f"download_{doc_id}"):
                                 repo_id = get_current_repo_id()
                                 content, msg = st.session_state.serve_client.download_document(
-                                    int(doc_id), repo_id
+                                    doc_id, repo_id
                                 )
                                 if content:
                                     st.success(msg)
@@ -391,41 +396,51 @@ else:
 
             with col1:
                 st.write("### 문서 업로드")
+                upload_file_name = st.text_input("파일명", value="document.txt", key="upload_file_name")
+                upload_file_type = st.selectbox(
+                    "파일 타입",
+                    ["text/plain", "application/json", "text/markdown", "application/octet-stream"],
+                    key="upload_file_type"
+                )
                 upload_text = st.text_area("문서 내용", "This is a hydraulic valve (Type-K). Pressure limit: 500bar.")
 
                 if st.button("암호화 및 업로드", type="primary"):
-                    repo_id = get_current_repo_id()
-                    doc_id, msg = st.session_state.serve_client.upload_document(
-                        upload_text, repo_id
-                    )
-                    if doc_id:
-                        st.success(f"{msg} (Doc ID: {doc_id})")
-                        # 문서 ID는 정수로 저장
-                        try:
-                            st.session_state.last_doc_id = int(doc_id)
-                        except (ValueError, TypeError):
-                            st.session_state.last_doc_id = doc_id
-                        # 문서 목록 자동 새로고침
-                        docs, _ = st.session_state.serve_client.get_documents(repo_id)
-                        if docs is not None:
-                            st.session_state.current_documents = docs
+                    if not upload_file_name:
+                        st.warning("파일명을 입력해주세요.")
                     else:
-                        st.error(msg)
+                        repo_id = get_current_repo_id()
+                        success, msg = st.session_state.serve_client.upload_document(
+                            upload_text, repo_id, upload_file_name, upload_file_type
+                        )
+                        if success:
+                            st.success(msg)
+                            # 문서 목록 자동 새로고침
+                            docs, _ = st.session_state.serve_client.get_documents(repo_id)
+                            if docs is not None:
+                                st.session_state.current_documents = docs
+                                # 마지막 문서 ID 업데이트 (가장 최근에 업로드된 문서)
+                                if docs:
+                                    st.session_state.last_doc_id = docs[-1].get('docId', '')
+                        else:
+                            st.error(msg)
 
             with col2:
                 st.write("### 문서 다운로드 (ID로 직접 조회)")
-                doc_id = st.number_input("문서 ID", min_value=1, value=st.session_state.get('last_doc_id', 1))
+                doc_id_input = st.text_input("문서 ID (UUID)", value=st.session_state.get('last_doc_id', ''), key="doc_id_download")
 
                 if st.button("다운로드 및 복호화"):
-                    repo_id = get_current_repo_id()
-                    content, msg = st.session_state.serve_client.download_document(
-                        doc_id, repo_id
-                    )
-                    if content:
-                        st.success(msg)
-                        st.text_area("복호화된 내용", content, height=150)
+                    if not doc_id_input:
+                        st.warning("문서 ID를 입력해주세요.")
                     else:
-                        st.error(msg)
+                        repo_id = get_current_repo_id()
+                        content, msg = st.session_state.serve_client.download_document(
+                            doc_id_input, repo_id
+                        )
+                        if content:
+                            st.success(msg)
+                            st.text_area("복호화된 내용", content, height=150)
+                        else:
+                            st.error(msg)
 
     # ==================== 탭 3: 멤버 관리 ====================
     with tab3:
@@ -540,11 +555,13 @@ else:
 
             # Tab B: 보안 RAG 추론 (SeRVe 연동)
             with tab_b:
-                doc_id_rag = st.number_input("Document ID (SeRVe)", min_value=1, value=st.session_state.get('last_doc_id', 1))
+                doc_id_rag = st.text_input("Document ID (SeRVe)", value=st.session_state.get('last_doc_id', ''), key="doc_id_rag")
 
                 if st.button("분석 (SeRVe 연동)", type="primary"):
                     if not st.session_state.current_repo:
                         st.error("먼저 저장소를 선택해주세요! (저장소 관리 탭)")
+                    elif not doc_id_rag:
+                        st.warning("문서 ID를 입력해주세요.")
                     elif selected_image:
                         with st.spinner("Fetching Secure Data & Decrypting..."):
                             # 1. SeRVe에서 보안 문서 가져오기

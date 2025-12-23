@@ -5,6 +5,7 @@ API Client - HTTP 통신 전담
 Session에서 토큰을 받아와 인증 헤더에 사용.
 """
 
+import json
 import requests
 from typing import Optional, Dict, Any, List, Tuple
 
@@ -146,7 +147,11 @@ class ApiClient:
                 params={"email": email},
                 headers=self._get_headers(access_token)
             )
-            return self._handle_response(resp)
+            success, data = self._handle_response(resp)
+            if success and isinstance(data, dict):
+                # dict를 JSON 문자열로 변환 (crypto_utils가 JSON 문자열을 기대함)
+                return True, json.dumps(data)
+            return success, data
         except Exception as e:
             return False, f"공개키 조회 오류: {str(e)}"
 
@@ -290,13 +295,16 @@ class ApiClient:
     # ==================== 문서 API ====================
 
     def upload_document(self, encrypted_content: str, repo_id: str,
-                       access_token: str) -> Tuple[bool, Any]:
+                       access_token: str, file_name: str = "document.txt",
+                       file_type: str = "text/plain") -> Tuple[bool, Any]:
         """
         암호화된 문서 업로드
 
         Args:
-            encrypted_content: 이미 팀 키로 암호화된 내용
+            encrypted_content: 이미 팀 키로 암호화된 내용 (Base64)
             repo_id: 저장소 ID (UUID 문자열)
+            file_name: 파일명 (기본값: document.txt)
+            file_type: 파일 타입 (기본값: text/plain)
 
         Returns:
             (성공 여부, 문서 ID 또는 에러 메시지)
@@ -305,23 +313,27 @@ class ApiClient:
             resp = self.session.post(
                 f"{self.server_url}/api/teams/{repo_id}/documents",
                 json={
-                    "content": encrypted_content,
-                    "repositoryId": repo_id
+                    "fileName": file_name,
+                    "fileType": file_type,
+                    "encryptedBlob": encrypted_content
                 },
                 headers=self._get_headers(access_token)
             )
             success, data = self._handle_response(resp)
             if success:
-                # ID 추출 (숫자만)
-                doc_id = ''.join(filter(str.isdigit, str(data)))
-                return True, doc_id
+                # 서버는 void를 반환하므로 데이터가 없거나 빈 응답일 수 있음
+                # 성공 시 응답에서 doc_id를 추출할 수 없으므로 성공 메시지만 반환
+                return True, "문서 업로드 성공"
             return False, data
         except Exception as e:
             return False, f"문서 업로드 오류: {str(e)}"
 
-    def get_document(self, doc_id: int, access_token: str) -> Tuple[bool, Optional[Dict]]:
+    def get_document(self, doc_id: str, access_token: str) -> Tuple[bool, Optional[Dict]]:
         """
         문서 다운로드
+
+        Args:
+            doc_id: 문서 ID (UUID 문자열)
 
         Returns:
             (성공 여부, {content: 암호화된 내용, ...} 또는 에러 메시지)
