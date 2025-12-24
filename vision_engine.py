@@ -128,9 +128,29 @@ Question: What is this object based on the context above? Provide technical deta
         if persist_directory and os.path.exists(persist_directory):
             try:
                 print(f"기존 벡터스토어 디렉토리 삭제 중: {persist_directory}")
-                shutil.rmtree(persist_directory)
-                # 파일 시스템이 디렉토리를 완전히 정리할 시간을 줌
-                time.sleep(0.2)
+
+                # ChromaDB가 사용 중일 수 있으므로 여러 번 시도
+                max_retries = 3
+                for retry in range(max_retries):
+                    try:
+                        # 가비지 컬렉션으로 열려있는 파일 핸들 정리
+                        gc.collect()
+                        time.sleep(0.3)
+
+                        # 디렉토리 삭제
+                        shutil.rmtree(persist_directory)
+                        print("벡터스토어 디렉토리 삭제 완료")
+                        break
+                    except PermissionError as pe:
+                        if retry < max_retries - 1:
+                            print(f"디렉토리 삭제 재시도 중... ({retry + 1}/{max_retries})")
+                            time.sleep(0.5)
+                        else:
+                            print(f"디렉토리 삭제 실패: {str(pe)}")
+                            raise
+
+                # 추가 대기 시간으로 파일 시스템이 정리될 시간을 줌
+                time.sleep(0.3)
                 gc.collect()
             except Exception as e:
                 print(f"디렉토리 삭제 중 오류 (계속 진행): {str(e)}")
@@ -273,6 +293,9 @@ Question: What is this object based on the context above? Provide technical deta
         """
         try:
             import gc
+            import time
+            import shutil
+            import os
 
             # ChromaDB 클라이언트와 컬렉션 정리
             if vectorstore is not None:
@@ -286,20 +309,48 @@ Question: What is this object based on the context above? Provide technical deta
                     except Exception as e:
                         print(f"컬렉션 삭제 중 오류 (무시 가능): {str(e)}")
 
+                # ChromaDB 클라이언트 정리 시도
+                if hasattr(vectorstore, '_client'):
+                    try:
+                        # 클라이언트의 시스템 캐시 정리
+                        if hasattr(vectorstore._client, 'clear_system_cache'):
+                            vectorstore._client.clear_system_cache()
+                    except Exception as e:
+                        print(f"클라이언트 캐시 정리 중 오류 (무시 가능): {str(e)}")
+
                 # 명시적으로 객체 삭제
                 del vectorstore
 
-            # 가비지 컬렉션 강제 실행
+            # 가비지 컬렉션 여러 번 강제 실행
+            gc.collect()
+            time.sleep(0.3)
             gc.collect()
 
-            # 디렉토리 삭제
-            import shutil
-            import os
+            # 디렉토리 삭제 (재시도 로직 포함)
             if os.path.exists(persist_directory):
-                # SQLite WAL 파일도 함께 삭제되도록 조금 대기
-                import time
-                time.sleep(0.1)
-                shutil.rmtree(persist_directory)
+                max_retries = 5
+                for retry in range(max_retries):
+                    try:
+                        # 추가 대기
+                        time.sleep(0.3)
+                        shutil.rmtree(persist_directory)
+                        print(f"벡터스토어 디렉토리 삭제 완료: {persist_directory}")
+                        break
+                    except PermissionError as pe:
+                        if retry < max_retries - 1:
+                            print(f"디렉토리 삭제 재시도 중... ({retry + 1}/{max_retries})")
+                            gc.collect()
+                            time.sleep(0.5)
+                        else:
+                            print(f"디렉토리 삭제 실패: {str(pe)}")
+                            raise
+                    except Exception as e:
+                        if retry < max_retries - 1:
+                            print(f"디렉토리 삭제 재시도 중... ({retry + 1}/{max_retries}): {str(e)}")
+                            gc.collect()
+                            time.sleep(0.5)
+                        else:
+                            raise
 
         except Exception as e:
             print(f"벡터스토어 정리 중 오류: {str(e)}")

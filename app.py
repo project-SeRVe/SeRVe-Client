@@ -363,7 +363,13 @@ else:
                             st.session_state.local_vectorstore,
                             persist_directory="./local_vectorstore"
                         )
+                        # 추가 정리
+                        import gc
+                        import time
                         st.session_state.local_vectorstore = None
+                        gc.collect()
+                        time.sleep(0.5)
+                        gc.collect()
                         st.success("로컬 벡터DB가 초기화되었습니다.")
                         st.rerun()
                     except Exception as e:
@@ -597,62 +603,46 @@ else:
                     if 'selected_local_chunks' not in st.session_state:
                         st.session_state.selected_local_chunks = set()
 
-                    # 전체 선택 체크박스 상태 초기화
+                    # 전체 선택 체크박스 상태를 실제 선택 상태와 동기화
+                    all_selected = len(st.session_state.selected_local_chunks) == num_chunks
                     if "select_all_local_chunks" not in st.session_state:
-                        st.session_state.select_all_local_chunks = False
+                        st.session_state.select_all_local_chunks = all_selected
 
                     select_all_local = st.checkbox("전체 선택", key="select_all_local_chunks")
 
-                    # 전체 선택/해제 처리
-                    all_selected = len(st.session_state.selected_local_chunks) == num_chunks
+                    # 전체 선택/해제 처리 - 체크박스를 클릭했을 때만 동작
                     if select_all_local and not all_selected:
+                        # 전체 선택 체크박스가 체크되었는데 모든 청크가 선택되지 않은 경우, 모든 청크 선택
                         st.session_state.selected_local_chunks = set(range(num_chunks))
-                        # 각 개별 체크박스의 위젯 상태도 업데이트
-                        for i in range(num_chunks):
-                            st.session_state[f"local_chunk_{i}"] = True
-                        # 문서 전체 선택 체크박스도 업데이트
-                        for doc_name in docs_by_name.keys():
-                            st.session_state[f"select_doc_{doc_name}"] = True
-                        st.rerun()
                     elif not select_all_local and all_selected:
+                        # 전체 선택 체크박스가 해제되었는데 모든 청크가 선택된 경우, 모든 청크 선택 해제
                         st.session_state.selected_local_chunks = set()
-                        # 각 개별 체크박스의 위젯 상태도 업데이트
-                        for i in range(num_chunks):
-                            st.session_state[f"local_chunk_{i}"] = False
-                        # 문서 전체 선택 체크박스도 업데이트
-                        for doc_name in docs_by_name.keys():
-                            st.session_state[f"select_doc_{doc_name}"] = False
-                        st.rerun()
 
                     # 청크 목록 표시 (문서별로 그룹화, 스크롤 가능)
                     with st.container(height=300):
                         for doc_name, chunk_indices in docs_by_name.items():
                             # 문서별 expander
                             with st.expander(f"📄 {doc_name} ({len(chunk_indices)}개 청크)", expanded=True):
-                                # 문서 전체 선택 체크박스 상태 초기화
+                                # 문서 전체 선택 체크박스 상태를 실제 선택 상태와 동기화
                                 doc_select_key = f"select_doc_{doc_name}"
+                                doc_all_selected = all(idx in st.session_state.selected_local_chunks for idx in chunk_indices)
                                 if doc_select_key not in st.session_state:
-                                    st.session_state[doc_select_key] = False
+                                    st.session_state[doc_select_key] = doc_all_selected
 
                                 select_doc = st.checkbox(
                                     f"문서 전체 선택",
                                     key=doc_select_key
                                 )
 
-                                # 문서 전체 선택/해제 처리
-                                doc_all_selected = all(idx in st.session_state.selected_local_chunks for idx in chunk_indices)
+                                # 문서 전체 선택/해제 처리 - 체크박스를 클릭했을 때만 동작
                                 if select_doc and not doc_all_selected:
                                     # 모든 청크 선택
                                     for idx in chunk_indices:
                                         st.session_state.selected_local_chunks.add(idx)
-                                        st.session_state[f"local_chunk_{idx}"] = True
-                                    st.rerun()
                                 elif not select_doc and doc_all_selected:
                                     # 모든 청크 선택 해제
                                     for idx in chunk_indices:
                                         st.session_state.selected_local_chunks.discard(idx)
-                                        st.session_state[f"local_chunk_{idx}"] = False
-                                    st.rerun()
 
                                 # 청크 목록
                                 for i in chunk_indices:
@@ -741,7 +731,6 @@ else:
                                                         st.success(f"✓ {len(chunks_data)}개 청크 업로드 완료!")
                                                         # 선택 초기화
                                                         st.session_state.selected_local_chunks = set()
-                                                        st.session_state.select_all_local_chunks = False
                                                         # 모든 청크 체크박스 상태 초기화
                                                         for i in range(num_chunks):
                                                             if f"local_chunk_{i}" in st.session_state:
@@ -750,6 +739,9 @@ else:
                                                         for doc_name in docs_by_name.keys():
                                                             if f"select_doc_{doc_name}" in st.session_state:
                                                                 del st.session_state[f"select_doc_{doc_name}"]
+                                                        # 전체 선택 체크박스 위젯 상태 초기화
+                                                        if "select_all_local_chunks" in st.session_state:
+                                                            del st.session_state["select_all_local_chunks"]
                                                     else:
                                                         st.error(f"청크 업로드 실패: {msg}")
 
@@ -782,20 +774,27 @@ else:
                                             # 빈 벡터스토어는 안전하게 정리
                                             try:
                                                 vision = VisionEngine()
+                                                # 벡터스토어 정리
                                                 vision.cleanup_vector_store(
                                                     st.session_state.local_vectorstore,
                                                     persist_directory="./local_vectorstore"
                                                 )
+                                                # 추가 정리
+                                                import gc
+                                                import time
+                                                st.session_state.local_vectorstore = None
+                                                gc.collect()
+                                                time.sleep(0.5)
+                                                gc.collect()
                                             except Exception as e:
                                                 print(f"벡터스토어 정리 중 오류: {str(e)}")
-                                            st.session_state.local_vectorstore = None
+                                                st.session_state.local_vectorstore = None
                                             st.success(f"✓ 모든 청크가 삭제되어 로컬 벡터DB가 초기화되었습니다!")
                                         else:
                                             st.success(f"✓ {len(ids_to_delete)}개 청크가 로컬 벡터DB에서 삭제되었습니다!")
 
                                         # 선택 초기화
                                         st.session_state.selected_local_chunks = set()
-                                        st.session_state.select_all_local_chunks = False
                                         # 삭제된 청크의 위젯 상태 초기화
                                         for idx in selected_indices:
                                             if f"local_chunk_{idx}" in st.session_state:
@@ -804,6 +803,9 @@ else:
                                         for doc_name in docs_by_name.keys():
                                             if f"select_doc_{doc_name}" in st.session_state:
                                                 del st.session_state[f"select_doc_{doc_name}"]
+                                        # 전체 선택 체크박스 위젯 상태 초기화
+                                        if "select_all_local_chunks" in st.session_state:
+                                            del st.session_state["select_all_local_chunks"]
 
                                         # 벡터 데이터 새로고침 또는 재시작
                                         if st.session_state.local_vectorstore is None:
@@ -894,16 +896,8 @@ else:
                                         doc_all_selected_remote = len(st.session_state.selected_remote_chunks[doc_id]) == len(chunks)
                                         if select_all_doc and not doc_all_selected_remote:
                                             st.session_state.selected_remote_chunks[doc_id] = set(range(len(chunks)))
-                                            # 각 개별 체크박스의 위젯 상태도 업데이트
-                                            for i in range(len(chunks)):
-                                                st.session_state[f"remote_chunk_{doc_id}_{i}"] = True
-                                            st.rerun()
                                         elif not select_all_doc and doc_all_selected_remote:
                                             st.session_state.selected_remote_chunks[doc_id] = set()
-                                            # 각 개별 체크박스의 위젯 상태도 업데이트
-                                            for i in range(len(chunks)):
-                                                st.session_state[f"remote_chunk_{doc_id}_{i}"] = False
-                                            st.rerun()
 
                                         # 청크 목록
                                         for i, chunk in enumerate(chunks):
