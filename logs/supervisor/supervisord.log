@@ -1,0 +1,24 @@
+2025-12-24 09:26:59,539 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2025-12-24 09:26:59,541 INFO supervisord started with pid 1
+2025-12-24 09:27:00,547 INFO spawned: 'suricata' with pid 6
+2025-12-24 09:27:00,550 INFO spawned: 'nginx' with pid 7
+2025-12-24 09:27:00,558 INFO spawned: 'fastapi' with pid 8
+2025-12-24 09:27:00,562 INFO spawned: 'streamlit' with pid 10
+2025-12-24 09:27:00,563 WARN exited: suricata (exit status 1; not expected)
+2025-12-24 09:27:00,918 WARN exited: fastapi (exit status 1; not expected)
+2025-12-24 09:27:02,001 INFO spawned: 'suricata' with pid 12
+2025-12-24 09:27:02,003 INFO success: nginx entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-12-24 09:27:02,012 INFO spawned: 'fastapi' with pid 13
+2025-12-24 09:27:02,013 INFO success: streamlit entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-12-24 09:27:02,017 WARN exited: suricata (exit status 1; not expected)
+2025-12-24 09:27:02,324 WARN exited: fastapi (exit status 1; not expected)
+2025-12-24 09:27:04,329 INFO spawned: 'suricata' with pid 14
+2025-12-24 09:27:04,336 INFO spawned: 'fastapi' with pid 15
+2025-12-24 09:27:04,342 WARN exited: suricata (exit status 1; not expected)
+2025-12-24 09:27:04,664 WARN exited: fastapi (exit status 1; not expected)
+2025-12-24 09:27:07,674 INFO spawned: 'suricata' with pid 23
+2025-12-24 09:27:07,676 INFO spawned: 'fastapi' with pid 24
+2025-12-24 09:27:07,682 WARN exited: suricata (exit status 1; not expected)
+2025-12-24 09:27:07,685 INFO gave up: suricata entered FATAL state, too many start retries too quickly
+2025-12-24 09:27:07,989 WARN exited: fastapi (exit status 1; not expected)
+2025-12-24 09:27:08,992 INFO gave up: fastapi entered FATAL state, too many start retries too quickly

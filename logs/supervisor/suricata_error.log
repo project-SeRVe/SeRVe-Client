@@ -1,0 +1,12 @@
+Error: conf-yaml-loader: ERROR: Invalid configuration file.
+Error: conf-yaml-loader: The configuration file must begin with the following two lines: %YAML 1.1 and ---
+Error: conf-yaml-loader: Failed to include configuration file /etc/suricata/rules/custom.rules
+Error: conf-yaml-loader: ERROR: Invalid configuration file.
+Error: conf-yaml-loader: The configuration file must begin with the following two lines: %YAML 1.1 and ---
+Error: conf-yaml-loader: Failed to include configuration file /etc/suricata/rules/custom.rules
+Error: conf-yaml-loader: ERROR: Invalid configuration file.
+Error: conf-yaml-loader: The configuration file must begin with the following two lines: %YAML 1.1 and ---
+Error: conf-yaml-loader: Failed to include configuration file /etc/suricata/rules/custom.rules
+Error: conf-yaml-loader: ERROR: Invalid configuration file.
+Error: conf-yaml-loader: The configuration file must begin with the following two lines: %YAML 1.1 and ---
+Error: conf-yaml-loader: Failed to include configuration file /etc/suricata/rules/custom.rules

@@ -1,0 +1,45 @@
+# Custom Suricata Rules for SeRVe Edge Server
+# SQL Injection Detection
+
+# Detect SQL DROP statements
+alert http any any -> any any (msg:"SQL Injection - DROP TABLE"; flow:established,to_server; content:"DROP"; nocase; content:"TABLE"; nocase; distance:0; within:50; classtype:web-application-attack; sid:1000001; rev:1;)
+
+# Detect SQL DELETE statements
+alert http any any -> any any (msg:"SQL Injection - DELETE"; flow:established,to_server; content:"DELETE"; nocase; content:"FROM"; nocase; distance:0; within:50; classtype:web-application-attack; sid:1000002; rev:1;)
+
+# Detect SQL UNION SELECT
+alert http any any -> any any (msg:"SQL Injection - UNION SELECT"; flow:established,to_server; content:"UNION"; nocase; content:"SELECT"; nocase; distance:0; within:50; classtype:web-application-attack; sid:1000003; rev:1;)
+
+# Detect SQL comment-based injection (-- and #)
+alert http any any -> any any (msg:"SQL Injection - Comment Markers"; flow:established,to_server; content:"--"; classtype:web-application-attack; sid:1000004; rev:1;)
+alert http any any -> any any (msg:"SQL Injection - Comment Hash"; flow:established,to_server; content:"#"; pcre:"/\#[^\n]*$/"; classtype:web-application-attack; sid:1000005; rev:1;)
+
+# Detect SQL OR 1=1 injection
+alert http any any -> any any (msg:"SQL Injection - OR 1=1"; flow:established,to_server; content:"OR"; nocase; content:"1"; distance:0; within:20; content:"="; distance:0; within:5; content:"1"; distance:0; within:5; classtype:web-application-attack; sid:1000006; rev:1;)
+
+# Detect SQL command execution
+alert http any any -> any any (msg:"SQL Injection - EXEC"; flow:established,to_server; content:"EXEC"; nocase; pcre:"/EXEC\s+(sp_|xp_)/i"; classtype:web-application-attack; sid:1000007; rev:1;)
+
+# Detect SQL information gathering (INFORMATION_SCHEMA)
+alert http any any -> any any (msg:"SQL Injection - INFORMATION_SCHEMA"; flow:established,to_server; content:"INFORMATION_SCHEMA"; nocase; classtype:web-application-attack; sid:1000008; rev:1;)
+
+# Detect SQL INSERT injection
+alert http any any -> any any (msg:"SQL Injection - INSERT"; flow:established,to_server; content:"INSERT"; nocase; content:"INTO"; nocase; distance:0; within:50; classtype:web-application-attack; sid:1000009; rev:1;)
+
+# Detect SQL UPDATE injection
+alert http any any -> any any (msg:"SQL Injection - UPDATE"; flow:established,to_server; content:"UPDATE"; nocase; content:"SET"; nocase; distance:0; within:50; classtype:web-application-attack; sid:1000010; rev:1;)
+
+# Detect admin'-- injection pattern
+alert http any any -> any any (msg:"SQL Injection - Admin Bypass"; flow:established,to_server; content:"admin"; nocase; content:"'--"; distance:0; within:10; classtype:web-application-attack; sid:1000011; rev:1;)
+
+# Detect multiple SQL keywords in single request
+alert http any any -> any any (msg:"SQL Injection - Multiple Keywords"; flow:established,to_server; content:"SELECT"; nocase; content:"FROM"; nocase; distance:0; content:"WHERE"; nocase; distance:0; classtype:web-application-attack; sid:1000012; rev:1;)
+
+# Detect SQL batch execution (semicolon)
+alert http any any -> any any (msg:"SQL Injection - Batch Execution"; flow:established,to_server; content:"';"; pcre:"/'\s*;\s*[A-Z]+/i"; classtype:web-application-attack; sid:1000013; rev:1;)
+
+# Detect SQL WAITFOR DELAY (blind injection)
+alert http any any -> any any (msg:"SQL Injection - WAITFOR DELAY"; flow:established,to_server; content:"WAITFOR"; nocase; content:"DELAY"; nocase; distance:0; within:50; classtype:web-application-attack; sid:1000014; rev:1;)
+
+# Detect SQL BENCHMARK (MySQL timing attack)
+alert http any any -> any any (msg:"SQL Injection - BENCHMARK"; flow:established,to_server; content:"BENCHMARK"; nocase; pcre:"/BENCHMARK\s*\(/i"; classtype:web-application-attack; sid:1000015; rev:1;)

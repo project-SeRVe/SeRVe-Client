@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  edge-server:
+    build:
+      context: ..
+      dockerfile: edge-server/Dockerfile
+    container_name: serve-edge-server
+    ports:
+      - "9000:9000"   # Robot data ingress
+      - "8501:8501"   # Streamlit dashboard
+    environment:
+      # Cloud server configuration
+      - CLOUD_URL=${CLOUD_URL:-http://host.docker.internal:8080}
+      - EDGE_EMAIL=${EDGE_EMAIL:-edge@serve.local}
+      - EDGE_PASSWORD=${EDGE_PASSWORD:-edge123}
+      - TEAM_ID=${TEAM_ID}
+
+      # Vectorstore configuration
+      - VECTORSTORE_PATH=/app/local_vectorstore
+
+    volumes:
+      # Persistent vector store
+      - vectorstore:/app/local_vectorstore
+
+      # Log files (for demonstration)
+      - ./logs/edge-server:/var/log/edge-server
+      - ./logs/suricata:/var/log/suricata
+      - ./logs/supervisor:/var/log/supervisor
+      - ./logs/nginx:/var/log/nginx
+
+    networks:
+      - serve-network
+
+    restart: unless-stopped
+
+    # Enable host networking for Suricata to monitor traffic
+    # Alternatively, use network_mode: host (but loses container isolation)
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
+volumes:
+  vectorstore:
+    driver: local
+
+networks:
+  serve-network:
+    driver: bridge
