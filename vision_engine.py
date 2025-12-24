@@ -140,6 +140,43 @@ Question: What is this object based on the context above? Provide technical deta
 
         return vectorstore
 
+    def load_vector_store(
+        self,
+        collection_name: str = "serve_rag",
+        persist_directory: str = "./local_vectorstore"
+    ) -> Optional[Chroma]:
+        """
+        Load existing vector store from disk
+
+        Args:
+            collection_name: ChromaDB 컬렉션 이름
+            persist_directory: 저장 디렉토리
+
+        Returns:
+            Chroma: Vector store 인스턴스 또는 None (존재하지 않는 경우)
+        """
+        try:
+            import os
+            if not os.path.exists(persist_directory):
+                return None
+
+            vectorstore = Chroma(
+                collection_name=collection_name,
+                embedding_function=self._get_embeddings(),
+                persist_directory=persist_directory
+            )
+
+            # 벡터스토어가 비어있는지 확인
+            collection = vectorstore._collection
+            if collection.count() == 0:
+                # 비어있지만 유효한 벡터스토어
+                return vectorstore
+
+            return vectorstore
+        except Exception as e:
+            print(f"벡터스토어 로드 실패: {str(e)}")
+            return None
+
     def extract_vectors(self, vectorstore: Chroma) -> Dict[str, Any]:
         """
         Extract vectors from ChromaDB collection for encryption/sharing
