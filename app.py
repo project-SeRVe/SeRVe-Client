@@ -27,9 +27,21 @@ if 'serve_client' not in st.session_state:
             persist_directory="./local_vectorstore"
         )
         st.session_state.local_vectorstore = loaded_vectorstore
+        if loaded_vectorstore is None:
+            # 손상된 벡터스토어가 자동으로 정리되었을 수 있음
+            print("벡터스토어가 없거나 손상되어 초기화되었습니다.")
     except Exception as e:
         st.session_state.local_vectorstore = None
         print(f"벡터스토어 자동 로드 실패: {str(e)}")
+        # 오류 발생 시 디렉토리 정리
+        try:
+            import shutil
+            persist_dir = "./local_vectorstore"
+            if os.path.exists(persist_dir):
+                shutil.rmtree(persist_dir)
+                print("손상된 벡터스토어 디렉토리를 삭제했습니다.")
+        except Exception as cleanup_error:
+            print(f"정리 중 오류: {str(cleanup_error)}")
 
 # 서버 연결 확인 함수
 def check_server_connection(url):
@@ -344,14 +356,21 @@ else:
                 st.success(f"✓ 로컬 벡터DB 활성화됨")
             with col_status2:
                 if st.button("🗑️ 초기화", help="벡터DB를 삭제하고 새로 시작합니다"):
-                    import shutil
-                    # 디스크 저장소 삭제
-                    persist_dir = "./local_vectorstore"
-                    if os.path.exists(persist_dir):
-                        shutil.rmtree(persist_dir)
-                    st.session_state.local_vectorstore = None
-                    st.success("로컬 벡터DB가 초기화되었습니다.")
-                    st.rerun()
+                    try:
+                        vision = VisionEngine()
+                        # ChromaDB 리소스를 안전하게 정리
+                        vision.cleanup_vector_store(
+                            st.session_state.local_vectorstore,
+                            persist_directory="./local_vectorstore"
+                        )
+                        st.session_state.local_vectorstore = None
+                        st.success("로컬 벡터DB가 초기화되었습니다.")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"초기화 중 오류: {str(e)}")
+                        # 오류가 발생해도 세션 상태는 초기화
+                        st.session_state.local_vectorstore = None
+                        st.rerun()
         else:
             st.info("로컬 벡터DB가 없습니다. 아래에서 새로 생성하세요.")
 
@@ -757,7 +776,22 @@ else:
                                         # 벡터DB에서 삭제
                                         st.session_state.local_vectorstore.delete(ids=ids_to_delete)
 
-                                        st.success(f"✓ {len(ids_to_delete)}개 청크가 로컬 벡터DB에서 삭제되었습니다!")
+                                        # 삭제 후 벡터스토어가 비어있는지 확인
+                                        collection = st.session_state.local_vectorstore._collection
+                                        if collection.count() == 0:
+                                            # 빈 벡터스토어는 안전하게 정리
+                                            try:
+                                                vision = VisionEngine()
+                                                vision.cleanup_vector_store(
+                                                    st.session_state.local_vectorstore,
+                                                    persist_directory="./local_vectorstore"
+                                                )
+                                            except Exception as e:
+                                                print(f"벡터스토어 정리 중 오류: {str(e)}")
+                                            st.session_state.local_vectorstore = None
+                                            st.success(f"✓ 모든 청크가 삭제되어 로컬 벡터DB가 초기화되었습니다!")
+                                        else:
+                                            st.success(f"✓ {len(ids_to_delete)}개 청크가 로컬 벡터DB에서 삭제되었습니다!")
 
                                         # 선택 초기화
                                         st.session_state.selected_local_chunks = set()
@@ -771,8 +805,12 @@ else:
                                             if f"select_doc_{doc_name}" in st.session_state:
                                                 del st.session_state[f"select_doc_{doc_name}"]
 
-                                        # 벡터 데이터 새로고침 필요 알림
-                                        st.info("목록을 새로고침하세요.")
+                                        # 벡터 데이터 새로고침 또는 재시작
+                                        if st.session_state.local_vectorstore is None:
+                                            st.info("벡터DB가 초기화되었습니다. 이제 새로운 벡터DB를 생성할 수 있습니다.")
+                                            st.rerun()
+                                        else:
+                                            st.info("목록을 새로고침하세요.")
 
                                 except Exception as e:
                                     st.error(f"삭제 오류: {str(e)}")

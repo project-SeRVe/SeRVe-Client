@@ -119,6 +119,22 @@ Question: What is this object based on the context above? Provide technical deta
         Returns:
             Chroma: Vector store 인스턴스
         """
+        import os
+        import shutil
+        import time
+        import gc
+
+        # persist_directory가 지정된 경우, 기존 디렉토리를 완전히 삭제
+        if persist_directory and os.path.exists(persist_directory):
+            try:
+                print(f"기존 벡터스토어 디렉토리 삭제 중: {persist_directory}")
+                shutil.rmtree(persist_directory)
+                # 파일 시스템이 디렉토리를 완전히 정리할 시간을 줌
+                time.sleep(0.2)
+                gc.collect()
+            except Exception as e:
+                print(f"디렉토리 삭제 중 오류 (계속 진행): {str(e)}")
+
         # Text splitting
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
@@ -157,6 +173,8 @@ Question: What is this object based on the context above? Provide technical deta
         """
         try:
             import os
+            import shutil
+
             if not os.path.exists(persist_directory):
                 return None
 
@@ -169,12 +187,25 @@ Question: What is this object based on the context above? Provide technical deta
             # 벡터스토어가 비어있는지 확인
             collection = vectorstore._collection
             if collection.count() == 0:
-                # 비어있지만 유효한 벡터스토어
-                return vectorstore
+                # 비어있는 벡터스토어는 None으로 처리하여 UI에서 재생성 가능하도록 함
+                return None
 
             return vectorstore
         except Exception as e:
-            print(f"벡터스토어 로드 실패: {str(e)}")
+            error_msg = str(e).lower()
+            # 읽기 전용 오류 또는 데이터베이스 오류 감지
+            if "readonly" in error_msg or "database" in error_msg or "attempt to write" in error_msg:
+                print(f"손상된 벡터스토어 감지: {str(e)}")
+                print(f"벡터스토어 디렉토리 삭제 중: {persist_directory}")
+                try:
+                    import shutil
+                    if os.path.exists(persist_directory):
+                        shutil.rmtree(persist_directory)
+                    print("손상된 벡터스토어가 삭제되었습니다. 새로 생성해주세요.")
+                except Exception as cleanup_error:
+                    print(f"정리 중 오류: {str(cleanup_error)}")
+            else:
+                print(f"벡터스토어 로드 실패: {str(e)}")
             return None
 
     def extract_vectors(self, vectorstore: Chroma) -> Dict[str, Any]:
@@ -227,3 +258,48 @@ Question: What is this object based on the context above? Provide technical deta
         vectorstore.add_documents(documents)
 
         return vectorstore
+
+    def cleanup_vector_store(
+        self,
+        vectorstore: Chroma,
+        persist_directory: str = "./local_vectorstore"
+    ) -> None:
+        """
+        ChromaDB 벡터 스토어를 안전하게 정리합니다.
+
+        Args:
+            vectorstore: 정리할 Chroma 벡터 스토어
+            persist_directory: 저장 디렉토리
+        """
+        try:
+            import gc
+
+            # ChromaDB 클라이언트와 컬렉션 정리
+            if vectorstore is not None:
+                # 컬렉션 이름 가져오기
+                collection_name = vectorstore._collection.name if hasattr(vectorstore, '_collection') else None
+
+                # 클라이언트를 통해 컬렉션 삭제
+                if hasattr(vectorstore, '_client') and collection_name:
+                    try:
+                        vectorstore._client.delete_collection(collection_name)
+                    except Exception as e:
+                        print(f"컬렉션 삭제 중 오류 (무시 가능): {str(e)}")
+
+                # 명시적으로 객체 삭제
+                del vectorstore
+
+            # 가비지 컬렉션 강제 실행
+            gc.collect()
+
+            # 디렉토리 삭제
+            import shutil
+            import os
+            if os.path.exists(persist_directory):
+                # SQLite WAL 파일도 함께 삭제되도록 조금 대기
+                import time
+                time.sleep(0.1)
+                shutil.rmtree(persist_directory)
+
+        except Exception as e:
+            print(f"벡터스토어 정리 중 오류: {str(e)}")
