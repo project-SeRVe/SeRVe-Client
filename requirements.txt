@@ -8,3 +8,6 @@ streamlit
 ollama
 httpx
 chromadb>=0.5.23
+sentence-transformers>=2.2.0
+torch>=2.0.0
+pillow>=10.0.0

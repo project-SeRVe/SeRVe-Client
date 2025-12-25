@@ -21,7 +21,7 @@ if 'serve_client' not in st.session_state:
 
     # 로컬 벡터DB 자동 로드 (디스크에 저장된 경우)
     try:
-        vision = VisionEngine()
+        vision = VisionEngine(use_multimodal=True)
         loaded_vectorstore = vision.load_vector_store(
             collection_name="serve_local_rag",
             persist_directory="./local_vectorstore"
@@ -390,7 +390,7 @@ else:
             with col_status2:
                 if st.button("🗑️ 초기화", help="벡터DB를 삭제하고 새로 시작합니다"):
                     try:
-                        vision = VisionEngine()
+                        vision = VisionEngine(use_multimodal=True)
                         # ChromaDB 리소스를 안전하게 정리
                         vision.cleanup_vector_store(
                             st.session_state.local_vectorstore,
@@ -415,180 +415,132 @@ else:
 
         st.divider()
 
-        # ========== 1. 벡터DB 생성 ==========
-        st.write("## 1️⃣ 로컬 저장소(벡터DB) 생성")
+        # ========== 1. 이미지로 벡터DB 생성 ==========
+        st.write("## 1️⃣ 이미지로 벡터DB 생성")
 
-        # 청크 설정 (공통)
-        col_chunk1, col_chunk2 = st.columns(2)
-        with col_chunk1:
-            chunk_size = st.number_input("청크 크기", value=500, min_value=100, max_value=2000, key="chunk_size")
-        with col_chunk2:
-            chunk_overlap = st.number_input("청크 오버랩", value=50, min_value=0, max_value=500, key="chunk_overlap")
+        if st.session_state.local_vectorstore:
+            st.info("💡 벡터DB가 이미 생성되어 있습니다. 새로 생성하려면 먼저 초기화하세요.")
+        else:
+            col_create1, col_create2 = st.columns(2)
 
-        col_create1, col_create2 = st.columns(2)
+            with col_create1:
+                st.write("### 이미지 업로드")
+                uploaded_image_create = st.file_uploader(
+                    "이미지 선택 (JPG, PNG)",
+                    type=['jpg', 'png', 'jpeg'],
+                    key="create_image_file"
+                )
 
-        with col_create1:
-            st.write("### 텍스트로 생성")
-            vector_text_name = st.text_input(
-                "문서 이름",
-                "Hydraulic Valve Manual",
-                key="vector_text_name"
-            )
-            vector_text_input = st.text_area(
-                "문서 내용",
-                "This is a hydraulic valve (Type-K). Pressure limit: 500bar. Use only with certified hydraulic fluids.",
-                height=120,
-                key="vector_text_input"
-            )
+                if uploaded_image_create:
+                    from PIL import Image
+                    image = Image.open(uploaded_image_create)
+                    st.image(image, caption="업로드된 이미지", width=300)
 
-            if st.button("텍스트로 벡터DB 생성", type="primary", disabled=st.session_state.local_vectorstore is not None):
-                if not vector_text_input:
-                    st.warning("문서 내용을 입력해주세요.")
-                elif not vector_text_name:
-                    st.warning("문서 이름을 입력해주세요.")
-                else:
-                    try:
-                        vision = VisionEngine()
-                        with st.spinner("벡터 생성 중..."):
-                            vectorstore = vision.create_vector_store(
-                                text_content=vector_text_input,
-                                collection_name="serve_local_rag",
-                                persist_directory="./local_vectorstore",
-                                chunk_size=chunk_size,
-                                chunk_overlap=chunk_overlap,
-                                document_name=vector_text_name
-                            )
-                            st.session_state.local_vectorstore = vectorstore
-                            st.success("✓ 로컬 벡터DB가 생성되었습니다!")
-                            st.rerun()
-                    except Exception as e:
-                        st.error(f"벡터DB 생성 실패: {str(e)}")
+            with col_create2:
+                st.write("### 캡션 입력")
+                image_document_name_create = st.text_input(
+                    "문서 이름",
+                    "Equipment Photos",
+                    key="create_image_doc_name"
+                )
+                image_caption_create = st.text_area(
+                    "이미지 설명 (캡션)",
+                    "Hydraulic valve Type-K, max pressure 500bar",
+                    height=100,
+                    key="create_image_caption"
+                )
 
-            if st.session_state.local_vectorstore:
-                st.info("💡 벡터DB가 생성되었습니다. 새로 생성하려면 먼저 초기화하세요.")
+                st.info("💡 이미지와 캡션으로 멀티모달 벡터DB를 생성합니다.")
 
-        with col_create2:
-            st.write("### 파일로 생성")
-            uploaded_file_create = st.file_uploader(
-                "텍스트 파일 선택",
-                type=['txt', 'md', 'json'],
-                key="vector_file_create"
-            )
+                if st.button("🎨 이미지로 벡터DB 생성", type="primary", key="create_vectordb_btn"):
+                    if not uploaded_image_create:
+                        st.warning("이미지를 업로드해주세요.")
+                    elif not image_caption_create.strip():
+                        st.warning("캡션을 입력해주세요.")
+                    else:
+                        try:
+                            with st.spinner("벡터DB 생성 중..."):
+                                from vision_engine import VisionEngine
+                                vision = VisionEngine(use_multimodal=True)
 
-            if uploaded_file_create:
-                st.info(f"파일: {uploaded_file_create.name} ({uploaded_file_create.size} bytes)")
+                                # Create vector store with first image
+                                image = Image.open(uploaded_image_create)
+                                vectorstore = vision.create_vector_store_with_image(
+                                    image,
+                                    image_caption_create,
+                                    collection_name="serve_local_rag",
+                                    persist_directory="./local_vectorstore",
+                                    document_name=image_document_name_create
+                                )
 
-            vector_file_name = st.text_input(
-                "문서 이름",
-                value=uploaded_file_create.name if uploaded_file_create else "",
-                key="vector_file_name"
-            )
-
-            if st.button("파일로 벡터DB 생성", type="primary", disabled=st.session_state.local_vectorstore is not None or uploaded_file_create is None):
-                if not vector_file_name:
-                    st.warning("문서 이름을 입력해주세요.")
-                else:
-                    try:
-                        file_content = uploaded_file_create.read().decode('utf-8')
-                        vision = VisionEngine()
-                        with st.spinner("파일 처리 및 벡터 생성 중..."):
-                            vectorstore = vision.create_vector_store(
-                                text_content=file_content,
-                                collection_name="serve_local_rag",
-                                persist_directory="./local_vectorstore",
-                                chunk_size=chunk_size,
-                                chunk_overlap=chunk_overlap,
-                                document_name=vector_file_name
-                            )
-                            st.session_state.local_vectorstore = vectorstore
-                            st.success(f"✓ '{vector_file_name}'로부터 벡터DB가 생성되었습니다!")
-                            st.rerun()
-                    except Exception as e:
-                        st.error(f"파일 처리 실패: {str(e)}")
-
-            if st.session_state.local_vectorstore:
-                st.info("💡 벡터DB가 생성되었습니다. 새로 생성하려면 먼저 초기화하세요.")
+                                st.session_state.local_vectorstore = vectorstore
+                                st.success("✅ 벡터DB가 생성되었습니다!")
+                                st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ 벡터DB 생성 실패: {str(e)}")
 
         st.divider()
 
-        # ========== 2. 벡터DB에 문서 추가 ==========
-        st.write("## 2️⃣ 로컬 저장소(벡터DB)에 문서 추가")
+        # ========== 2. 이미지 추가 ==========
+        st.write("## 2️⃣ 이미지 추가")
 
         if not st.session_state.local_vectorstore:
-            st.warning("먼저 위에서 로컬 벡터DB를 생성해주세요.")
+            st.warning("먼저 벡터DB를 생성하세요.")
         else:
-            col_add1, col_add2 = st.columns(2)
+            col_img1, col_img2 = st.columns(2)
 
-            with col_add1:
-                st.write("### 텍스트 추가")
-                add_text_name = st.text_input(
+            with col_img1:
+                st.write("### 이미지 업로드")
+                uploaded_image = st.file_uploader(
+                    "이미지 선택 (JPG, PNG)",
+                    type=['jpg', 'png', 'jpeg'],
+                    key="add_image_file"
+                )
+
+                if uploaded_image:
+                    from PIL import Image
+                    image = Image.open(uploaded_image)
+                    st.image(image, caption="업로드된 이미지", width=300)
+
+            with col_img2:
+                st.write("### 캡션 입력")
+                image_document_name = st.text_input(
                     "문서 이름",
-                    "Safety Warning",
-                    key="add_text_name"
+                    "Equipment Photos",
+                    key="image_doc_name"
                 )
-                add_text_input = st.text_area(
-                    "추가할 문서 내용",
-                    "Safety Warning: Maximum temperature: 80°C. Do not exceed rated pressure.",
-                    height=90,
-                    key="add_text_input"
+                image_caption = st.text_area(
+                    "이미지 설명 (캡션)",
+                    "Hydraulic valve Type-K, max pressure 500bar",
+                    height=100,
+                    key="image_caption"
                 )
 
-                if st.button("텍스트를 벡터DB에 추가", type="secondary"):
-                    if not add_text_input:
-                        st.warning("추가할 내용을 입력해주세요.")
-                    elif not add_text_name:
-                        st.warning("문서 이름을 입력해주세요.")
+                st.info("💡 이미지와 캡션이 멀티모달 벡터DB에 추가됩니다.")
+
+                if st.button("➕ 이미지를 벡터DB에 추가", type="primary", key="add_image_btn"):
+                    if not uploaded_image:
+                        st.warning("이미지를 업로드해주세요.")
+                    elif not image_caption.strip():
+                        st.warning("캡션을 입력해주세요.")
                     else:
                         try:
-                            vision = VisionEngine()
-                            with st.spinner("벡터 추가 중..."):
-                                vision.add_to_vector_store(
+                            with st.spinner("이미지 추가 중..."):
+                                from vision_engine import VisionEngine
+                                vision = VisionEngine(use_multimodal=True)
+
+                                # Add image to vectorstore
+                                vision.add_image_to_vector_store(
                                     st.session_state.local_vectorstore,
-                                    add_text_input,
-                                    chunk_size=chunk_size,
-                                    chunk_overlap=chunk_overlap,
-                                    document_name=add_text_name
+                                    image,
+                                    image_caption,
+                                    document_name=image_document_name
                                 )
-                                st.success("✓ 텍스트가 벡터DB에 추가되었습니다!")
+
+                                st.success("✅ 이미지가 벡터DB에 추가되었습니다!")
+                                st.rerun()
                         except Exception as e:
-                            st.error(f"텍스트 추가 실패: {str(e)}")
-
-            with col_add2:
-                st.write("### 파일 추가")
-                uploaded_file_add = st.file_uploader(
-                    "추가할 파일 선택",
-                    type=['txt', 'md', 'json'],
-                    key="vector_file_add"
-                )
-
-                if uploaded_file_add:
-                    st.info(f"파일: {uploaded_file_add.name} ({uploaded_file_add.size} bytes)")
-
-                add_file_name = st.text_input(
-                    "문서 이름",
-                    value=uploaded_file_add.name if uploaded_file_add else "",
-                    key="add_file_name"
-                )
-
-                if uploaded_file_add:
-                    if st.button("파일을 벡터DB에 추가", type="secondary"):
-                        if not add_file_name:
-                            st.warning("문서 이름을 입력해주세요.")
-                        else:
-                            try:
-                                file_content = uploaded_file_add.read().decode('utf-8')
-                                vision = VisionEngine()
-                                with st.spinner("파일 처리 및 벡터 추가 중..."):
-                                    vision.add_to_vector_store(
-                                        st.session_state.local_vectorstore,
-                                        file_content,
-                                        chunk_size=chunk_size,
-                                        chunk_overlap=chunk_overlap,
-                                        document_name=add_file_name
-                                    )
-                                    st.success(f"✓ '{add_file_name}' 파일이 벡터DB에 추가되었습니다!")
-                            except Exception as e:
-                                st.error(f"파일 추가 실패: {str(e)}")
+                            st.error(f"❌ 이미지 추가 실패: {str(e)}")
 
         st.divider()
 
@@ -606,7 +558,7 @@ else:
             else:
                 if st.button("🔄 로컬 청크 목록 새로고침", key="refresh_local_chunks"):
                     try:
-                        vision = VisionEngine()
+                        vision = VisionEngine(use_multimodal=True)
                         vector_data = vision.extract_vectors(st.session_state.local_vectorstore)
 
                         # 세션에 저장
@@ -675,22 +627,57 @@ else:
 
                                 # 청크 목록
                                 for i in chunk_indices:
-                                    chunk_doc = vector_data['documents'][i] if vector_data['documents'] else ""
-                                    chunk_preview = chunk_doc[:40] + "..." if len(chunk_doc) > 40 else chunk_doc
+                                    import os
+                                    metadata = vector_data['metadatas'][i] if vector_data['metadatas'] else {}
+                                    modality = metadata.get('modality', 'text')
 
                                     # 청크 체크박스 상태 초기화
                                     if f"local_chunk_{i}" not in st.session_state:
                                         st.session_state[f"local_chunk_{i}"] = i in st.session_state.selected_local_chunks
 
-                                    is_selected = st.checkbox(
-                                        f"Chunk {i}: {chunk_preview}",
-                                        key=f"local_chunk_{i}"
-                                    )
+                                    if modality == 'image':
+                                        # IMAGE CHUNK DISPLAY
+                                        image_path = metadata.get('image_path')
+                                        caption = metadata.get('caption', 'No caption')
 
-                                    if is_selected:
-                                        st.session_state.selected_local_chunks.add(i)
+                                        col_check, col_preview, col_info = st.columns([1, 2, 4])
+
+                                        with col_check:
+                                            is_selected = st.checkbox(
+                                                f"#{i}",
+                                                key=f"local_chunk_{i}"
+                                            )
+
+                                        with col_preview:
+                                            if image_path and os.path.exists(image_path):
+                                                st.image(image_path, width=120)
+                                            else:
+                                                st.warning("🖼️ 이미지 없음")
+
+                                        with col_info:
+                                            st.caption(f"**이미지 #{i}**")
+                                            caption_preview = caption[:80] + "..." if len(caption) > 80 else caption
+                                            st.text(caption_preview)
+
+                                        if is_selected:
+                                            st.session_state.selected_local_chunks.add(i)
+                                        else:
+                                            st.session_state.selected_local_chunks.discard(i)
+
                                     else:
-                                        st.session_state.selected_local_chunks.discard(i)
+                                        # TEXT CHUNK DISPLAY (existing logic)
+                                        chunk_doc = vector_data['documents'][i] if vector_data['documents'] else ""
+                                        chunk_preview = chunk_doc[:40] + "..." if len(chunk_doc) > 40 else chunk_doc
+
+                                        is_selected = st.checkbox(
+                                            f"Chunk {i}: {chunk_preview}",
+                                            key=f"local_chunk_{i}"
+                                        )
+
+                                        if is_selected:
+                                            st.session_state.selected_local_chunks.add(i)
+                                        else:
+                                            st.session_state.selected_local_chunks.discard(i)
 
                     st.write(f"**선택된 청크:** {len(st.session_state.selected_local_chunks)}개")
 
@@ -727,6 +714,18 @@ else:
                                             'document': vector_data['documents'][chunk_idx] if vector_data['documents'] else None,
                                             'metadata': vector_data['metadatas'][chunk_idx] if vector_data['metadatas'] else None
                                         }
+
+                                        # NEW: Handle image chunks - embed image data as base64
+                                        import base64
+                                        metadata = chunk_content['metadata']
+                                        if metadata and metadata.get('modality') == 'image':
+                                            image_path = metadata.get('image_path')
+                                            if image_path and os.path.exists(image_path):
+                                                with open(image_path, 'rb') as f:
+                                                    image_bytes = f.read()
+                                                    metadata['image_base64'] = base64.b64encode(image_bytes).decode('utf-8')
+                                                # Note: keep image_path for local reference, but server will use base64
+
                                         chunks_data.append({
                                             "chunkIndex": idx,  # 새 인덱스 (0부터 시작)
                                             "data": json.dumps(chunk_content)
@@ -799,7 +798,7 @@ else:
                                         if collection.count() == 0:
                                             # 빈 벡터스토어는 안전하게 정리
                                             try:
-                                                vision = VisionEngine()
+                                                vision = VisionEngine(use_multimodal=True)
                                                 # 벡터스토어 정리
                                                 vision.cleanup_vector_store(
                                                     st.session_state.local_vectorstore,
@@ -974,7 +973,7 @@ else:
                                         st.warning("다운로드할 청크를 선택해주세요.")
                                     else:
                                         try:
-                                            vision = VisionEngine()
+                                            vision = VisionEngine(use_multimodal=True)
                                             downloaded_chunks = []
 
                                             for doc_id, selected_indices in st.session_state.selected_remote_chunks.items():
@@ -995,16 +994,91 @@ else:
                                                     st.warning("로컬 벡터DB가 없습니다. 먼저 벡터DB를 생성하세요.")
                                                 else:
                                                     import json
+                                                    import base64
+                                                    from PIL import Image
+                                                    import io
+                                                    import image_utils
+
+                                                    download_success_count = 0
+
                                                     for chunk in downloaded_chunks:
                                                         try:
                                                             chunk_content = json.loads(chunk['data'])
-                                                            document_text = chunk_content.get('document', '')
+                                                            metadata = chunk_content.get('metadata', {})
 
-                                                            if document_text:
-                                                                vision.add_to_vector_store(
-                                                                    st.session_state.local_vectorstore,
-                                                                    document_text
-                                                                )
+                                                            if metadata.get('modality') == 'image':
+                                                                # IMAGE CHUNK: Reconstruct from base64
+                                                                image_base64 = metadata.get('image_base64')
+                                                                if image_base64:
+                                                                    # Decode base64
+                                                                    image_bytes = base64.b64decode(image_base64)
+
+                                                                    # Generate filename
+                                                                    filename = metadata.get('image_filename') or image_utils.generate_unique_filename('jpg')
+
+                                                                    # Ensure ./rag_images/ exists
+                                                                    os.makedirs('./rag_images', exist_ok=True)
+                                                                    image_path = f"./rag_images/{filename}"
+
+                                                                    # Save image file
+                                                                    with open(image_path, 'wb') as f:
+                                                                        f.write(image_bytes)
+
+                                                                    # Update metadata for local storage
+                                                                    metadata['image_path'] = image_path
+                                                                    del metadata['image_base64']  # Remove base64 to save memory
+
+                                                                    # Add to vectorstore with ORIGINAL embedding
+                                                                    import uuid
+                                                                    original_embedding = chunk_content.get('embedding')
+                                                                    caption = metadata.get('caption', '')
+                                                                    chunk_id = chunk_content.get('id') or f"img_{uuid.uuid4()}"
+
+                                                                    if original_embedding:
+                                                                        # Use original embedding from server to maintain consistency
+                                                                        collection = st.session_state.local_vectorstore._collection
+                                                                        collection.add(
+                                                                            ids=[chunk_id],
+                                                                            embeddings=[original_embedding],
+                                                                            documents=[caption],
+                                                                            metadatas=[metadata]
+                                                                        )
+                                                                    else:
+                                                                        # Fallback: recompute embedding if not available
+                                                                        vision_multimodal = VisionEngine(use_multimodal=True)
+                                                                        image = Image.open(image_path)
+                                                                        vision_multimodal.add_image_to_vector_store(
+                                                                            st.session_state.local_vectorstore,
+                                                                            image,
+                                                                            caption,
+                                                                            document_name=metadata.get('document_name', 'Downloaded Images')
+                                                                        )
+
+                                                                    download_success_count += 1
+                                                            else:
+                                                                # TEXT CHUNK: Use original embedding if available
+                                                                document_text = chunk_content.get('document', '')
+                                                                original_embedding = chunk_content.get('embedding')
+                                                                chunk_id = chunk_content.get('id')
+
+                                                                if document_text:
+                                                                    if original_embedding and chunk_id:
+                                                                        # Use original embedding from server
+                                                                        collection = st.session_state.local_vectorstore._collection
+                                                                        collection.add(
+                                                                            ids=[chunk_id],
+                                                                            embeddings=[original_embedding],
+                                                                            documents=[document_text],
+                                                                            metadatas=[metadata]
+                                                                        )
+                                                                    else:
+                                                                        # Fallback: recompute embedding
+                                                                        vision.add_to_vector_store(
+                                                                            st.session_state.local_vectorstore,
+                                                                            document_text,
+                                                                            document_name=metadata.get('document_name')
+                                                                        )
+                                                                    download_success_count += 1
                                                         except Exception as e:
                                                             st.warning(f"청크 {chunk['chunk_index']} 추가 실패: {str(e)}")
 
@@ -1068,6 +1142,25 @@ else:
 
                                         except Exception as e:
                                             st.error(f"삭제 오류: {str(e)}")
+
+        # ========== 4. 이미지 정리 (고아 파일 삭제) ==========
+        st.divider()
+        st.write("## 4️⃣ 이미지 정리")
+
+        if st.button("🧹 고아 이미지 파일 삭제", key="cleanup_orphaned", help="벡터DB에서 참조되지 않는 이미지 파일을 삭제합니다."):
+            if st.session_state.local_vectorstore:
+                try:
+                    with st.spinner("고아 이미지 파일 검색 및 삭제 중..."):
+                        import image_utils
+                        image_utils.cleanup_orphaned_images(
+                            st.session_state.local_vectorstore,
+                            './rag_images'
+                        )
+                        st.success("✅ 고아 이미지 정리 완료!")
+                except Exception as e:
+                    st.error(f"❌ 정리 실패: {str(e)}")
+            else:
+                st.warning("로컬 벡터DB가 없습니다.")
 
     # ==================== 탭 3: 멤버 관리 ====================
     with tab3:
@@ -1223,9 +1316,9 @@ else:
         with col2:
             st.write("### AI Analysis")
 
-            vision = VisionEngine()
+            vision = VisionEngine(use_multimodal=True)
 
-            tab_a, tab_b = st.tabs(["일반 추론", "로컬 벡터DB RAG 추론"])
+            tab_a, tab_b = st.tabs(["일반 추론 (No RAG)", "멀티모달 RAG (이미지 + 텍스트)"])
 
             # Tab A: 일반 추론 (보안 DB 없이 그냥 보기)
             with tab_a:
@@ -1237,50 +1330,80 @@ else:
                     else:
                         st.warning("위에서 이미지를 선택해주세요.")
 
-            # Tab B: 로컬 벡터DB를 사용한 RAG 추론
+            # Tab B: 멀티모달 RAG (이미지 + 텍스트)
             with tab_b:
                 if not st.session_state.local_vectorstore:
-                    st.warning("로컬 벡터DB가 없습니다. 먼저 '문서 관리' 탭에서 벡터DB를 생성하거나 다운로드하세요.")
+                    st.warning("⚠️ 로컬 벡터DB가 없습니다. Tab 2에서 생성하세요.")
                 else:
-                    st.info(f"✓ 로컬 벡터DB가 생성되어 있습니다.")
+                    st.info("✨ 이미지 유사도 검색 모드: 입력 이미지와 유사한 이미지를 DB에서 찾아 캡션을 RAG 컨텍스트로 사용합니다.")
 
-                    # 검색 파라미터 설정
                     col_param1, col_param2 = st.columns(2)
                     with col_param1:
-                        top_k = st.number_input("검색할 청크 수 (top_k)", value=3, min_value=1, max_value=10, key="rag_top_k")
+                        top_k_images = st.number_input(
+                            "🖼️ 검색할 유사 이미지 수",
+                            value=3,
+                            min_value=1,
+                            max_value=10,
+                            key="multimodal_top_k_images"
+                        )
                     with col_param2:
-                        st.write("")  # 간격
+                        top_k_text = st.number_input(
+                            "📄 검색할 텍스트 청크 수",
+                            value=0,
+                            min_value=0,
+                            max_value=10,
+                            key="multimodal_top_k_text"
+                        )
 
-                    search_query = st.text_input(
-                        "검색 쿼리 (선택사항)",
-                        value="Describe technical specifications and safety information",
-                        key="rag_query"
+                    text_query = st.text_input(
+                        "추가 텍스트 검색 쿼리 (선택사항)",
+                        value="",
+                        key="multimodal_text_query",
+                        help="텍스트 청크도 함께 검색하려면 쿼리를 입력하세요."
                     )
 
-                    if st.button("분석 (로컬 벡터DB 활용)", type="primary"):
+                    if st.button("🚀 분석 (이미지 유사도 + 벡터DB)", type="primary", key="multimodal_analyze_btn"):
                         if not img_bytes:
-                            st.warning("위에서 이미지를 선택해주세요.")
+                            st.warning("⚠️ 이미지를 선택해주세요.")
                         else:
-                            with st.spinner("로컬 벡터DB에서 관련 문맥 검색 중..."):
+                            with st.spinner("🔍 이미지 유사도 검색 및 멀티모달 RAG 분석 중..."):
                                 try:
-                                    # 로컬 벡터DB를 사용한 RAG 추론
-                                    result = vision.analyze_with_vectorstore(
+                                    from vision_engine import VisionEngine
+                                    vision = VisionEngine(use_multimodal=True)
+
+                                    # Run multimodal RAG
+                                    result = vision.analyze_with_multimodal_rag(
                                         img_bytes,
                                         st.session_state.local_vectorstore,
-                                        top_k=top_k,
-                                        query=search_query
+                                        top_k_images=top_k_images,
+                                        top_k_text=top_k_text if top_k_text > 0 else 0,
+                                        text_query=text_query if text_query.strip() else None,
+                                        use_image_search=True
                                     )
 
                                     st.markdown("### 🤖 AI Analysis Result")
                                     st.write(result)
 
-                                    # 검색된 문맥도 표시 (디버깅용)
-                                    with st.expander("검색된 문맥 확인"):
-                                        relevant_docs = st.session_state.local_vectorstore.similarity_search(
-                                            search_query, k=top_k
+                                    # Show retrieved similar images
+                                    with st.expander("🔎 검색된 유사 이미지 보기"):
+                                        similar_images = vision.similarity_search_by_image(
+                                            img_bytes,
+                                            st.session_state.local_vectorstore,
+                                            k=top_k_images,
+                                            modality_filter="image"
                                         )
-                                        for i, doc in enumerate(relevant_docs):
-                                            st.markdown(f"**청크 {i+1}:**")
-                                            st.info(doc.page_content)
+
+                                        if not similar_images:
+                                            st.info("검색된 이미지가 없습니다.")
+                                        else:
+                                            for i, doc in enumerate(similar_images):
+                                                st.markdown(f"**유사 이미지 {i+1}:**")
+                                                img_path = doc.metadata.get('image_path')
+                                                if img_path and os.path.exists(img_path):
+                                                    st.image(img_path, width=250)
+                                                st.info(f"📝 {doc.metadata.get('caption', 'No caption')}")
+                                                st.divider()
+
                                 except Exception as e:
-                                    st.error(f"RAG 추론 실패: {str(e)}")
+                                    st.error(f"❌ 멀티모달 RAG 분석 실패: {str(e)}")
+                                    st.exception(e)
