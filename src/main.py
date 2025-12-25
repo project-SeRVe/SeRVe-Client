@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 """
 Edge Server FastAPI Proxy
-Receives data from robots, processes with vision_engine, encrypts with serve_sdk, uploads to cloud
+로봇으로부터 센서 데이터를 받아서 vision_engine으로 처리하고,
+serve_sdk로 암호화한 후 클라우드로 업로드하는 프록시 서버
 """
 
 import os
@@ -16,14 +18,13 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import uvicorn
 
-# Add parent directory to path to import serve_sdk and vision_engine
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "SeRVe-Client"))
+# 상위 디렉터리를 경로에 추가하여 serve_sdk import
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from serve_sdk import ServeClient
 from vision_engine import VisionEngine
 
-# Configure logging
-# Create log directory if it doesn't exist
+# 로깅 설정
 log_dir = Path(__file__).parent.parent / "logs"
 log_dir.mkdir(exist_ok=True)
 
@@ -37,24 +38,24 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# FastAPI app
+# FastAPI 앱 생성
 app = FastAPI(title="SeRVe Edge Server", version="1.0.0")
 
-# Global instances
+# 전역 인스턴스
 serve_client: Optional[ServeClient] = None
 vision_engine: Optional[VisionEngine] = None
 local_vectorstore = None
 
-# Configuration from environment variables
+# 환경 변수에서 설정 로드
 CLOUD_URL = os.getenv("CLOUD_URL", "http://localhost:8080")
 EDGE_EMAIL = os.getenv("EDGE_EMAIL", "edge@serve.local")
 EDGE_PASSWORD = os.getenv("EDGE_PASSWORD", "edge123")
 TEAM_ID = os.getenv("TEAM_ID", None)
 VECTORSTORE_PATH = os.getenv("VECTORSTORE_PATH", "./local_vectorstore")
 
-# Pydantic models
+# Pydantic 모델 정의
 class SensorData(BaseModel):
-    """Robot sensor data"""
+    """로봇 센서 데이터 모델"""
     robot_id: str
     temperature: Optional[float] = None
     pressure: Optional[float] = None
@@ -63,52 +64,52 @@ class SensorData(BaseModel):
     metadata: Optional[Dict[str, Any]] = None
 
 class StatusResponse(BaseModel):
-    """Edge server status"""
+    """Edge 서버 상태 응답 모델"""
     status: str
     cloud_connected: bool
     vectorstore_loaded: bool
     team_id: Optional[str]
     uptime: str
 
-# Startup event
+# 서버 시작 이벤트
 @app.on_event("startup")
 async def startup_event():
-    """Initialize edge server on startup"""
+    """Edge 서버 초기화"""
     global serve_client, vision_engine, local_vectorstore
 
     logger.info("=" * 60)
-    logger.info("Edge Server Starting Up")
+    logger.info("Edge Server 시작 중...")
     logger.info("=" * 60)
 
-    # 1. Initialize ServeClient
+    # 1. ServeClient 초기화
     try:
         serve_client = ServeClient(server_url=CLOUD_URL)
-        logger.info(f"✓ ServeClient initialized (Cloud: {CLOUD_URL})")
+        logger.info(f"✓ ServeClient 초기화 완료 (Cloud: {CLOUD_URL})")
     except Exception as e:
-        logger.error(f"✗ Failed to initialize ServeClient: {e}")
+        logger.error(f"✗ ServeClient 초기화 실패: {e}")
         raise
 
-    # 2. Login to cloud
+    # 2. 클라우드 로그인
     try:
         success, msg = serve_client.login(EDGE_EMAIL, EDGE_PASSWORD)
         if success:
-            logger.info(f"✓ Logged in to cloud as {EDGE_EMAIL}")
+            logger.info(f"✓ 클라우드 로그인 성공: {EDGE_EMAIL}")
         else:
-            logger.error(f"✗ Cloud login failed: {msg}")
-            logger.warning("Continuing without cloud connection...")
+            logger.error(f"✗ 클라우드 로그인 실패: {msg}")
+            logger.warning("클라우드 연결 없이 계속 진행...")
     except Exception as e:
-        logger.error(f"✗ Cloud login error: {e}")
-        logger.warning("Continuing without cloud connection...")
+        logger.error(f"✗ 클라우드 로그인 오류: {e}")
+        logger.warning("클라우드 연결 없이 계속 진행...")
 
-    # 3. Initialize VisionEngine
+    # 3. VisionEngine 초기화
     try:
         vision_engine = VisionEngine()
-        logger.info("✓ VisionEngine initialized")
+        logger.info("✓ VisionEngine 초기화 완료")
     except Exception as e:
-        logger.error(f"✗ Failed to initialize VisionEngine: {e}")
+        logger.error(f"✗ VisionEngine 초기화 실패: {e}")
         raise
 
-    # 4. Load local vectorstore (optional)
+    # 4. 로컬 벡터스토어 로드 (선택사항)
     try:
         if os.path.exists(VECTORSTORE_PATH):
             local_vectorstore = vision_engine.load_vector_store(
@@ -116,28 +117,28 @@ async def startup_event():
                 persist_directory=VECTORSTORE_PATH
             )
             if local_vectorstore:
-                logger.info(f"✓ Local vectorstore loaded from {VECTORSTORE_PATH}")
+                logger.info(f"✓ 로컬 벡터스토어 로드 완료: {VECTORSTORE_PATH}")
             else:
-                logger.info("ℹ No vectorstore found, will create on demand")
+                logger.info("ℹ 벡터스토어를 찾을 수 없음, 필요시 생성됨")
         else:
-            logger.info(f"ℹ Vectorstore path does not exist: {VECTORSTORE_PATH}")
+            logger.info(f"ℹ 벡터스토어 경로가 존재하지 않음: {VECTORSTORE_PATH}")
     except Exception as e:
-        logger.warning(f"⚠ Failed to load vectorstore: {e}")
+        logger.warning(f"⚠ 벡터스토어 로드 실패: {e}")
         local_vectorstore = None
 
     logger.info("=" * 60)
-    logger.info("Edge Server Ready")
+    logger.info("Edge Server 준비 완료")
     logger.info("=" * 60)
 
-# Health check endpoint
+# Health check 엔드포인트
 @app.get("/")
 async def root():
-    """Root endpoint"""
+    """루트 엔드포인트"""
     return {"message": "SeRVe Edge Server", "version": "1.0.0"}
 
 @app.get("/api/status", response_model=StatusResponse)
 async def get_status():
-    """Get edge server status"""
+    """Edge 서버 상태 조회"""
     cloud_connected = False
     if serve_client:
         try:
@@ -150,64 +151,64 @@ async def get_status():
         cloud_connected=cloud_connected,
         vectorstore_loaded=local_vectorstore is not None,
         team_id=TEAM_ID,
-        uptime="N/A"  # Could implement uptime tracking
+        uptime="N/A"  # 추후 업타임 추적 구현 가능
     )
 
 @app.post("/api/sensor-data")
 async def receive_sensor_data(sensor_data: SensorData, request: Request):
     """
-    Receive sensor data from robot
+    로봇으로부터 센서 데이터 수신
 
-    Flow:
-    1. Receive JSON data from robot
-    2. Process with vision_engine (optional local vectorstore)
-    3. Encrypt with serve_sdk
-    4. Upload to cloud as chunks
+    처리 흐름:
+    1. 로봇으로부터 JSON 데이터 수신
+    2. vision_engine으로 처리 (선택적으로 로컬 벡터스토어 사용)
+    3. serve_sdk로 암호화
+    4. 클라우드에 청크로 업로드
     """
     client_ip = request.client.host
-    logger.info(f"📥 Received sensor data from {sensor_data.robot_id} (IP: {client_ip})")
+    logger.info(f"📥 센서 데이터 수신: {sensor_data.robot_id} (IP: {client_ip})")
 
     try:
-        # 1. Validate and process data
+        # 1. 데이터 검증 및 처리
         sensor_json = sensor_data.dict()
-        sensor_str = json.dumps(sensor_json, indent=2)
+        sensor_str = json.dumps(sensor_json, indent=2, ensure_ascii=False)
 
-        logger.info(f"   Data: {sensor_str[:100]}...")
+        logger.info(f"   데이터: {sensor_str[:100]}...")
 
-        # 2. Check for cloud connection
+        # 2. 클라우드 연결 확인
         if not serve_client or not serve_client.session.is_authenticated():
-            logger.warning("   ⚠ Cloud not connected, storing locally only")
-            # TODO: Implement local buffering
+            logger.warning("   ⚠ 클라우드 미연결, 로컬에만 저장")
+            # TODO: 로컬 버퍼링 구현
             return {
                 "status": "queued_local",
-                "message": "Cloud not connected, data queued locally",
+                "message": "클라우드 미연결, 데이터가 로컬에 대기 중",
                 "robot_id": sensor_data.robot_id
             }
 
-        # 3. Check TEAM_ID
+        # 3. TEAM_ID 확인
         if not TEAM_ID:
-            logger.error("   ✗ TEAM_ID not configured")
-            raise HTTPException(status_code=500, detail="TEAM_ID not configured")
+            logger.error("   ✗ TEAM_ID가 설정되지 않음")
+            raise HTTPException(status_code=500, detail="TEAM_ID가 설정되지 않음")
 
-        # 4. Process with vision_engine (if local vectorstore exists)
+        # 4. vision_engine으로 처리 (로컬 벡터스토어가 있는 경우)
         processed_data = sensor_str
         if local_vectorstore and vision_engine:
             try:
-                # Add to local vectorstore for future RAG queries
+                # 로컬 벡터스토어에 추가 (향후 RAG 쿼리용)
                 vision_engine.add_to_vector_store(
                     local_vectorstore,
                     sensor_str,
                     document_name=f"{sensor_data.robot_id}_{sensor_data.timestamp}"
                 )
-                logger.info("   ✓ Added to local vectorstore")
+                logger.info("   ✓ 로컬 벡터스토어에 추가됨")
             except Exception as e:
-                logger.warning(f"   ⚠ Failed to add to vectorstore: {e}")
+                logger.warning(f"   ⚠ 벡터스토어 추가 실패: {e}")
 
-        # 5. Upload to cloud
-        # Create document name
+        # 5. 클라우드에 업로드
+        # 문서 이름 생성
         doc_name = f"{sensor_data.robot_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
-        # Upload document metadata
+        # 문서 메타데이터 업로드
         success, msg = serve_client.upload_document(
             plaintext=f"Sensor data from {sensor_data.robot_id}",
             repo_id=TEAM_ID,
@@ -216,21 +217,21 @@ async def receive_sensor_data(sensor_data: SensorData, request: Request):
         )
 
         if not success:
-            logger.error(f"   ✗ Failed to create document: {msg}")
-            raise HTTPException(status_code=500, detail=f"Failed to create document: {msg}")
+            logger.error(f"   ✗ 문서 생성 실패: {msg}")
+            raise HTTPException(status_code=500, detail=f"문서 생성 실패: {msg}")
 
-        logger.info(f"   ✓ Document created: {doc_name}")
+        logger.info(f"   ✓ 문서 생성됨: {doc_name}")
 
-        # Get document ID (latest document)
+        # 문서 ID 조회 (최신 문서)
         docs, _ = serve_client.get_documents(TEAM_ID)
         if not docs or len(docs) == 0:
-            logger.error("   ✗ Failed to retrieve document ID")
-            raise HTTPException(status_code=500, detail="Failed to retrieve document ID")
+            logger.error("   ✗ 문서 ID 조회 실패")
+            raise HTTPException(status_code=500, detail="문서 ID 조회 실패")
 
         latest_doc = docs[-1]
         doc_id = latest_doc.get('docId')
 
-        # Upload as single chunk
+        # 단일 청크로 업로드
         chunks_data = [{
             "chunkIndex": 0,
             "data": processed_data
@@ -243,15 +244,15 @@ async def receive_sensor_data(sensor_data: SensorData, request: Request):
         )
 
         if not success:
-            logger.error(f"   ✗ Failed to upload chunks: {msg}")
-            raise HTTPException(status_code=500, detail=f"Failed to upload chunks: {msg}")
+            logger.error(f"   ✗ 청크 업로드 실패: {msg}")
+            raise HTTPException(status_code=500, detail=f"청크 업로드 실패: {msg}")
 
-        logger.info(f"   ✓ Uploaded 1 chunk to cloud (encrypted)")
-        logger.info(f"   ✓ Data from {sensor_data.robot_id} processed successfully")
+        logger.info(f"   ✓ 1개 청크가 클라우드에 업로드됨 (암호화)")
+        logger.info(f"   ✓ {sensor_data.robot_id}의 데이터 처리 완료")
 
         return {
             "status": "success",
-            "message": "Data encrypted and uploaded to cloud",
+            "message": "데이터가 암호화되어 클라우드에 업로드됨",
             "robot_id": sensor_data.robot_id,
             "doc_id": doc_id,
             "doc_name": doc_name
@@ -260,25 +261,25 @@ async def receive_sensor_data(sensor_data: SensorData, request: Request):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"   ✗ Error processing sensor data: {e}")
+        logger.error(f"   ✗ 센서 데이터 처리 오류: {e}")
         import traceback
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
-# Exception handler
+# 전역 예외 핸들러
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """Global exception handler"""
-    logger.error(f"Unhandled exception: {exc}")
+    """전역 예외 핸들러"""
+    logger.error(f"처리되지 않은 예외: {exc}")
     import traceback
     logger.error(traceback.format_exc())
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal server error", "error": str(exc)}
+        content={"detail": "내부 서버 오류", "error": str(exc)}
     )
 
 if __name__ == "__main__":
-    # Run FastAPI server
+    # FastAPI 서버 실행
     uvicorn.run(
         app,
         host="0.0.0.0",
