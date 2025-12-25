@@ -349,8 +349,9 @@ async def receive_sensor_data(sensor_data: SensorData, request: Request):
                 import traceback
                 logger.warning(traceback.format_exc())
 
-        # 5. 클라우드에 청크 업로드 (신규: 문서 생성 없이 바로 청크 업로드)
-        doc_name_cloud = f"{sensor_data.robot_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        # 5. 클라우드에 청크 업로드 (Federated Model: member_id 포함으로 충돌 방지)
+        user_id_short = serve_client.session.user_id[:8] if serve_client.session.user_id else "unknown"
+        doc_name_cloud = f"{sensor_data.robot_id}_{user_id_short}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         chunks_data = [{
             "chunkIndex": 0,

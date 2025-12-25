@@ -7,3 +7,6 @@ __pycache__/
 .idea/
 local_vectorstore/
 .t
+logs/
+*.log
+logs/suricata/
