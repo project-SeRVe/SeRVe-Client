@@ -22,3 +22,27 @@
 2025-12-24 09:27:07,685 INFO gave up: suricata entered FATAL state, too many start retries too quickly
 2025-12-24 09:27:07,989 WARN exited: fastapi (exit status 1; not expected)
 2025-12-24 09:27:08,992 INFO gave up: fastapi entered FATAL state, too many start retries too quickly
+2025-12-25 07:42:38,920 CRIT Supervisor is running as root.  Privileges were not dropped because no user is specified in the config file.  If you intend to run as root, you can set user=root in the config file to avoid this message.
+2025-12-25 07:42:38,923 INFO supervisord started with pid 1
+2025-12-25 07:42:39,938 INFO spawned: 'suricata' with pid 7
+2025-12-25 07:42:39,948 INFO spawned: 'nginx' with pid 8
+2025-12-25 07:42:39,957 INFO spawned: 'fastapi' with pid 9
+2025-12-25 07:42:39,969 INFO spawned: 'streamlit' with pid 11
+2025-12-25 07:42:39,983 WARN exited: suricata (exit status 1; not expected)
+2025-12-25 07:42:40,007 WARN exited: fastapi (exit status 1; not expected)
+2025-12-25 07:42:41,317 INFO spawned: 'suricata' with pid 13
+2025-12-25 07:42:41,318 INFO success: nginx entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-12-25 07:42:41,329 INFO spawned: 'fastapi' with pid 14
+2025-12-25 07:42:41,330 INFO success: streamlit entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-12-25 07:42:41,336 WARN exited: suricata (exit status 1; not expected)
+2025-12-25 07:42:41,381 WARN exited: fastapi (exit status 1; not expected)
+2025-12-25 07:42:43,400 INFO spawned: 'suricata' with pid 15
+2025-12-25 07:42:43,410 INFO spawned: 'fastapi' with pid 16
+2025-12-25 07:42:43,418 WARN exited: suricata (exit status 1; not expected)
+2025-12-25 07:42:43,462 WARN exited: fastapi (exit status 1; not expected)
+2025-12-25 07:42:46,482 INFO spawned: 'suricata' with pid 24
+2025-12-25 07:42:46,492 INFO spawned: 'fastapi' with pid 25
+2025-12-25 07:42:46,497 WARN exited: suricata (exit status 1; not expected)
+2025-12-25 07:42:46,501 INFO gave up: suricata entered FATAL state, too many start retries too quickly
+2025-12-25 07:42:46,538 WARN exited: fastapi (exit status 1; not expected)
+2025-12-25 07:42:47,544 INFO gave up: fastapi entered FATAL state, too many start retries too quickly
