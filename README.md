@@ -21,10 +21,18 @@ pip install -r requirements.txt
 
 ## 2. Ollama 설치 및 사용 (Vision AI)
 
-실제로 추론을 수행하려면 로컬에 Ollama가 설치되어 있고, LLaVA 모델이 실행 가능한 상태여야 합니다.
+실제로 추론을 수행하려면 로컬에 Ollama가 설치되어 있고, LLaVA 모델이 실행 가능한 상태여야 합니다. [Ollama Quickstart 가이드](https://docs.ollama.com/quickstart)를 따라서 Ollama 및 모델을 설치하거나, 다음 명령어로 설치할 수 있습니다.
 
-* [Ollama Quickstart 가이드](https://docs.ollama.com/quickstart)
-* 모델 다운로드 예시: `ollama pull llava`
+```bash
+# Ollama 설치
+curl -fsSL https://ollama.com/install.sh | sh
+
+# 모델 설치
+ollama pull llava:7b
+
+# 임베딩 모델 설치
+ollama pull nomic-embed-text
+```
 
 ## 3. Client 실행하는 법
 
@@ -35,9 +43,4 @@ conda activate serve-client
 
 # 앱 실행
 streamlit run app.py
-```
-
-### CLI 시뮬레이션 (자동화 테스트)
-```bash
-python main.py
 ```

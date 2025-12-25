@@ -256,11 +256,11 @@ else:
         st.divider()
 
     # 메인 탭
-    tab1, tab2, tab3, tab4 = st.tabs(["저장소 관리", "문서 관리", "멤버 관리", "추론"])
+    tab1, tab2, tab3, tab4 = st.tabs(["원격 저장소 관리", "문서 관리", "멤버 관리", "추론"])
 
     # ==================== 탭 1: 저장소 관리 ====================
     with tab1:
-        st.subheader("저장소 관리")
+        st.subheader("원격 저장소 관리")
 
         # 성공 메시지 표시 (rerun 후)
         if st.session_state.success_message:
@@ -276,8 +276,8 @@ else:
         col1, col2 = st.columns(2)
 
         with col1:
-            st.write("### 내 저장소 목록")
-            if st.button("저장소 목록 새로고침"):
+            st.write("### 내 원격 저장소 목록")
+            if st.button("원격 저장소 목록 새로고침"):
                 repos, msg = st.session_state.serve_client.get_my_repositories()
                 if repos is not None:
                     st.session_state.my_repos = repos
@@ -293,9 +293,9 @@ else:
                         st.write(f"**타입:** {repo['type']}")
                         st.write(f"**소유자:** {repo['ownerEmail']}")
 
-                        if st.button(f"이 저장소 선택", key=f"select_repo_{repo_id}"):
+                        if st.button(f"이 원격 저장소 선택", key=f"select_repo_{repo_id}"):
                             st.session_state.current_repo = repo
-                            st.success(f"저장소 '{repo['name']}'가 선택되었습니다.")
+                            st.success(f"원격 저장소 '{repo['name']}'가 선택되었습니다.")
 
                         if st.button(f"삭제", key=f"delete_repo_{repo_id}"):
                             success, msg = st.session_state.serve_client.delete_repository(repo_id)
@@ -308,19 +308,19 @@ else:
                                 if st.session_state.current_repo and get_repo_id(st.session_state.current_repo) == repo_id:
                                     st.session_state.current_repo = None
                                 # 성공 메시지를 세션에 저장하고 rerun
-                                st.session_state.success_message = f"저장소가 성공적으로 삭제되었습니다: {msg}"
+                                st.session_state.success_message = f"원격 저장소가 성공적으로 삭제되었습니다: {msg}"
                                 st.rerun()
                             else:
                                 st.error(msg)
             else:
-                st.info("저장소가 없습니다. 새 저장소를 생성해주세요.")
+                st.info("원격 저장소가 없습니다. 새 원격 저장소를 생성해주세요.")
 
         with col2:
-            st.write("### 새 저장소 생성")
-            new_repo_name = st.text_input("저장소 이름")
-            new_repo_desc = st.text_area("저장소 설명")
+            st.write("### 새 원격 저장소 생성")
+            new_repo_name = st.text_input("원격 저장소 이름")
+            new_repo_desc = st.text_area("원격 저장소 설명")
 
-            if st.button("저장소 생성", type="primary"):
+            if st.button("원격 저장소 생성", type="primary"):
                 if new_repo_name:
                     repo_id, msg = st.session_state.serve_client.create_repository(
                         new_repo_name, new_repo_desc
@@ -331,18 +331,18 @@ else:
                         if repos is not None:
                             st.session_state.my_repos = repos
                         # 성공 메시지를 세션에 저장하고 rerun
-                        st.session_state.success_message = f"저장소가 성공적으로 생성되었습니다: {msg}"
+                        st.session_state.success_message = f"원격 저장소가 성공적으로 생성되었습니다: {msg}"
                         st.rerun()
                     else:
                         st.error(msg)
                 else:
-                    st.warning("저장소 이름을 입력해주세요.")
+                    st.warning("원격 저장소 이름을 입력해주세요.")
 
         # 선택된 저장소 표시
         if st.session_state.current_repo:
             st.divider()
             current_repo_id = get_current_repo_id()
-            st.info(f"**현재 선택된 저장소:** {st.session_state.current_repo['name']} (ID: {current_repo_id})")
+            st.info(f"**현재 선택된 원격 저장소:** {st.session_state.current_repo['name']} (ID: {current_repo_id})")
 
     # ==================== 탭 2: 문서 관리 ====================
     with tab2:
