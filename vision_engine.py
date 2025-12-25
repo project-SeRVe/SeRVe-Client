@@ -123,37 +123,86 @@ Question: What is this object based on the context above? Provide technical deta
         import shutil
         import time
         import gc
+        import chromadb
 
         # persist_directory가 지정된 경우, 기존 디렉토리를 완전히 삭제
         if persist_directory and os.path.exists(persist_directory):
             try:
                 print(f"기존 벡터스토어 디렉토리 삭제 중: {persist_directory}")
 
-                # ChromaDB가 사용 중일 수 있으므로 여러 번 시도
-                max_retries = 3
+                # 1. 기존 ChromaDB 클라이언트가 있다면 명시적으로 정리
+                try:
+                    # 임시로 클라이언트를 생성하여 컬렉션 삭제 시도
+                    temp_client = chromadb.PersistentClient(path=persist_directory)
+                    try:
+                        temp_client.delete_collection(collection_name)
+                        print(f"기존 컬렉션 '{collection_name}' 삭제 완료")
+                    except Exception:
+                        pass  # 컬렉션이 없을 수 있음
+                    # 클라이언트 정리
+                    del temp_client
+                except Exception as e:
+                    print(f"ChromaDB 클라이언트 정리 중 오류 (무시): {str(e)}")
+
+                # 2. 가비지 컬렉션으로 모든 파일 핸들 정리
+                gc.collect()
+                time.sleep(0.5)
+                gc.collect()
+
+                # 3. 디렉토리 삭제 (여러 번 재시도)
+                max_retries = 5
                 for retry in range(max_retries):
                     try:
-                        # 가비지 컬렉션으로 열려있는 파일 핸들 정리
-                        gc.collect()
+                        # 추가 대기
                         time.sleep(0.3)
 
                         # 디렉토리 삭제
                         shutil.rmtree(persist_directory)
                         print("벡터스토어 디렉토리 삭제 완료")
                         break
-                    except PermissionError as pe:
+                    except (PermissionError, OSError) as e:
                         if retry < max_retries - 1:
                             print(f"디렉토리 삭제 재시도 중... ({retry + 1}/{max_retries})")
-                            time.sleep(0.5)
+                            gc.collect()
+                            time.sleep(0.7)
                         else:
-                            print(f"디렉토리 삭제 실패: {str(pe)}")
-                            raise
+                            print(f"디렉토리 삭제 실패: {str(e)}")
+                            # 마지막 시도: 개별 파일 삭제
+                            try:
+                                print("개별 파일 삭제 시도...")
+                                for root, dirs, files in os.walk(persist_directory, topdown=False):
+                                    for name in files:
+                                        file_path = os.path.join(root, name)
+                                        try:
+                                            os.chmod(file_path, 0o777)
+                                            os.remove(file_path)
+                                        except Exception:
+                                            pass
+                                    for name in dirs:
+                                        dir_path = os.path.join(root, name)
+                                        try:
+                                            os.rmdir(dir_path)
+                                        except Exception:
+                                            pass
+                                os.rmdir(persist_directory)
+                                print("개별 파일 삭제 완료")
+                            except Exception as cleanup_err:
+                                print(f"개별 파일 삭제도 실패: {str(cleanup_err)}")
+                                raise Exception(f"벡터스토어 디렉토리를 삭제할 수 없습니다. 수동으로 '{persist_directory}' 디렉토리를 삭제하거나, 실행 중인 다른 프로세스를 종료해주세요.")
 
-                # 추가 대기 시간으로 파일 시스템이 정리될 시간을 줌
-                time.sleep(0.3)
+                # 4. 디렉토리가 완전히 삭제되었는지 확인
+                if os.path.exists(persist_directory):
+                    raise Exception(f"디렉토리 삭제 확인 실패: {persist_directory}")
+
+                # 5. 파일 시스템이 정리될 시간을 충분히 줌
+                time.sleep(0.5)
                 gc.collect()
+
             except Exception as e:
-                print(f"디렉토리 삭제 중 오류 (계속 진행): {str(e)}")
+                error_msg = str(e)
+                if "삭제할 수 없습니다" in error_msg or "삭제 확인 실패" in error_msg:
+                    raise
+                print(f"디렉토리 삭제 중 오류 (계속 진행): {error_msg}")
 
         # Text splitting
         text_splitter = RecursiveCharacterTextSplitter(
@@ -166,13 +215,24 @@ Question: What is this object based on the context above? Provide technical deta
         metadata = {"document_name": document_name} if document_name else {}
         documents = [Document(page_content=chunk, metadata=metadata.copy()) for chunk in chunks]
 
-        # Create vector store
-        vectorstore = Chroma.from_documents(
-            documents=documents,
-            embedding=self._get_embeddings(),
-            collection_name=collection_name,
-            persist_directory=persist_directory
-        )
+        # Create vector store with explicit client
+        if persist_directory:
+            # 명시적으로 새 클라이언트 생성
+            client = chromadb.PersistentClient(path=persist_directory)
+            vectorstore = Chroma.from_documents(
+                documents=documents,
+                embedding=self._get_embeddings(),
+                collection_name=collection_name,
+                client=client,
+                persist_directory=persist_directory
+            )
+        else:
+            vectorstore = Chroma.from_documents(
+                documents=documents,
+                embedding=self._get_embeddings(),
+                collection_name=collection_name,
+                persist_directory=persist_directory
+            )
 
         return vectorstore
 
@@ -194,23 +254,46 @@ Question: What is this object based on the context above? Provide technical deta
         try:
             import os
             import shutil
+            import chromadb
 
             if not os.path.exists(persist_directory):
                 return None
 
-            vectorstore = Chroma(
-                collection_name=collection_name,
-                embedding_function=self._get_embeddings(),
-                persist_directory=persist_directory
-            )
+            # 명시적으로 클라이언트 생성하여 로드
+            try:
+                client = chromadb.PersistentClient(path=persist_directory)
+                vectorstore = Chroma(
+                    collection_name=collection_name,
+                    embedding_function=self._get_embeddings(),
+                    client=client,
+                    persist_directory=persist_directory
+                )
 
-            # 벡터스토어가 비어있는지 확인
-            collection = vectorstore._collection
-            if collection.count() == 0:
-                # 비어있는 벡터스토어는 None으로 처리하여 UI에서 재생성 가능하도록 함
-                return None
+                # 벡터스토어가 비어있는지 확인
+                collection = vectorstore._collection
+                if collection.count() == 0:
+                    # 비어있는 벡터스토어는 None으로 처리하여 UI에서 재생성 가능하도록 함
+                    print("벡터스토어가 비어있습니다. 새로 생성해주세요.")
+                    return None
 
-            return vectorstore
+                return vectorstore
+            except Exception as load_error:
+                # 로드 실패 시 클라이언트 없이 재시도
+                print(f"클라이언트를 사용한 로드 실패, 기본 방식으로 재시도: {str(load_error)}")
+                vectorstore = Chroma(
+                    collection_name=collection_name,
+                    embedding_function=self._get_embeddings(),
+                    persist_directory=persist_directory
+                )
+
+                # 벡터스토어가 비어있는지 확인
+                collection = vectorstore._collection
+                if collection.count() == 0:
+                    print("벡터스토어가 비어있습니다. 새로 생성해주세요.")
+                    return None
+
+                return vectorstore
+
         except Exception as e:
             error_msg = str(e).lower()
             # 읽기 전용 오류 또는 데이터베이스 오류 감지
@@ -219,9 +302,30 @@ Question: What is this object based on the context above? Provide technical deta
                 print(f"벡터스토어 디렉토리 삭제 중: {persist_directory}")
                 try:
                     import shutil
+                    import time
+                    import gc
+
                     if os.path.exists(persist_directory):
-                        shutil.rmtree(persist_directory)
-                    print("손상된 벡터스토어가 삭제되었습니다. 새로 생성해주세요.")
+                        # 가비지 컬렉션
+                        gc.collect()
+                        time.sleep(0.3)
+
+                        # 디렉토리 삭제 재시도
+                        max_retries = 3
+                        for retry in range(max_retries):
+                            try:
+                                shutil.rmtree(persist_directory)
+                                print("손상된 벡터스토어가 삭제되었습니다. 새로 생성해주세요.")
+                                break
+                            except Exception as retry_error:
+                                if retry < max_retries - 1:
+                                    print(f"삭제 재시도 중... ({retry + 1}/{max_retries})")
+                                    gc.collect()
+                                    time.sleep(0.5)
+                                else:
+                                    print(f"디렉토리 삭제 실패: {str(retry_error)}")
+                                    print(f"앱 재시작 후 다시 시도하거나 수동으로 '{persist_directory}' 디렉토리를 삭제해주세요.")
+
                 except Exception as cleanup_error:
                     print(f"정리 중 오류: {str(cleanup_error)}")
             else:

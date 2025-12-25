@@ -32,16 +32,49 @@ if 'serve_client' not in st.session_state:
             print("벡터스토어가 없거나 손상되어 초기화되었습니다.")
     except Exception as e:
         st.session_state.local_vectorstore = None
+        error_msg = str(e).lower()
         print(f"벡터스토어 자동 로드 실패: {str(e)}")
-        # 오류 발생 시 디렉토리 정리
-        try:
-            import shutil
-            persist_dir = "./local_vectorstore"
-            if os.path.exists(persist_dir):
-                shutil.rmtree(persist_dir)
-                print("손상된 벡터스토어 디렉토리를 삭제했습니다.")
-        except Exception as cleanup_error:
-            print(f"정리 중 오류: {str(cleanup_error)}")
+
+        # 읽기 전용 오류 또는 데이터베이스 오류 시 강력한 정리 수행
+        if "readonly" in error_msg or "database" in error_msg or "attempt to write" in error_msg:
+            print("손상된 벡터스토어 감지 - 강력한 정리 수행 중...")
+            try:
+                import shutil
+                import time
+                import gc
+
+                persist_dir = "./local_vectorstore"
+                if os.path.exists(persist_dir):
+                    # 가비지 컬렉션
+                    gc.collect()
+                    time.sleep(0.3)
+
+                    # 디렉토리 삭제 재시도
+                    max_retries = 3
+                    for retry in range(max_retries):
+                        try:
+                            shutil.rmtree(persist_dir)
+                            print("손상된 벡터스토어 디렉토리를 삭제했습니다.")
+                            break
+                        except Exception as retry_error:
+                            if retry < max_retries - 1:
+                                print(f"삭제 재시도 중... ({retry + 1}/{max_retries})")
+                                gc.collect()
+                                time.sleep(0.5)
+                            else:
+                                print(f"디렉토리 삭제 실패. 앱 재시작 후 다시 시도하거나 수동으로 '{persist_dir}' 디렉토리를 삭제해주세요.")
+            except Exception as cleanup_error:
+                print(f"정리 중 오류: {str(cleanup_error)}")
+        else:
+            # 다른 종류의 오류 - 일반 정리
+            try:
+                import shutil
+                persist_dir = "./local_vectorstore"
+                if os.path.exists(persist_dir):
+                    shutil.rmtree(persist_dir)
+                    print("벡터스토어 디렉토리를 삭제했습니다.")
+            except Exception as cleanup_error:
+                print(f"정리 중 오류: {str(cleanup_error)}")
 
 # 서버 연결 확인 함수
 def check_server_connection(url):
