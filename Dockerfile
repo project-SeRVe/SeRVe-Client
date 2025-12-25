@@ -27,12 +27,10 @@ RUN mkdir -p /app/src \
 WORKDIR /app
 
 # 1. Copy Requirements & Install Dependencies
-# 먼저 의존성 파일을 복사해서 설치 (캐싱 효율화)
 COPY SeRVe-Client/src/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # 2. Copy Source Code & SDK
-# main.py에서 serve_sdk를 import 할 수 있도록 /app/serve_sdk에 복사
 COPY SeRVe-Client/serve_sdk /app/serve_sdk
 COPY SeRVe-Client/src /app/src
 COPY SeRVe-Client/robot_simulator.py /app/
@@ -42,17 +40,13 @@ COPY SeRVe-Client/setup_edge_account.py /app/
 COPY SeRVe-Client/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY SeRVe-Client/nginx.conf /etc/nginx/nginx.conf
 COPY SeRVe-Client/suricata/custom.rules /etc/suricata/rules/custom.rules
+COPY SeRVe-Client/suricata/suricata.yaml /etc/suricata/suricata.yaml
 
 # 4. Set Environment Variables
-# /app 경로를 파이썬 경로에 추가하여 serve_sdk import 가능하게 함
 ENV PYTHONPATH=/app
 
-# Configure Suricata
-RUN suricata-update && \
-    echo "include: /etc/suricata/rules/custom.rules" >> /etc/suricata/suricata.yaml
-
-# Configure Suricata to monitor loopback interface
-RUN sed -i 's/interface: eth0/interface: lo/g' /etc/suricata/suricata.yaml || true
+# 5. Create and set permissions for vector store directory (after copying source code)
+RUN mkdir -p /app/local_vectorstore && chmod -R 777 /app/local_vectorstore
 
 # Expose ports
 EXPOSE 9000 8501

@@ -1,0 +1,1991 @@
+INFO:     127.0.0.1:43748 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51632 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56324 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39996 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51646 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54156 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45002 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47372 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35376 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58280 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50284 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57598 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58298 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45186 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45878 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38156 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34352 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38782 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48710 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34848 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57696 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43210 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60344 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57740 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48232 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42856 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46804 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50124 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42728 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42788 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43878 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43378 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42902 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59200 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57794 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40480 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35232 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33478 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51228 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58012 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57468 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33446 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38582 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41212 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47328 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40378 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44630 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36060 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55302 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52618 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46956 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45322 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48866 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33218 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37652 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50964 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34518 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51032 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38328 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47574 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34002 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48518 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51062 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42936 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45224 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34328 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52924 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58060 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47176 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60122 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52640 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37320 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39512 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37898 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40068 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46708 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42908 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55848 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46782 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58468 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54280 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50980 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49106 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56290 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36622 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45420 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44928 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46544 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42442 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44646 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58252 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56528 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53398 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39840 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58744 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46620 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60106 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58200 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36986 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37354 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48470 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56116 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46310 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43238 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "GET /api/status HTTP/1.0" 200 OK
+INFO:     127.0.0.1:35700 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50372 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46338 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "GET /api/status?id=1'%20OR%20'1'='1 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:59964 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "GET /api/status?id=1%27+OR+%271%27%3d%271 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:51346 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35228 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "GET /api/status?id=1%27+OR+%271%27%3d%271 HTTP/1.0" 200 OK
+INFO:     172.28.0.1:0 - "GET /api/status?id=1%27+OR+%271%27%3d%271 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:44532 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45606 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49318 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "GET /api/status?id=1%27+OR+%271%27%3d%271 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:38114 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39460 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "GET /api/status?id=1%27+OR+%271%27%3d%271&dummy=111 HTTP/1.0" 200 OK
+INFO:     172.28.0.1:0 - "GET /api/status?id=1%27+OR+%271%27%3d%271&dummy=222 HTTP/1.0" 200 OK
+INFO:     172.28.0.1:0 - "GET /api/status?id=1%27+OR+%271%27%3d%271 HTTP/1.0" 200 OK
+INFO:     172.28.0.1:0 - "GET /api/status?id=1%27+OR+%271%27%3d%271 HTTP/1.0" 200 OK
+INFO:     127.0.0.1:60850 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57906 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59268 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35378 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56102 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49646 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57392 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35314 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37646 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44426 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.3:37872 - "GET /api/status?id=1'%20OR%20'1'='1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60042 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.3:37386 - "GET /api/status?id=1'%20OR%20'1'='1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51178 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58032 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39866 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45338 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53526 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45420 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50558 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44374 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42748 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45250 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50384 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54742 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60196 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53166 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37542 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38472 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44072 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57976 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38500 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49804 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46292 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32928 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41834 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57024 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52992 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50188 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60124 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50568 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39066 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52050 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57132 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38408 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52590 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33848 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53690 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53110 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47966 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53628 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43556 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57036 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53378 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35266 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58922 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59600 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46248 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42258 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40918 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43738 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58350 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55776 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53778 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42828 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54470 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37408 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38892 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43000 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35758 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39004 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56918 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35610 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43316 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35344 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52572 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58180 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55656 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56350 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43958 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45380 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36060 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39218 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36244 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34630 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42170 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39558 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44806 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59144 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38024 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57550 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38692 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43980 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39474 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45112 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60912 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54940 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54882 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41294 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36616 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60018 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55314 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57748 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33376 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/documents HTTP/1.0" 404 Not Found
+INFO:     127.0.0.1:50494 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34024 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43798 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:51546 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44982 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33404 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38598 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56064 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53988 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50670 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41114 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32782 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41592 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44394 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39394 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52030 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60342 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40100 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47500 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34950 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59530 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51126 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38348 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48246 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39778 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42964 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44450 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38828 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38816 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:57586 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53426 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55792 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35418 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35304 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53028 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54646 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45124 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53500 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34376 - "GET /api/status HTTP/1.1" 200 OK
+벡터스토어 로드 실패: name 'os' is not defined
+INFO:     127.0.0.1:42710 - "GET /api/status HTTP/1.1" 200 OK
+벡터스토어 로드 실패: name 'os' is not defined
+INFO:     127.0.0.1:45012 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:44724 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52152 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18`.0.1:11434
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18`.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:37590 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18`.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:50728 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:35144 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:39206 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59622 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52722 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51032 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57468 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40392 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33688 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55260 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41410 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40128 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59434 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38154 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48264 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59424 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57308 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55848 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54216 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37568 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48688 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58086 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42892 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44708 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55766 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44288 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39676 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38118 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34866 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35118 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33656 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33988 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58444 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36812 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37102 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48094 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48866 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52686 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51820 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:57146 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41704 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54344 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38036 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46312 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41498 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41324 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59254 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51944 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56140 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55944 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:35916 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59390 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:33966 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:36350 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:56678 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:42680 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:58246 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:42556 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:36548 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:38406 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:51656 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56734 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:60294 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:44162 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+디렉토리 삭제 중 오류 (계속 진행): [Errno 16] Device or resource busy: '/app/local_vectorstore'
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:37486 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+벡터스토어 디렉토리 삭제 완료
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:41148 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+벡터스토어 디렉토리 삭제 완료
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:38112 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:54018 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:41792 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+벡터스토어 디렉토리 삭제 완료
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:44292 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:59510 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43928 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49308 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43950 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50624 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44080 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:43746 - "GET /api/status HTTP/1.1" 200 OK
+기존 벡터스토어 디렉토리 삭제 중: /app/local_vectorstore
+벡터스토어 디렉토리 삭제 완료
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:50326 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:57460 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:36712 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:59056 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:39236 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:48760 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:44582 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:41454 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:34372 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:41380 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:41662 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46580 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34716 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49318 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:42544 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60848 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 500 Internal Server Error
+INFO:     127.0.0.1:54808 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50748 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44856 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42024 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50308 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35702 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46020 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34134 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54318 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49752 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57702 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59878 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34212 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44824 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46196 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53904 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55616 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55814 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47676 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41872 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43096 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:43750 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     172.28.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:47468 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42144 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57200 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59400 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58758 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45908 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54820 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33144 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54362 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39130 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50142 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33010 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58726 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53866 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45542 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60574 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53570 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33950 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36482 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57348 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50598 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49998 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52690 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:55528 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36956 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53938 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:54260 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:53734 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:47646 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57904 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56368 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52996 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:36756 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56934 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49422 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:49776 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:33728 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:47710 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58892 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57218 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:41018 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57586 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:35434 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:56180 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:34912 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:46912 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:52456 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:45718 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58134 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:58524 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:51708 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:57170 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:0 - "POST /api/sensor-data HTTP/1.0" 200 OK
+INFO:     127.0.0.1:59914 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:59592 - "GET /api/status HTTP/1.1" 200 OK
+Ollama 연결 시도: http://172.18.0.1:11434
+INFO:     127.0.0.1:39228 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39960 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33758 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34048 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34912 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44096 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44946 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44686 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58412 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34992 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38978 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42482 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42060 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48244 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42148 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33880 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52528 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53306 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57160 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59044 - "GET /api/status HTTP/1.1" 200 OK

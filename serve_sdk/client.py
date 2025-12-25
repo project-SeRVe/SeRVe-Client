@@ -459,13 +459,13 @@ class ServeClient:
 
     # ==================== 벡터 청크 API ====================
 
-    def upload_chunks_to_document(self, doc_id: str, repo_id: str, chunks_data: List[Dict[str, Any]]) -> Tuple[bool, str]:
+    def upload_chunks_to_document(self, file_name: str, repo_id: str, chunks_data: List[Dict[str, Any]]) -> Tuple[bool, str]:
         """
         벡터 청크 배치 업로드 (암호화 포함)
 
         Args:
-            doc_id: 문서 ID (UUID 문자열)
-            repo_id: 저장소 ID (팀 키 조회용)
+            file_name: 파일명 (문서 식별용)
+            repo_id: 저장소 ID (팀 ID, 팀 키 조회용)
             chunks_data: 청크 데이터 목록 [{"chunkIndex": int, "data": str (평문)}, ...]
 
         Returns:
@@ -493,7 +493,8 @@ class ServeClient:
 
             # 3. 서버에 업로드
             return self.api.upload_chunks(
-                doc_id,
+                repo_id,  # team_id
+                file_name,
                 encrypted_chunks,
                 self.session.access_token
             )
@@ -501,13 +502,13 @@ class ServeClient:
         except Exception as e:
             return False, f"청크 업로드 오류: {str(e)}"
 
-    def download_chunks_from_document(self, doc_id: str, repo_id: str) -> Tuple[Optional[List[Dict]], str]:
+    def download_chunks_from_document(self, file_name: str, repo_id: str) -> Tuple[Optional[List[Dict]], str]:
         """
         문서의 모든 청크 다운로드 (복호화 포함)
 
         Args:
-            doc_id: 문서 ID (UUID 문자열)
-            repo_id: 저장소 ID (팀 키 조회용)
+            file_name: 파일명 (문서 식별용)
+            repo_id: 저장소 ID (팀 ID, 팀 키 조회용)
 
         Returns:
             (청크 목록, 메시지)
@@ -517,7 +518,7 @@ class ServeClient:
 
         try:
             # 1. 서버에서 암호화된 청크들 다운로드
-            success, chunks = self.api.download_chunks(doc_id, self.session.access_token)
+            success, chunks = self.api.download_chunks(repo_id, file_name, self.session.access_token)
 
             if not success:
                 return None, chunks

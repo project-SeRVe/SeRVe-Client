@@ -10,13 +10,13 @@ services:
       - "9000:9000"   # Robot data ingress (Nginx)
       - "8501:8501"   # Streamlit dashboard
     environment:
-      - CLOUD_URL=${CLOUD_URL:-http://host.docker.internal:8080}
+      - CLOUD_URL=${CLOUD_URL:-http://172.18.0.1:8080}
+      - OLLAMA_BASE_URL=http://172.18.0.1:11434
       - EDGE_EMAIL=${EDGE_EMAIL:-edge@serve.local}
       - EDGE_PASSWORD=${EDGE_PASSWORD:-edge123}
       - TEAM_ID=${TEAM_ID}
       - VECTORSTORE_PATH=/app/local_vectorstore
     volumes:
-      - vectorstore:/app/local_vectorstore
       - ./logs/edge-server:/var/log/edge-server
       - ./logs/suricata:/var/log/suricata
       - ./logs/supervisor:/var/log/supervisor
@@ -27,10 +27,6 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW
-
-volumes:
-  vectorstore:
-    driver: local
 
 networks:
   serve-network:

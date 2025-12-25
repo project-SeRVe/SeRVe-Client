@@ -1,10 +1,11 @@
+import os
 import ollama
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 import json
 
 from langchain_ollama import OllamaEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
@@ -24,10 +25,13 @@ class VisionEngine:
 
     def _get_embeddings(self):
         """Get or create embeddings instance (lazy loading)"""
+        ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+        print(f"Ollama 연결 시도: {ollama_url}")  # 디버깅용 로그
         if self.embeddings is None:
             self.embeddings = OllamaEmbeddings(
                 model=self.embedding_model,
-                base_url="http://localhost:11434"
+                base_url=ollama_url
             )
         return self.embeddings
 
@@ -120,40 +124,11 @@ Question: What is this object based on the context above? Provide technical deta
             Chroma: Vector store 인스턴스
         """
         import os
-        import shutil
-        import time
-        import gc
 
-        # persist_directory가 지정된 경우, 기존 디렉토리를 완전히 삭제
-        if persist_directory and os.path.exists(persist_directory):
-            try:
-                print(f"기존 벡터스토어 디렉토리 삭제 중: {persist_directory}")
-
-                # ChromaDB가 사용 중일 수 있으므로 여러 번 시도
-                max_retries = 3
-                for retry in range(max_retries):
-                    try:
-                        # 가비지 컬렉션으로 열려있는 파일 핸들 정리
-                        gc.collect()
-                        time.sleep(0.3)
-
-                        # 디렉토리 삭제
-                        shutil.rmtree(persist_directory)
-                        print("벡터스토어 디렉토리 삭제 완료")
-                        break
-                    except PermissionError as pe:
-                        if retry < max_retries - 1:
-                            print(f"디렉토리 삭제 재시도 중... ({retry + 1}/{max_retries})")
-                            time.sleep(0.5)
-                        else:
-                            print(f"디렉토리 삭제 실패: {str(pe)}")
-                            raise
-
-                # 추가 대기 시간으로 파일 시스템이 정리될 시간을 줌
-                time.sleep(0.3)
-                gc.collect()
-            except Exception as e:
-                print(f"디렉토리 삭제 중 오류 (계속 진행): {str(e)}")
+        # persist_directory 확인 및 생성
+        if persist_directory and not os.path.exists(persist_directory):
+            os.makedirs(persist_directory, mode=0o777, exist_ok=True)
+            print(f"벡터스토어 디렉토리 생성: {persist_directory}")
 
         # Text splitting
         text_splitter = RecursiveCharacterTextSplitter(

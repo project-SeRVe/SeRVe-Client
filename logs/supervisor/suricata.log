@@ -14,3 +14,227 @@ Info: suricata: Multiple af-packet option without interface on each is useless
 Info: conf-yaml-loader: Including configuration file /etc/suricata/rules/custom.rules.
 Info: suricata: Multiple af-packet option without interface on each is useless
 Info: conf-yaml-loader: Including configuration file /etc/suricata/rules/custom.rules.
+Info: suricata: Multiple af-packet option without interface on each is useless
+Info: conf-yaml-loader: Including configuration file /etc/suricata/rules/custom.rules.
+Info: suricata: Multiple af-packet option without interface on each is useless
+Info: conf-yaml-loader: Including configuration file /etc/suricata/rules/custom.rules.
+Info: suricata: Multiple af-packet option without interface on each is useless
+Info: conf-yaml-loader: Including configuration file /etc/suricata/rules/custom.rules.
+Info: suricata: Multiple af-packet option without interface on each is useless
+Info: conf-yaml-loader: Including configuration file /etc/suricata/rules/custom.rules.
+Info: suricata: Multiple af-packet option without interface on each is useless
+Info: conf-yaml-loader: Including configuration file /etc/suricata/rules/custom.rules.
+Info: suricata: Multiple af-packet option without interface on each is useless
+Info: conf-yaml-loader: Including configuration file /etc/suricata/rules/custom.rules.
+Info: suricata: Multiple af-packet option without interface on each is useless
+Info: conf-yaml-loader: Including configuration file /etc/suricata/rules/custom.rules.
+Info: suricata: Multiple af-packet option without interface on each is useless
+Info: conf-yaml-loader: Including configuration file /etc/suricata/rules/custom.rules.
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: ioctl: lo: failed to set SIOCETHTOOL ioctl: Operation not supported
+W: af-packet: lo: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: lo: packets: 388, drops: 0 (0.00%), invalid chksum: 0
+W: ioctl: lo: failed to set SIOCETHTOOL ioctl: Operation not supported
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 0, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 14, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 210, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 46, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 57, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 40, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 57, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 31, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 211, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 122, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 1, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 13, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 65, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 101, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 396, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 1878, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 1084, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 617, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 768, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 2645, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 1375, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 1573, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 9304, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 29, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 334, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 330, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.
+i: suricata: Signal Received.  Stopping engine.
+i: device: eth0: packets: 10342, drops: 0 (0.00%), invalid chksum: 0
+Info: suricata: Multiple af-packet option without interface on each is useless
+i: suricata: This is Suricata version 7.0.10 RELEASE running in SYSTEM mode
+W: detect: No rule files match the pattern /var/lib/suricata/rules/suricata.rules
+W: af-packet: eth0: AF_PACKET tpacket-v3 is recommended for non-inline operation
+i: threads: Threads created -> W: 8 FM: 1 FR: 1   Engine started.

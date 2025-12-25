@@ -389,13 +389,14 @@ class ApiClient:
 
     # ==================== 벡터 청크 API ====================
 
-    def upload_chunks(self, doc_id: str, chunks: List[Dict[str, Any]],
+    def upload_chunks(self, team_id: str, file_name: str, chunks: List[Dict[str, Any]],
                      access_token: str) -> Tuple[bool, str]:
         """
         벡터 청크 배치 업로드
 
         Args:
-            doc_id: 문서 ID (UUID 문자열)
+            team_id: 팀 ID (UUID 문자열)
+            file_name: 파일명 (문서 식별용)
             chunks: 청크 목록 [{"chunkIndex": int, "encryptedBlob": str (Base64)}, ...]
             access_token: 인증 토큰
 
@@ -404,21 +405,22 @@ class ApiClient:
         """
         try:
             resp = self.session.post(
-                f"{self.server_url}/api/documents/{doc_id}/chunks",
-                json={"chunks": chunks},
+                f"{self.server_url}/api/teams/{team_id}/chunks",
+                json={"fileName": file_name, "chunks": chunks},
                 headers=self._get_headers(access_token)
             )
-            success, _ = self._handle_response(resp)
-            return success, "청크 업로드 성공" if success else "청크 업로드 실패"
+            success, data = self._handle_response(resp)
+            return success, "청크 업로드 성공" if success else f"청크 업로드 실패: {data}"
         except Exception as e:
             return False, f"청크 업로드 오류: {str(e)}"
 
-    def download_chunks(self, doc_id: str, access_token: str) -> Tuple[bool, Optional[List[Dict]]]:
+    def download_chunks(self, team_id: str, file_name: str, access_token: str) -> Tuple[bool, Optional[List[Dict]]]:
         """
         문서의 모든 청크 다운로드
 
         Args:
-            doc_id: 문서 ID (UUID 문자열)
+            team_id: 팀 ID (UUID 문자열)
+            file_name: 파일명 (문서 식별용)
             access_token: 인증 토큰
 
         Returns:
@@ -427,7 +429,8 @@ class ApiClient:
         """
         try:
             resp = self.session.get(
-                f"{self.server_url}/api/documents/{doc_id}/chunks",
+                f"{self.server_url}/api/teams/{team_id}/chunks",
+                params={"fileName": file_name},
                 headers=self._get_headers(access_token)
             )
             return self._handle_response(resp)

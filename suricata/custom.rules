@@ -36,7 +36,7 @@ alert http any any -> any any (msg:"SQL Injection - Admin Bypass"; flow:establis
 alert http any any -> any any (msg:"SQL Injection - Multiple Keywords"; flow:established,to_server; content:"SELECT"; nocase; content:"FROM"; nocase; distance:0; content:"WHERE"; nocase; distance:0; classtype:web-application-attack; sid:1000012; rev:1;)
 
 # Detect SQL batch execution (semicolon)
-alert http any any -> any any (msg:"SQL Injection - Batch Execution"; flow:established,to_server; content:"';"; pcre:"/'\s*;\s*[A-Z]+/i"; classtype:web-application-attack; sid:1000013; rev:1;)
+alert http any any -> any any (msg:"SQL Injection - Batch Execution"; flow:established,to_server; content:"|27 3B|"; pcre:"/'\s*\;\s*[A-Z]+/i"; classtype:web-application-attack; sid:1000013; rev:1;)
 
 # Detect SQL WAITFOR DELAY (blind injection)
 alert http any any -> any any (msg:"SQL Injection - WAITFOR DELAY"; flow:established,to_server; content:"WAITFOR"; nocase; content:"DELAY"; nocase; distance:0; within:50; classtype:web-application-attack; sid:1000014; rev:1;)

@@ -4,7 +4,11 @@ requests>=2.31.0
 langchain
 langchain-community
 langchain-ollama
+langchain-chroma
 streamlit
 ollama
 httpx
 chromadb>=0.5.23
+fastapi
+uvicorn
+python-multipart
