@@ -61,7 +61,8 @@ def test_sync_with_changes():
     # 3. 새로운 데이터 업로드 (ADMIN이 업로드한다고 가정)
     print("\n[Step 2] 새로운 센서 데이터 업로드 중...")
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    file_name = f"TEST_SYNC_{timestamp}"
+    user_id_short = client.session.user_id[:8] if client.session.user_id else "unknown"
+    file_name = f"TEST_SYNC_{user_id_short}_{timestamp}"
 
     sensor_data = {
         "robot_id": "TEST-SYNC-001",

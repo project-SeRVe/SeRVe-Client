@@ -19,8 +19,8 @@ EDGE_EMAIL = "edge@serve.local"
 EDGE_PASSWORD = "edge123"
 TEAM_ID = "b67b09a2-62ea-4b1e-a181-cfad8ed3517c"
 
-# 테스트용 고정 파일명
-TEST_FILE_NAME = "DEMO_FIXED_FILE"
+# 테스트용 고정 파일명 (user_id는 로그인 후 동적으로 설정)
+TEST_FILE_NAME = None  # 로그인 후 설정됨
 
 def print_header(title):
     """헤더 출력"""
@@ -122,6 +122,12 @@ def main():
         return
 
     print(f"\n✓ 로그인 성공: {EDGE_EMAIL}")
+
+    # 테스트용 파일명 설정 (user_id 포함으로 충돌 방지)
+    global TEST_FILE_NAME
+    user_id_short = client.session.user_id[:8] if client.session.user_id else "unknown"
+    TEST_FILE_NAME = f"DEMO_FIXED_FILE_{user_id_short}"
+    print(f"  테스트 파일명: {TEST_FILE_NAME}")
 
     # ========================================
     # Part 1: 최초 업로드

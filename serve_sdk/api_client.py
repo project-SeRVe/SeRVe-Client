@@ -508,4 +508,3 @@ class ApiClient:
             return self._handle_response(resp)
         except Exception as e:
             return False, f"팀 청크 동기화 오류: {str(e)}"
-

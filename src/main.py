@@ -321,9 +321,12 @@ async def receive_sensor_data(sensor_data: SensorData, request: Request):
         # ==================================================================
         # [핵심 수정 구간] 4. vision_engine으로 처리 및 저장
         # ==================================================================
+        # 파일명 충돌 방지: user_id 포함 (로컬 + 클라우드 공통)
+        user_id_short = serve_client.session.user_id[:8] if serve_client.session.user_id else "unknown"
+        timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+        doc_name = f"{sensor_data.robot_id}_{user_id_short}_{timestamp_str}"
+
         if vision_engine:
-            doc_name = f"{sensor_data.robot_id}_{sensor_data.timestamp}"
-            
             try:
                 if local_vectorstore:
                     # A. 이미 스토어가 있으면 -> 추가 (Add)
@@ -349,17 +352,14 @@ async def receive_sensor_data(sensor_data: SensorData, request: Request):
                 import traceback
                 logger.warning(traceback.format_exc())
 
-        # 5. 클라우드에 청크 업로드 (Federated Model: member_id 포함으로 충돌 방지)
-        user_id_short = serve_client.session.user_id[:8] if serve_client.session.user_id else "unknown"
-        doc_name_cloud = f"{sensor_data.robot_id}_{user_id_short}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-
+        # 5. 클라우드에 청크 업로드 (Federated Model: 위에서 생성한 doc_name 재사용)
         chunks_data = [{
             "chunkIndex": 0,
             "data": sensor_str
         }]
 
         success, msg = serve_client.upload_chunks_to_document(
-            file_name=doc_name_cloud,
+            file_name=doc_name,  # 로컬과 동일한 파일명 사용
             repo_id=TEAM_ID,
             chunks_data=chunks_data
         )
@@ -375,7 +375,7 @@ async def receive_sensor_data(sensor_data: SensorData, request: Request):
             "status": "success",
             "message": "데이터가 암호화되어 클라우드에 업로드됨",
             "robot_id": sensor_data.robot_id,
-            "file_name": doc_name_cloud
+            "file_name": doc_name  # 통일된 파일명 사용
         }
 
     except HTTPException:

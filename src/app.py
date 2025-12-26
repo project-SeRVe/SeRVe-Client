@@ -673,9 +673,10 @@ else:
                     with col_upload:
                         st.write("**청크 업로드**")
                         upload_to_doc = st.text_input(
-                            "문서 이름",
+                            "문서 이름 (접두사)",
                             value="local_chunks",
-                            key="upload_local_chunks_docname"
+                            key="upload_local_chunks_docname",
+                            help="실제 파일명은 'prefix_userid_timestamp' 형식으로 자동 생성됩니다"
                         )
 
                         if st.button("⬆️ 선택한 청크 업로드", type="primary", key="upload_selected_local"):
@@ -686,7 +687,14 @@ else:
                             else:
                                 try:
                                     import json
+                                    from datetime import datetime
                                     repo_id = get_current_repo_id()
+
+                                    # 파일명 충돌 방지: user_id와 timestamp 포함
+                                    user_id = st.session_state.serve_client.session.user_id
+                                    user_id_short = user_id[:8] if user_id else "unknown"
+                                    timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+                                    file_name = f"{upload_to_doc}_{user_id_short}_{timestamp_str}"
 
                                     # 선택된 청크만 추출
                                     selected_indices = sorted(list(st.session_state.selected_local_chunks))
@@ -703,47 +711,29 @@ else:
                                             "data": json.dumps(chunk_content)
                                         })
 
-                                    with st.spinner("문서 생성 중..."):
-                                        # 문서 메타데이터 생성
-                                        success, msg = st.session_state.serve_client.upload_document(
-                                            f"Local chunks upload: {len(chunks_data)} chunks",
-                                            repo_id,
-                                            upload_to_doc,
-                                            "application/json"
+                                    # 청크 업로드 (파일명 기반 API 사용)
+                                    with st.spinner(f"청크 업로드 중... ({len(chunks_data)}개)"):
+                                        success, msg = st.session_state.serve_client.upload_chunks_to_document(
+                                            file_name, repo_id, chunks_data
                                         )
 
-                                        if not success:
-                                            st.error(f"문서 생성 실패: {msg}")
+                                        if success:
+                                            st.success(f"✓ {len(chunks_data)}개 청크가 '{file_name}'으로 업로드되었습니다!")
+                                            # 선택 초기화
+                                            st.session_state.selected_local_chunks = set()
+                                            # 모든 청크 체크박스 상태 초기화
+                                            for i in range(num_chunks):
+                                                if f"local_chunk_{i}" in st.session_state:
+                                                    del st.session_state[f"local_chunk_{i}"]
+                                            # 문서 전체 선택 체크박스 초기화
+                                            for doc_name in docs_by_name.keys():
+                                                if f"select_doc_{doc_name}" in st.session_state:
+                                                    del st.session_state[f"select_doc_{doc_name}"]
+                                            # 전체 선택 체크박스 위젯 상태 초기화
+                                            if "select_all_local_chunks" in st.session_state:
+                                                del st.session_state["select_all_local_chunks"]
                                         else:
-                                            # 문서 ID 조회
-                                            docs, _ = st.session_state.serve_client.get_documents(repo_id)
-                                            if docs and len(docs) > 0:
-                                                latest_doc = docs[-1]
-                                                doc_id = latest_doc.get('docId')
-
-                                                # 청크 업로드
-                                                with st.spinner(f"청크 업로드 중... ({len(chunks_data)}개)"):
-                                                    success, msg = st.session_state.serve_client.upload_chunks_to_document(
-                                                        doc_id, repo_id, chunks_data
-                                                    )
-
-                                                    if success:
-                                                        st.success(f"✓ {len(chunks_data)}개 청크 업로드 완료!")
-                                                        # 선택 초기화
-                                                        st.session_state.selected_local_chunks = set()
-                                                        # 모든 청크 체크박스 상태 초기화
-                                                        for i in range(num_chunks):
-                                                            if f"local_chunk_{i}" in st.session_state:
-                                                                del st.session_state[f"local_chunk_{i}"]
-                                                        # 문서 전체 선택 체크박스 초기화
-                                                        for doc_name in docs_by_name.keys():
-                                                            if f"select_doc_{doc_name}" in st.session_state:
-                                                                del st.session_state[f"select_doc_{doc_name}"]
-                                                        # 전체 선택 체크박스 위젯 상태 초기화
-                                                        if "select_all_local_chunks" in st.session_state:
-                                                            del st.session_state["select_all_local_chunks"]
-                                                    else:
-                                                        st.error(f"청크 업로드 실패: {msg}")
+                                            st.error(f"청크 업로드 실패: {msg}")
 
                                 except Exception as e:
                                     st.error(f"업로드 오류: {str(e)}")

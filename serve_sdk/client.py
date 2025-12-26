@@ -76,7 +76,18 @@ class ServeClient:
         )
 
         if not success:
-            raise RuntimeError(f"팀 키 조회 실패: {encrypted_key}")
+            # ADMIN 중심 에러 메시지 표시
+            error_msg = encrypted_key if isinstance(encrypted_key, str) else str(encrypted_key)
+            raise RuntimeError(
+                f"팀 키 조회 실패\n"
+                f"{'=' * 60}\n"
+                f"{error_msg}\n"
+                f"{'=' * 60}\n"
+                f"💡 해결 방법:\n"
+                f"   1. 팀 멤버가 아닌 경우: 팀 ADMIN에게 초대를 요청하세요\n"
+                f"   2. 팀 키 미설정: 팀 ADMIN에게 재초대를 요청하세요\n"
+                f"   3. 위 메시지에서 ADMIN 이메일을 확인하세요"
+            )
 
         # 3. 내 개인키로 복호화
         try:
