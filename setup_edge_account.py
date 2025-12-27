@@ -14,8 +14,15 @@ from serve_sdk import ServeClient
 
 # 설정
 CLOUD_URL = "http://localhost:8080"
+
+# ADMIN 계정 (저장소 생성자)
+ADMIN_EMAIL = "admin@serve.local"
+ADMIN_PASSWORD = "admin123"
+
+# EDGE 계정 (MEMBER role로 데이터 업로드)
 EDGE_EMAIL = "edge@serve.local"
 EDGE_PASSWORD = "edge123"
+
 REPO_NAME = "Edge Server Repository"
 REPO_DESC = "Edge 서버 데이터 수집 및 처리용 저장소"
 
@@ -60,75 +67,105 @@ TEAM_ID={team_id}
     print(f"✓ .env 파일 업데이트 완료: TEAM_ID={team_id}")
 
 def main():
-    """메인 설정 함수"""
+    """메인 설정 함수 - Federated Model 지원"""
     print("=" * 60)
-    print("SeRVe Edge 계정 설정")
+    print("SeRVe Edge 계정 설정 (Federated Model)")
+    print("=" * 60)
+    print("ℹ  ADMIN: 저장소 생성자, 메타데이터만 조회 가능")
+    print("ℹ  MEMBER: 데이터 업로드/동기화 가능")
     print("=" * 60)
 
-    # 클라이언트 초기화
-    print(f"\n1. 클라우드 서버 연결 중: {CLOUD_URL}")
-    client = ServeClient(server_url=CLOUD_URL)
-    print(f"   ✓ 연결됨")
+    # ========== STEP 1: ADMIN 계정으로 저장소 생성 ==========
+    print(f"\n[ADMIN 계정] 저장소 생성")
+    print(f"1. ADMIN 계정 생성 중: {ADMIN_EMAIL}")
 
-    # 회원가입
-    print(f"\n2. Edge 계정 생성 중: {EDGE_EMAIL}")
-    success, msg = client.signup(EDGE_EMAIL, EDGE_PASSWORD)
+    admin_client = ServeClient(server_url=CLOUD_URL)
+    success, msg = admin_client.signup(ADMIN_EMAIL, ADMIN_PASSWORD)
 
     if success:
-        print(f"   ✓ 계정 생성됨: {msg}")
+        print(f"   ✓ ADMIN 계정 생성됨: {msg}")
     elif "already exists" in msg.lower() or "duplicate" in msg.lower():
-        print(f"   ℹ 계정이 이미 존재함, 회원가입 건너뜀")
+        print(f"   ℹ ADMIN 계정이 이미 존재함")
     else:
         print(f"   ✗ 회원가입 실패: {msg}")
         return False
 
-    # 로그인
-    print(f"\n3. {EDGE_EMAIL}로 로그인 중")
-    success, msg = client.login(EDGE_EMAIL, EDGE_PASSWORD)
-
+    # ADMIN 로그인
+    print(f"\n2. ADMIN 계정 로그인 중: {ADMIN_EMAIL}")
+    success, msg = admin_client.login(ADMIN_EMAIL, ADMIN_PASSWORD)
     if not success:
         print(f"   ✗ 로그인 실패: {msg}")
         return False
+    print(f"   ✓ 로그인 성공")
 
-    print(f"   ✓ 로그인 성공: {msg}")
-
-    # 기존 저장소 확인
-    print(f"\n4. 기존 저장소 확인 중")
-    repos, msg = client.get_my_repositories()
+    # 저장소 확인/생성
+    print(f"\n3. 저장소 확인 중")
+    repos, msg = admin_client.get_my_repositories()
 
     if repos and len(repos) > 0:
-        print(f"   ℹ {len(repos)}개의 기존 저장소 발견")
-
-        # 첫 번째 저장소 사용
         repo = repos[0]
         repo_id = repo.get('Teamid') or repo.get('teamid')
         repo_name = repo.get('name')
-
-        print(f"   ✓ 기존 저장소 사용: {repo_name} (ID: {repo_id})")
+        print(f"   ℹ 기존 저장소 사용: {repo_name} (ID: {repo_id})")
     else:
-        # 새 저장소 생성
-        print(f"\n5. 저장소 생성 중: {REPO_NAME}")
-        repo_id, msg = client.create_repository(REPO_NAME, REPO_DESC)
+        # 저장소 이름 충돌 시 타임스탬프 추가
+        import datetime
+        repo_name_to_create = REPO_NAME
+
+        print(f"   저장소 생성 중: {repo_name_to_create}")
+        repo_id, msg = admin_client.create_repository(repo_name_to_create, REPO_DESC)
+
+        # 이름 충돌 시 타임스탬프 추가하여 재시도
+        if not repo_id and "이미 존재" in msg:
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            repo_name_to_create = f"{REPO_NAME}_{timestamp}"
+            print(f"   ℹ 저장소 이름 충돌 감지, 새 이름으로 재시도: {repo_name_to_create}")
+            repo_id, msg = admin_client.create_repository(repo_name_to_create, REPO_DESC)
 
         if not repo_id:
             print(f"   ✗ 저장소 생성 실패: {msg}")
             return False
+        print(f"   ✓ 저장소 생성됨 (ID: {repo_id})")
 
-        print(f"   ✓ 저장소 생성됨: {msg}")
-        print(f"   ✓ 저장소 ID: {repo_id}")
+    # ========== STEP 2: EDGE 계정 생성 및 MEMBER로 초대 ==========
+    print(f"\n[EDGE 계정] MEMBER로 초대")
+    print(f"4. EDGE 계정 생성 중: {EDGE_EMAIL}")
 
-    # .env 파일 업데이트
+    edge_client = ServeClient(server_url=CLOUD_URL)
+    success, msg = edge_client.signup(EDGE_EMAIL, EDGE_PASSWORD)
+
+    if success:
+        print(f"   ✓ EDGE 계정 생성됨: {msg}")
+    elif "already exists" in msg.lower() or "duplicate" in msg.lower():
+        print(f"   ℹ EDGE 계정이 이미 존재함")
+    else:
+        print(f"   ✗ 회원가입 실패: {msg}")
+        return False
+
+    # EDGE 계정을 MEMBER로 초대
+    print(f"\n5. EDGE 계정을 MEMBER로 초대 중")
+    success, msg = admin_client.invite_member(repo_id, EDGE_EMAIL)
+
+    if success:
+        print(f"   ✓ MEMBER 초대 성공: {msg}")
+    elif "already" in msg.lower():
+        print(f"   ℹ 이미 멤버로 등록되어 있음")
+    else:
+        print(f"   ✗ 초대 실패: {msg}")
+        return False
+
+    # ========== STEP 3: .env 파일 업데이트 ==========
     print(f"\n6. .env 파일 업데이트 중")
     update_env_file(repo_id)
 
     print("\n" + "=" * 60)
-    print("설정 완료!")
+    print("✅ 설정 완료!")
     print("=" * 60)
-    print(f"\nEdge 계정: {EDGE_EMAIL}")
-    print(f"저장소 ID: {repo_id}")
+    print(f"ADMIN 계정: {ADMIN_EMAIL} (저장소 관리)")
+    print(f"EDGE 계정:  {EDGE_EMAIL} (데이터 업로드/동기화)")
+    print(f"저장소 ID:  {repo_id}")
     print(f"\n이제 다음 명령어로 Edge 서버를 실행할 수 있습니다:")
-    print(f"  cd edge-server")
-    print(f"  docker-compose up --build")
+    print(f"  docker compose up --build")
     print("=" * 60)
 
     return True

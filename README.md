@@ -1,6 +1,6 @@
 # SeRVe Edge Server
 
-**Zero-Trust Edge Computing Platform for Physical AI**
+**Zero-Trust Edge Computing Platform for Physical AI with Multimodal RAG**
 
 엣지 서버는 로봇(Physical AI)과 클라우드 사이의 보안 게이트웨이 역할을 수행합니다.
 
@@ -11,32 +11,48 @@
              ↓
          [Suricata IDS] → 공격 탐지
          [FastAPI Proxy] → 데이터 수신 및 암호화
-         [VisionEngine] → 로컬 벡터DB 처리
+         [VisionEngine + CLIP] → 멀티모달 RAG (이미지+텍스트)
          [Streamlit] → 관리 대시보드
 ```
 
 ## 주요 기능
 
-### 1. Suricata IDS
+### 1. Envelope Encryption (엔벨로프 암호화)
+- **DEK (Data Encryption Key)**: 데이터 암호화에 사용되는 대칭키
+- **KEK (Key Encryption Key)**: DEK를 암호화하는 사용자별 공개키
+- **Federated Model**:
+  - ADMIN: 메타데이터만 조회 가능 (암호화된 데이터 접근 불가)
+  - MEMBER: 데이터 업로드/동기화 가능 (DEK 복호화 권한 보유)
+- **Zero-Trust**: 서버는 평문 데이터나 개인키를 절대 보지 못함
+
+### 2. Multimodal RAG (이미지+텍스트 검색)
+- **CLIP 임베딩**: OpenAI CLIP 모델 기반 512차원 벡터 생성
+- **이미지 유사도 검색**: 이미지로 이미지 검색
+- **텍스트-이미지 크로스 검색**: 텍스트 쿼리로 관련 이미지 검색
+- **Chroma VectorDB**: 로컬 벡터 데이터베이스에 임베딩 저장
+- **Vision AI 통합**: LLaVA 모델과 통합된 멀티모달 분석
+
+### 3. Suricata IDS
 - 포트 9000으로 들어오는 트래픽 감시
 - SQL Injection, XSS 등 공격 패턴 탐지
 - 미러 모드 (탐지만, 차단 없음)
 - 로그: `/var/log/suricata/fast.log`
 
-### 2. FastAPI Proxy
+### 4. FastAPI Proxy
 - **POST /api/sensor-data**: 로봇 센서 데이터 수신
 - **GET /api/status**: 엣지 서버 상태 확인
 - 데이터 흐름:
   1. 로봇 → JSON 데이터 수신
-  2. vision_engine으로 로컬 처리 및 벡터DB 저장
-  3. serve_sdk로 로그인 및 암호화
-  4. 클라우드에 청크로 업로드
+  2. VisionEngine으로 로컬 처리 및 벡터DB 저장 (CLIP 임베딩)
+  3. serve_sdk로 Envelope Encryption (DEK → KEK)
+  4. 클라우드에 암호화된 청크로 업로드
 
-### 3. Streamlit Dashboard
+### 5. Streamlit Dashboard
 - 포트 8501에서 접근
 - 저장소/문서/멤버 관리
-- 로컬 벡터DB 관리
-- Vision AI 분석
+- 로컬 벡터DB 관리 (Chroma)
+- Vision AI 분석 (LLaVA + CLIP)
+- 멀티모달 RAG 인터페이스
 
 ## 설치 및 실행
 
@@ -282,24 +298,50 @@ cd ../SeRVe-Backend
 ## 디렉토리 구조
 
 ```
-edge-server/
-├── Dockerfile              # All-in-one 이미지
+SeRVe-Client/
+├── Dockerfile              # 배포용: All-in-one 이미지 (Suricata + FastAPI + Streamlit)
+├── Dockerfile.edge         # 테스트용: FastAPI만 포함된 경량 이미지
 ├── docker-compose.yml      # 컨테이너 실행 설정
-├── supervisord.conf        # 멀티 프로세스 관리
+├── supervisord.conf        # 멀티 프로세스 관리 (배포용)
 ├── nginx.conf              # 트래픽 프록시 설정
 ├── .env                    # 환경변수 (생성 필요)
 ├── .env.example            # 환경변수 예제
 ├── robot_simulator.py      # 로봇 시뮬레이터
+├── setup_edge_account.py   # Edge 계정 자동 설정 (ADMIN/MEMBER 분리)
 ├── src/
-│   └── main.py             # FastAPI 앱
+│   ├── main.py             # FastAPI 앱 (Edge Proxy Server)
+│   ├── app.py              # Streamlit Dashboard
+│   ├── vision_engine.py    # Vision AI + Multimodal RAG 엔진
+│   ├── clip_embeddings.py  # CLIP 임베딩 생성기
+│   ├── image_utils.py      # 이미지 저장/관리 유틸리티
+│   └── requirements.txt    # Python 의존성 (torch, sentence-transformers 등)
+├── serve_sdk/              # SeRVe Python SDK (암호화, API 클라이언트)
+│   ├── client.py
+│   ├── security/
+│   │   ├── crypto_utils.py  # Envelope Encryption (DEK/KEK)
+│   │   └── key_manager.py
+│   └── ...
 ├── suricata/
-│   └── custom.rules        # Suricata 커스텀 룰
-└── logs/                   # 로그 디렉토리 (자동 생성)
-    ├── edge-server/
-    ├── suricata/
-    ├── supervisor/
-    └── nginx/
+│   ├── custom.rules        # Suricata 커스텀 룰 (SQL Injection 등)
+│   └── suricata.yaml       # Suricata 설정
+├── rag_images/             # 멀티모달 RAG 테스트 이미지
+└── test/                   # 테스트 스크립트들
+    ├── test_multimodal_rag.py
+    ├── test_sync.py
+    └── ...
 ```
+
+### Docker 이미지 설명
+
+- **Dockerfile (배포용)**:
+  - Suricata IDS + FastAPI Proxy + Streamlit Dashboard + Nginx 모두 포함
+  - Supervisor로 멀티 프로세스 관리
+  - 프로덕션 환경 배포용
+
+- **Dockerfile.edge (테스트용)**:
+  - FastAPI Proxy만 포함된 경량 이미지
+  - 로컬 개발 및 단위 테스트용
+  - IDS 없이 빠른 테스트 가능
 
 ## 보안 고려사항
 
