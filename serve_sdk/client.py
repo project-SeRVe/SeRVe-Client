@@ -327,15 +327,92 @@ class ServeClient:
         success, data = self.api.get_members(repo_id, self.session.access_token)
         return (data, "조회 성공") if success else (None, data)
 
-    def kick_member(self, repo_id: str, target_user_id: str) -> Tuple[bool, str]:
-        """멤버 강퇴"""
+    def kick_member(self, repo_id: str, target_user_id: str,
+                    auto_rotate_keys: bool = True) -> Tuple[bool, str]:
+        """
+        멤버 강퇴 (자동 키 로테이션 지원)
+
+        Args:
+            repo_id: 팀 ID
+            target_user_id: 강퇴할 사용자 ID
+            auto_rotate_keys: 자동 키 로테이션 수행 여부 (기본값: True)
+
+        Returns:
+            (성공 여부, 메시지)
+        """
         self._ensure_authenticated()
-        return self.api.kick_member(
+
+        # 1. 멤버 강퇴 API 호출
+        success, response = self.api.kick_member(
             repo_id,
             target_user_id,
             self.session.user_id,
             self.session.access_token
         )
+
+        if not success:
+            return False, f"멤버 강퇴 실패: {response}"
+
+        # 2. 응답 확인
+        if not isinstance(response, dict):
+            return True, "멤버 강퇴 성공 (키 로테이션 정보 없음)"
+
+        key_rotation_required = response.get("keyRotationRequired", False)
+        remaining_members = response.get("remainingMembers", [])
+
+        # 3. 자동 키 로테이션 수행
+        if auto_rotate_keys and key_rotation_required and remaining_members:
+            try:
+                # 3-1. 새 팀 키 생성
+                new_team_key = self.crypto.generate_aes_key()
+
+                # 3-2. 각 멤버의 공개키로 새 팀 키 래핑
+                member_keys = []
+                for member in remaining_members:
+                    user_id = member["userId"]
+                    public_key_json = member["publicKey"]
+
+                    # 공개키 파싱
+                    public_key_handle = self.crypto.parse_public_key_json(public_key_json)
+
+                    # 팀 키 래핑
+                    encrypted_team_key = self.crypto.wrap_aes_key(new_team_key, public_key_handle)
+
+                    member_keys.append({
+                        "userId": user_id,
+                        "encryptedTeamKey": encrypted_team_key
+                    })
+
+                # 3-3. 키 로테이션 API 호출
+                rotate_success, rotate_msg = self.api.rotate_team_keys(
+                    repo_id,
+                    member_keys,
+                    self.session.access_token
+                )
+
+                if not rotate_success:
+                    return True, f"멤버 강퇴 성공, 하지만 키 로테이션 실패: {rotate_msg}"
+
+                # 3-4. 기존 문서(청크)를 새 키로 재암호화
+                try:
+                    self._reencrypt_all_documents(repo_id, new_team_key)
+                except Exception as e:
+                    # 재암호화 실패해도 키 로테이션은 완료됨
+                    return True, f"키 로테이션 완료, 하지만 문서 재암호화 실패: {str(e)}"
+
+                # 3-5. 세션에서 팀 키 업데이트 (내 것만)
+                self.session.cache_team_key(repo_id, new_team_key)
+
+                return True, f"멤버 강퇴 성공 및 키 로테이션 완료 ({len(member_keys)}명)"
+
+            except Exception as e:
+                return True, f"멤버 강퇴 성공, 하지만 자동 키 로테이션 실패: {str(e)}"
+
+        # 4. 키 로테이션 미수행
+        if key_rotation_required and not auto_rotate_keys:
+            return True, "멤버 강퇴 성공 (수동 키 로테이션 필요)"
+
+        return True, response.get("message", "멤버 강퇴 성공")
 
     def update_member_role(self, repo_id: str, target_user_id: str, new_role: str) -> Tuple[bool, str]:
         """멤버 권한 변경"""
@@ -395,50 +472,15 @@ class ServeClient:
 
     def download_document(self, doc_id: str, repo_id: str) -> Tuple[Optional[str], str]:
         """
-        문서 다운로드
+        [사용 중단] 문서 다운로드 (Federated Model에서 지원하지 않음)
 
-        내부 동작:
-        1. 서버에서 암호문 다운로드
-        2. 팀 키 가져오기 (lazy loading)
-        3. 암호문을 팀 키로 복호화
+        Federated Model에서는 다운로드 대신 동기화(sync_team_chunks)를 사용합니다.
 
-        Args:
-            doc_id: 문서 ID (UUID 문자열)
-            repo_id: 저장소 ID (UUID 문자열, 팀 키 조회용)
-
-        Returns:
-            (평문 내용, 메시지)
+        대신 사용:
+        - sync_team_chunks(repo_id, last_version) - 팀 전체 증분 동기화
+        - download_chunks_from_document(file_name, repo_id) - 특정 파일 동기화 (내부적으로 sync 사용)
         """
-        self._ensure_authenticated()
-
-        try:
-            # 1. 다운로드
-            success, data = self.api.get_document(doc_id, self.session.access_token)
-
-            if not success:
-                return None, data
-
-            # 2. 암호문 추출 (서버는 encryptedBlob 필드로 반환)
-            encrypted_content = data.get('encryptedBlob')
-            if not encrypted_content:
-                return None, "암호문이 없습니다"
-
-            # 3. byte[] -> Base64 문자열 변환 (JSON 직렬화 시 자동 처리되지만 명시적 확인)
-            if isinstance(encrypted_content, list):
-                # byte[] 배열이 JSON으로 직렬화되면 숫자 배열로 올 수 있음
-                import base64
-                encrypted_content = base64.b64encode(bytes(encrypted_content)).decode('utf-8')
-
-            # 4. 팀 키 가져오기 (lazy loading)
-            team_key = self._ensure_team_key(repo_id)
-
-            # 5. 복호화
-            plaintext = self.crypto.decrypt_data(encrypted_content, team_key)
-
-            return plaintext, "복호화 성공"
-
-        except Exception as e:
-            return None, f"다운로드 오류: {str(e)}"
+        return None, "다운로드 기능은 Federated Model에서 지원하지 않습니다. sync_team_chunks() 또는 download_chunks_from_document()를 사용하세요."
 
     def get_documents(self, repo_id: str) -> Tuple[Optional[List], str]:
         """
@@ -472,7 +514,13 @@ class ServeClient:
 
     def upload_chunks_to_document(self, file_name: str, repo_id: str, chunks_data: List[Dict[str, Any]]) -> Tuple[bool, str]:
         """
-        벡터 청크 배치 업로드 (암호화 포함)
+        벡터 청크 배치 업로드 (Envelope Encryption 적용)
+
+        Envelope Encryption:
+        1. DEK(Data Encryption Key) 생성 - 문서별 랜덤 키
+        2. DEK로 청크 데이터 암호화
+        3. 팀 키(KEK)로 DEK 래핑(암호화)
+        4. 암호화된 DEK를 서버에 전송
 
         Args:
             file_name: 파일명 (문서 식별용)
@@ -485,29 +533,36 @@ class ServeClient:
         self._ensure_authenticated()
 
         try:
-            # 1. 팀 키 가져오기
+            # 1. 팀 키 가져오기 (KEK - Key Encryption Key)
             team_key = self._ensure_team_key(repo_id)
 
-            # 2. 각 청크 암호화
+            # 2. DEK(Data Encryption Key) 생성 - 문서별 랜덤 키
+            dek = self.crypto.generate_aes_key()
+
+            # 3. 각 청크를 DEK로 암호화
             encrypted_chunks = []
             for chunk in chunks_data:
                 chunk_index = chunk["chunkIndex"]
                 plaintext_data = chunk["data"]
 
-                # 암호화
-                encrypted_blob = self.crypto.encrypt_data(plaintext_data, team_key)
+                # DEK로 암호화 (팀 키가 아님!)
+                encrypted_blob = self.crypto.encrypt_data(plaintext_data, dek)
 
                 encrypted_chunks.append({
                     "chunkIndex": chunk_index,
                     "encryptedBlob": encrypted_blob
                 })
 
-            # 3. 서버에 업로드
+            # 4. DEK를 팀 키로 래핑 (암호화) - Envelope Encryption
+            encrypted_dek = self.crypto.wrap_key_with_aes(dek, team_key)
+
+            # 5. 서버에 업로드 (암호화된 DEK 포함)
             return self.api.upload_chunks(
                 repo_id,  # team_id
                 file_name,
                 encrypted_chunks,
-                self.session.access_token
+                self.session.access_token,
+                encrypted_dek  # Base64 인코딩된 암호화된 DEK
             )
 
         except Exception as e:
@@ -515,7 +570,14 @@ class ServeClient:
 
     def download_chunks_from_document(self, file_name: str, repo_id: str) -> Tuple[Optional[List[Dict]], str]:
         """
-        문서의 모든 청크 다운로드 (복호화 포함)
+        [주의] 이름은 download이지만 내부적으로 동기화(sync) API를 사용합니다.
+        Federated Model에서는 다운로드가 아닌 동기화만 지원하기 때문입니다.
+
+        문서의 모든 청크 가져오기 (Envelope Encryption 적용, 동기화 API 사용, 복호화 포함)
+
+        Envelope Encryption:
+        1. 팀 키로 DEK를 언래핑(복호화)
+        2. DEK로 청크 데이터 복호화
 
         Args:
             file_name: 파일명 (문서 식별용)
@@ -528,29 +590,68 @@ class ServeClient:
         self._ensure_authenticated()
 
         try:
-            # 1. 서버에서 암호화된 청크들 다운로드
-            success, chunks = self.api.download_chunks(repo_id, file_name, self.session.access_token)
-
+            # 1. 문서 목록 조회하여 fileName → documentId + encryptedDEK 가져오기
+            success, documents = self.api.get_documents(repo_id, self.session.access_token)
             if not success:
-                return None, chunks
+                return None, f"문서 목록 조회 실패: {documents}"
 
-            # 2. 팀 키 가져오기
+            # 2. fileName으로 documentId 및 encryptedDEK 찾기
+            document_id = None
+            encrypted_dek_bytes = None
+            for doc in documents:
+                if doc.get("fileName") == file_name:
+                    document_id = doc.get("docId")
+                    encrypted_dek_bytes = doc.get("encryptedDEK")  # byte[] 형식
+                    break
+
+            if not document_id:
+                return None, f"문서를 찾을 수 없습니다: {file_name}"
+
+            if not encrypted_dek_bytes:
+                return None, f"문서에 암호화된 DEK가 없습니다: {file_name} (Envelope Encryption 미적용)"
+
+            # 3. 동기화 API로 팀의 모든 청크 가져오기 (lastVersion=-1로 전체 조회, version > -1이므로 모든 청크 포함)
+            success, all_chunks = self.api.sync_team_chunks(repo_id, -1, self.session.access_token)
+            if not success:
+                return None, f"청크 동기화 실패: {all_chunks}"
+
+            # 4. 해당 문서의 청크만 필터링 (삭제되지 않은 것만)
+            document_chunks = [
+                chunk for chunk in all_chunks
+                if chunk.get("documentId") == document_id and not chunk.get("isDeleted", False)
+            ]
+
+            if not document_chunks:
+                return None, f"문서에 청크가 없습니다: {file_name}"
+
+            # 5. 팀 키 가져오기 (KEK - Key Encryption Key)
             team_key = self._ensure_team_key(repo_id)
 
-            # 3. 각 청크 복호화
+            # 6. Envelope Encryption: 팀 키로 DEK 언래핑(복호화)
+            import base64
+            if isinstance(encrypted_dek_bytes, list):
+                # byte[] → Base64 변환
+                encrypted_dek = base64.b64encode(bytes(encrypted_dek_bytes)).decode('utf-8')
+            elif isinstance(encrypted_dek_bytes, bytes):
+                encrypted_dek = base64.b64encode(encrypted_dek_bytes).decode('utf-8')
+            else:
+                encrypted_dek = encrypted_dek_bytes  # 이미 Base64 문자열
+
+            dek = self.crypto.unwrap_key_with_aes(encrypted_dek, team_key)
+
+            # 7. 각 청크를 DEK로 복호화 (팀 키가 아님!)
             decrypted_chunks = []
-            for chunk in chunks:
+            for chunk in document_chunks:
                 chunk_index = chunk["chunkIndex"]
                 encrypted_blob = chunk["encryptedBlob"]
                 version = chunk["version"]
 
                 # byte[] → Base64 변환 (필요시)
                 if isinstance(encrypted_blob, list):
-                    import base64
                     encrypted_blob = base64.b64encode(bytes(encrypted_blob)).decode('utf-8')
 
-                # 복호화
-                plaintext = self.crypto.decrypt_data(encrypted_blob, team_key)
+                # DEK로 복호화 (팀 키가 아님!)
+                plaintext = self.crypto.decrypt_data(encrypted_blob, dek)
 
                 decrypted_chunks.append({
                     "chunkIndex": chunk_index,
@@ -716,6 +817,77 @@ class ServeClient:
 
         except Exception as e:
             return None, f"팀 청크 동기화 오류: {str(e)}"
+
+    # ==================== 내부 헬퍼 메서드 ====================
+
+    def _reencrypt_all_documents(self, repo_id: str, new_team_key):
+        """
+        팀의 모든 문서 DEK를 새 팀 키로 재암호화 (Envelope Encryption)
+
+        Envelope Encryption:
+        - 청크 데이터는 변경하지 않음 (DEK로 이미 암호화됨)
+        - DEK만 이전 팀 키로 언래핑 → 새 팀 키로 래핑
+        - 작은 메타데이터만 업데이트 (대용량 데이터 재암호화 불필요)
+
+        Args:
+            repo_id: 팀 ID
+            new_team_key: 새로 생성된 팀 키 (KeysetHandle)
+        """
+        import base64
+
+        # 1. 현재 팀 키 백업 (이전 키)
+        old_team_key = self.session.get_cached_team_key(repo_id)
+        if not old_team_key:
+            raise ValueError("이전 팀 키를 찾을 수 없습니다")
+
+        # 2. 모든 문서 조회
+        success, documents = self.api.get_documents(repo_id, self.session.access_token)
+        if not success:
+            raise RuntimeError(f"문서 목록 조회 실패: {documents}")
+
+        # 3. 각 문서의 DEK 재암호화
+        reencrypted_docs = []
+        for doc in documents:
+            doc_id = doc.get("docId")
+            encrypted_dek_bytes = doc.get("encryptedDEK")
+
+            if not encrypted_dek_bytes:
+                # Envelope Encryption 미적용 문서는 스킵
+                continue
+
+            # 3-1. byte[] → Base64 변환 (필요시)
+            if isinstance(encrypted_dek_bytes, list):
+                encrypted_dek = base64.b64encode(bytes(encrypted_dek_bytes)).decode('utf-8')
+            elif isinstance(encrypted_dek_bytes, bytes):
+                encrypted_dek = base64.b64encode(encrypted_dek_bytes).decode('utf-8')
+            else:
+                encrypted_dek = encrypted_dek_bytes  # 이미 Base64 문자열
+
+            # 3-2. 이전 팀 키로 DEK 언래핑(복호화)
+            try:
+                dek = self.crypto.unwrap_key_with_aes(encrypted_dek, old_team_key)
+            except Exception as e:
+                # 복호화 실패 시 스킵 (이미 새 키로 암호화되었거나 손상됨)
+                print(f"경고: 문서 {doc_id} DEK 복호화 실패: {e}")
+                continue
+
+            # 3-3. 새 팀 키로 DEK 래핑(암호화)
+            new_encrypted_dek = self.crypto.wrap_key_with_aes(dek, new_team_key)
+
+            reencrypted_docs.append({
+                "documentId": doc_id,
+                "newEncryptedDEK": new_encrypted_dek  # Base64 문자열
+            })
+
+        # 4. 서버에 재암호화된 DEK 전송 (청크 데이터는 변경 없음!)
+        if reencrypted_docs:
+            success, msg = self.api.reencrypt_document_keys(
+                repo_id,
+                reencrypted_docs,
+                self.session.access_token
+            )
+            if not success:
+                raise RuntimeError(f"DEK 재암호화 실패: {msg}")
 
     # ==================== 디버그 유틸 ====================
 

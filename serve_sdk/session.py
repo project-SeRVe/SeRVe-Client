@@ -17,18 +17,11 @@ class Session:
     """
     Zero-Trust 아키텍처를 위한 클라이언트 측 메모리 저장소
 
-    Singleton 패턴으로 구현하여 앱 전체에서 단일 인스턴스 사용
+    각 ServeClient 인스턴스마다 독립적인 세션을 유지합니다.
+    여러 사용자가 동시에 로그인할 수 있도록 Singleton 패턴을 제거했습니다.
     """
 
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(Session, cls).__new__(cls)
-            cls._instance._initialize()
-        return cls._instance
-
-    def _initialize(self):
+    def __init__(self):
         """세션 초기화"""
         self.access_token: Optional[str] = None
         self.user_id: Optional[str] = None  # UUID 문자열

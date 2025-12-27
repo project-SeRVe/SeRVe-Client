@@ -160,6 +160,52 @@ class CryptoUtils:
         # 3. JSON을 AES 핸들로 변환
         return self.parse_aes_key_json(decrypted_json.decode('utf-8'))
 
+    def wrap_key_with_aes(self, dek_handle, kek_handle) -> str:
+        """
+        AES 키(DEK)를 다른 AES 키(KEK)로 래핑 (Envelope Encryption용)
+
+        Envelope Encryption:
+        - DEK(Data Encryption Key): 실제 데이터를 암호화하는 키
+        - KEK(Key Encryption Key): DEK를 암호화하는 키 (팀 키)
+
+        Args:
+            dek_handle: 래핑할 DEK (Data Encryption Key)
+            kek_handle: 래핑에 사용할 KEK (Key Encryption Key, 팀 키)
+
+        Returns:
+            str: Base64로 인코딩된 암호화된 DEK
+        """
+        # 1. DEK를 JSON으로 직렬화
+        dek_json = self.serialize_aes_key(dek_handle)
+
+        # 2. KEK로 암호화
+        env_aead = kek_handle.primitive(aead.Aead)
+        encrypted_bytes = env_aead.encrypt(dek_json.encode('utf-8'), b'')
+
+        # 3. Base64 인코딩 (전송용)
+        return base64.b64encode(encrypted_bytes).decode('utf-8')
+
+    def unwrap_key_with_aes(self, encrypted_dek_b64: str, kek_handle):
+        """
+        AES 키(KEK)로 래핑된 DEK를 언래핑 (Envelope Encryption용)
+
+        Args:
+            encrypted_dek_b64: Base64로 인코딩된 암호화된 DEK
+            kek_handle: KEK (Key Encryption Key, 팀 키)
+
+        Returns:
+            KeysetHandle: 복호화된 DEK 핸들
+        """
+        # 1. Base64 디코딩
+        encrypted_bytes = base64.b64decode(encrypted_dek_b64)
+
+        # 2. KEK로 복호화
+        env_aead = kek_handle.primitive(aead.Aead)
+        decrypted_json = env_aead.decrypt(encrypted_bytes, b'')
+
+        # 3. JSON을 AES 핸들로 변환
+        return self.parse_aes_key_json(decrypted_json.decode('utf-8'))
+
     # ==================== 데이터 암복호화 ====================
 
     def encrypt_data(self, plaintext: str, aes_handle) -> str:

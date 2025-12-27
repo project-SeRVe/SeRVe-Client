@@ -247,8 +247,13 @@ class ApiClient:
                 },
                 headers=self._get_headers(access_token)
             )
-            success, _ = self._handle_response(resp)
-            return success, "멤버 초대 성공" if success else "멤버 초대 실패"
+            success, data = self._handle_response(resp)
+            if success:
+                return True, "멤버 초대 성공"
+            else:
+                # 서버 에러 메시지 반환
+                error_msg = data if isinstance(data, str) else str(data)
+                return False, f"멤버 초대 실패: {error_msg}"
         except Exception as e:
             return False, f"멤버 초대 오류: {str(e)}"
 
@@ -264,16 +269,32 @@ class ApiClient:
             return False, f"멤버 목록 조회 오류: {str(e)}"
 
     def kick_member(self, repo_id: str, target_user_id: str, admin_id: str,
-                   access_token: str) -> Tuple[bool, str]:
-        """멤버 강퇴"""
+                   access_token: str) -> Tuple[bool, any]:
+        """
+        멤버 강퇴 (자동 키 로테이션 지원)
+
+        Returns:
+            (success, response_data)
+            response_data 형식:
+            {
+                "success": true,
+                "keyRotationRequired": true,
+                "message": "...",
+                "keyRotationReason": "...",
+                "remainingMembers": [
+                    {"userId": "...", "email": "...", "publicKey": "..."},
+                    ...
+                ]
+            }
+        """
         try:
             resp = self.session.delete(
                 f"{self.server_url}/api/teams/{repo_id}/members/{target_user_id}",
                 params={"adminId": admin_id},
                 headers=self._get_headers(access_token)
             )
-            success, _ = self._handle_response(resp)
-            return success, "멤버 강퇴 성공" if success else "멤버 강퇴 실패"
+            success, data = self._handle_response(resp)
+            return success, data  # 응답 데이터 그대로 반환
         except Exception as e:
             return False, f"멤버 강퇴 오류: {str(e)}"
 
@@ -291,6 +312,30 @@ class ApiClient:
             return success, "권한 변경 성공" if success else "권한 변경 실패"
         except Exception as e:
             return False, f"권한 변경 오류: {str(e)}"
+
+    def rotate_team_keys(self, repo_id: str, member_keys: list,
+                        access_token: str) -> Tuple[bool, str]:
+        """
+        팀 키 로테이션 (일괄 업데이트)
+
+        Args:
+            repo_id: 팀 ID
+            member_keys: [{"userId": "...", "encryptedTeamKey": "..."}, ...]
+            access_token: JWT 토큰
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        try:
+            resp = self.session.post(
+                f"{self.server_url}/api/teams/{repo_id}/members/rotate-keys",
+                json={"memberKeys": member_keys},
+                headers=self._get_headers(access_token)
+            )
+            success, _ = self._handle_response(resp)
+            return success, "키 로테이션 성공" if success else "키 로테이션 실패"
+        except Exception as e:
+            return False, f"키 로테이션 오류: {str(e)}"
 
     # ==================== 문서 API ====================
 
@@ -328,24 +373,14 @@ class ApiClient:
         except Exception as e:
             return False, f"문서 업로드 오류: {str(e)}"
 
+    # [DEPRECATED] 다운로드 기능 제거 - Federated Model에서는 동기화만 사용
     def get_document(self, doc_id: str, access_token: str) -> Tuple[bool, Optional[Dict]]:
         """
-        문서 다운로드
+        [사용 중단] 문서 다운로드 (Federated Model에서 지원하지 않음)
 
-        Args:
-            doc_id: 문서 ID (UUID 문자열)
-
-        Returns:
-            (성공 여부, {content: 암호화된 내용, ...} 또는 에러 메시지)
+        대신 sync_team_chunks()를 사용하세요.
         """
-        try:
-            resp = self.session.get(
-                f"{self.server_url}/api/documents/{doc_id}/data",
-                headers=self._get_headers(access_token)
-            )
-            return self._handle_response(resp)
-        except Exception as e:
-            return False, f"문서 다운로드 오류: {str(e)}"
+        return False, "다운로드 기능은 Federated Model에서 지원하지 않습니다. sync_team_chunks()를 사용하세요."
 
     def get_documents(self, repo_id: str, access_token: str) -> Tuple[bool, Optional[List]]:
         """
@@ -387,17 +422,14 @@ class ApiClient:
         except Exception as e:
             return False, f"문서 삭제 오류: {str(e)}"
 
-    # ==================== 벡터 청크 API ====================
-
-    def upload_chunks(self, team_id: str, file_name: str, chunks: List[Dict[str, Any]],
-                     access_token: str) -> Tuple[bool, str]:
+    def reencrypt_document_keys(self, team_id: str, documents: List[Dict[str, str]],
+                                access_token: str) -> Tuple[bool, str]:
         """
-        벡터 청크 배치 업로드
+        문서 DEK 재암호화 (Envelope Encryption, 키 로테이션용)
 
         Args:
-            team_id: 팀 ID (UUID 문자열)
-            file_name: 파일명 (문서 식별용)
-            chunks: 청크 목록 [{"chunkIndex": int, "encryptedBlob": str (Base64)}, ...]
+            team_id: 팀 ID
+            documents: 문서 목록 [{"documentId": str, "newEncryptedDEK": str (Base64)}, ...]
             access_token: 인증 토큰
 
         Returns:
@@ -405,8 +437,42 @@ class ApiClient:
         """
         try:
             resp = self.session.post(
+                f"{self.server_url}/api/teams/{team_id}/documents/reencrypt-keys",
+                json={"documents": documents},
+                headers=self._get_headers(access_token)
+            )
+            success, data = self._handle_response(resp)
+            return success, "DEK 재암호화 성공" if success else f"DEK 재암호화 실패: {data}"
+        except Exception as e:
+            return False, f"DEK 재암호화 오류: {str(e)}"
+
+    # ==================== 벡터 청크 API ====================
+
+    def upload_chunks(self, team_id: str, file_name: str, chunks: List[Dict[str, Any]],
+                     access_token: str, encrypted_dek: Optional[str] = None) -> Tuple[bool, str]:
+        """
+        벡터 청크 배치 업로드 (Envelope Encryption 지원)
+
+        Args:
+            team_id: 팀 ID (UUID 문자열)
+            file_name: 파일명 (문서 식별용)
+            chunks: 청크 목록 [{"chunkIndex": int, "encryptedBlob": str (Base64)}, ...]
+            access_token: 인증 토큰
+            encrypted_dek: 팀 키로 암호화된 DEK (Base64, Envelope Encryption용)
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        try:
+            payload = {"fileName": file_name, "chunks": chunks}
+
+            # Envelope Encryption: encryptedDEK 추가
+            if encrypted_dek:
+                payload["encryptedDEK"] = encrypted_dek
+
+            resp = self.session.post(
                 f"{self.server_url}/api/teams/{team_id}/chunks",
-                json={"fileName": file_name, "chunks": chunks},
+                json=payload,
                 headers=self._get_headers(access_token)
             )
             success, data = self._handle_response(resp)
@@ -414,28 +480,14 @@ class ApiClient:
         except Exception as e:
             return False, f"청크 업로드 오류: {str(e)}"
 
+    # [DEPRECATED] 다운로드 기능 제거 - Federated Model에서는 동기화만 사용
     def download_chunks(self, team_id: str, file_name: str, access_token: str) -> Tuple[bool, Optional[List[Dict]]]:
         """
-        문서의 모든 청크 다운로드
+        [사용 중단] 문서의 모든 청크 다운로드 (Federated Model에서 지원하지 않음)
 
-        Args:
-            team_id: 팀 ID (UUID 문자열)
-            file_name: 파일명 (문서 식별용)
-            access_token: 인증 토큰
-
-        Returns:
-            (성공 여부, 청크 목록 또는 에러 메시지)
-            청크 형식: [{"chunkId": str, "chunkIndex": int, "encryptedBlob": bytes, "version": int}, ...]
+        대신 sync_team_chunks()를 사용하세요.
         """
-        try:
-            resp = self.session.get(
-                f"{self.server_url}/api/teams/{team_id}/chunks",
-                params={"fileName": file_name},
-                headers=self._get_headers(access_token)
-            )
-            return self._handle_response(resp)
-        except Exception as e:
-            return False, f"청크 다운로드 오류: {str(e)}"
+        return False, "청크 다운로드는 Federated Model에서 지원하지 않습니다. sync_team_chunks()를 사용하세요."
 
     def delete_chunk(self, doc_id: str, chunk_index: int, access_token: str) -> Tuple[bool, str]:
         """

@@ -1,0 +1,41 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# 시스템 패키지 업데이트 및 필수 도구 설치
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python 패키지 복사 및 설치
+COPY src/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 애플리케이션 코드 복사
+COPY serve_sdk/ ./serve_sdk/
+COPY src/ ./src/
+
+# 데이터 및 로그 디렉터리 생성
+RUN mkdir -p /app/data /app/logs
+
+# 환경 변수 기본값 설정
+ENV CLOUD_URL=http://localhost:8080
+ENV EDGE_EMAIL=edge@serve.local
+ENV EDGE_PASSWORD=edge123
+ENV SYNC_INTERVAL=30
+ENV VECTORSTORE_PATH=/app/data/vectorstore
+ENV SYNC_VERSION_FILE=/app/data/sync_version.txt
+
+# FastAPI 서버 포트 노출
+EXPOSE 9000
+
+# 헬스체크 (선택사항)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:9000/api/status || exit 1
+
+# src 디렉터리를 PYTHONPATH에 추가하여 vision_engine import 가능하게 설정
+ENV PYTHONPATH=/app/src:$PYTHONPATH
+
+# Edge 서버 실행
+CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "9000"]

@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # Edge Server A (Team A Member)
+  edge-server-a:
+    build:
+      context: .
+      dockerfile: Dockerfile.edge
+    container_name: edge-server-a
+    environment:
+      - CLOUD_URL=http://172.18.0.1:8080
+      - EDGE_EMAIL=edge_a@serve.local
+      - EDGE_PASSWORD=edge123
+      - TEAM_ID=${TEAM_A_ID:-}
+      - SYNC_INTERVAL=10
+      - VECTORSTORE_PATH=/app/data/vectorstore
+      - SYNC_VERSION_FILE=/app/data/sync_version.txt
+    volumes:
+      - ./data/edge-a:/app/data
+      - ./logs/edge-a:/app/logs
+    ports:
+      - "9001:9000"
+    networks:
+      - serve-network
+    restart: unless-stopped
+
+  # Edge Server B (Team B Member)
+  edge-server-b:
+    build:
+      context: .
+      dockerfile: Dockerfile.edge
+    container_name: edge-server-b
+    environment:
+      - CLOUD_URL=http://172.18.0.1:8080
+      - EDGE_EMAIL=edge_b@serve.local
+      - EDGE_PASSWORD=edge123
+      - TEAM_ID=${TEAM_B_ID:-}
+      - SYNC_INTERVAL=10
+      - VECTORSTORE_PATH=/app/data/vectorstore
+      - SYNC_VERSION_FILE=/app/data/sync_version.txt
+    volumes:
+      - ./data/edge-b:/app/data
+      - ./logs/edge-b:/app/logs
+    ports:
+      - "9002:9000"
+    networks:
+      - serve-network
+    restart: unless-stopped
+
+  # Edge Server C (Team A Member - 같은 팀)
+  edge-server-c:
+    build:
+      context: .
+      dockerfile: Dockerfile.edge
+    container_name: edge-server-c
+    environment:
+      - CLOUD_URL=http://172.18.0.1:8080
+      - EDGE_EMAIL=edge_c@serve.local
+      - EDGE_PASSWORD=edge123
+      - TEAM_ID=${TEAM_A_ID:-}
+      - SYNC_INTERVAL=10
+      - VECTORSTORE_PATH=/app/data/vectorstore
+      - SYNC_VERSION_FILE=/app/data/sync_version.txt
+    volumes:
+      - ./data/edge-c:/app/data
+      - ./logs/edge-c:/app/logs
+    ports:
+      - "9003:9000"
+    networks:
+      - serve-network
+    restart: unless-stopped
+
+networks:
+  serve-network:
+    driver: bridge
