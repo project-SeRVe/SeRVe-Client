@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from serve_sdk import ServeClient
 from vision_engine import VisionEngine
+from config import SERVER_URL, ROBOT_ID
 
 # 로깅 설정
 log_dir = Path(__file__).parent.parent / "logs"
@@ -47,14 +48,15 @@ vision_engine: Optional[VisionEngine] = None
 local_vectorstore = None
 last_sync_version: int = 0  # 마지막 동기화 버전
 
-# 환경 변수에서 설정 로드
-CLOUD_URL = os.getenv("CLOUD_URL", "http://localhost:8080")
+# 환경 변수에서 설정 로드 (config.py를 기본값으로 사용)
+CLOUD_URL = os.getenv("CLOUD_URL", SERVER_URL)
 EDGE_EMAIL = os.getenv("EDGE_EMAIL", "edge@serve.local")
 EDGE_PASSWORD = os.getenv("EDGE_PASSWORD", "edge123")
 TEAM_ID = os.getenv("TEAM_ID", None)
 VECTORSTORE_PATH = os.getenv("VECTORSTORE_PATH", "./local_vectorstore")
 SYNC_VERSION_FILE = os.getenv("SYNC_VERSION_FILE", "./sync_version.txt")
 SYNC_INTERVAL = int(os.getenv("SYNC_INTERVAL", "30"))  # 동기화 주기 (초)
+DEFAULT_ROBOT_ID = os.getenv("ROBOT_ID", ROBOT_ID)
 
 # Pydantic 모델 정의
 class SensorData(BaseModel):

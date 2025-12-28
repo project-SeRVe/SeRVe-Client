@@ -1,5 +1,9 @@
-import streamlit as st
+import sys
 import os
+# Add parent directory to Python path to import serve_sdk
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+import streamlit as st
 from PIL import Image
 import io
 import requests
@@ -9,6 +13,7 @@ from config import SERVER_URL
 
 # 페이지 설정
 st.set_page_config(page_title="SeRVe: Secure Edge AI", layout="wide")
+
 
 # 세션 상태 초기화
 if 'serve_client' not in st.session_state:
