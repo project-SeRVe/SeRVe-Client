@@ -10,3 +10,7 @@ local_vectorstore/
 logs/
 *.log
 logs/suricata/
+
+# Local config (ignore actual config, keep example)
+src/config.py
+!src/config.py.example
