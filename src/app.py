@@ -135,8 +135,8 @@ if not st.session_state.server_connected:
         server_url_input = st.text_input(
             "서버 URL",
             value=st.session_state.server_url,
-            placeholder="http://localhost:8080",
-            help="SeRVe 서버의 주소를 입력하세요 (예: http://localhost:8080)"
+            placeholder="http://172.18.0.1:8080",
+            help="SeRVe 서버의 주소를 입력하세요 (예: http://172.18.0.1:8080)"
         )
 
     with col2:
