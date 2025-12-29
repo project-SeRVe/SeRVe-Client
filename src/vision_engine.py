@@ -25,36 +25,34 @@ class VisionEngine:
         self.embeddings = None  # Lazy loading
         self.clip_embeddings = None  # NEW: CLIP for multimodal
 
+        # Ollama 클라이언트 초기화 (환경변수 사용)
+        import os
+        ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        self.ollama_client = ollama.Client(host=ollama_url)
+
     def _get_embeddings(self):
         """Get or create embeddings instance (lazy loading)
 
         Returns:
-            CLIP embeddings if use_multimodal=True, else nomic-embed-text
+            Ollama embeddings (768-dim)
         """
-        if self.use_multimodal:
-            # Use CLIP for both text and images (512-dim embeddings)
-            if self.clip_embeddings is None:
-                from clip_embeddings import CLIPEmbeddings
-                self.clip_embeddings = CLIPEmbeddings()
-            return self.clip_embeddings
-        else:
-            # Use text-only embeddings (768-dim)
-            if self.embeddings is None:
-                import os
-                ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-                self.embeddings = OllamaEmbeddings(
-                    model=self.embedding_model,
-                    base_url=ollama_url
-                )
-            return self.embeddings
+        # 항상 Ollama API 사용 (로컬 모델 다운로드 불필요)
+        if self.embeddings is None:
+            import os
+            from ollama_embeddings import OllamaEmbeddings
+            ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+            self.embeddings = OllamaEmbeddings(
+                model_name=self.embedding_model,
+                base_url=ollama_url
+            )
+        return self.embeddings
 
     def analyze_image(self, image_bytes, prompt="Describe this image in detail."):
         """
-        [기존 메서드 - 변경 없음]
         이미지 바이트와 프롬프트를 받아 Ollama(LLaVA)에게 분석을 요청합니다.
         """
         try:
-            response = ollama.chat(
+            response = self.ollama_client.chat(
                 model=self.model_name,
                 messages=[
                     {
