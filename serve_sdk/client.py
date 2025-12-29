@@ -667,6 +667,73 @@ class ServeClient:
         except Exception as e:
             return None, f"청크 다운로드 오류: {str(e)}"
 
+    def get_encrypted_chunks_from_document(self, file_name: str, repo_id: str) -> Tuple[Optional[List[Dict]], str]:
+        """
+        서버 관리자 뷰용: 암호화된 청크 데이터 가져오기 (복호화하지 않음)
+
+        Args:
+            file_name: 파일명 (문서 식별용)
+            repo_id: 저장소 ID
+
+        Returns:
+            (청크 목록, 메시지)
+            청크 형식: [{"chunkIndex": int, "encryptedData": str (암호화된 데이터), "version": int}, ...]
+        """
+        self._ensure_authenticated()
+
+        try:
+            # 1. 문서 목록 조회하여 fileName → documentId 가져오기
+            success, documents = self.api.get_documents(repo_id, self.session.access_token)
+            if not success:
+                return None, f"문서 목록 조회 실패: {documents}"
+
+            # 2. fileName으로 documentId 찾기
+            document_id = None
+            for doc in documents:
+                if doc.get("fileName") == file_name:
+                    document_id = doc.get("docId")
+                    break
+
+            if not document_id:
+                return None, f"문서를 찾을 수 없습니다: {file_name}"
+
+            # 3. 동기화 API로 팀의 모든 청크 가져오기
+            success, all_chunks = self.api.sync_team_chunks(repo_id, -1, self.session.access_token)
+            if not success:
+                return None, f"청크 동기화 실패: {all_chunks}"
+
+            # 4. 해당 문서의 청크만 필터링 (암호화된 상태 그대로)
+            import base64
+            encrypted_chunks = []
+            for chunk in all_chunks:
+                if chunk.get("documentId") == document_id and not chunk.get("isDeleted", False):
+                    encrypted_blob = chunk.get("encryptedBlob")
+
+                    # byte[] → Base64 변환
+                    if isinstance(encrypted_blob, list):
+                        encrypted_data = base64.b64encode(bytes(encrypted_blob)).decode('utf-8')
+                    elif isinstance(encrypted_blob, bytes):
+                        encrypted_data = base64.b64encode(encrypted_blob).decode('utf-8')
+                    else:
+                        encrypted_data = encrypted_blob
+
+                    encrypted_chunks.append({
+                        "chunkIndex": chunk["chunkIndex"],
+                        "encryptedData": encrypted_data,
+                        "version": chunk["version"]
+                    })
+
+            if not encrypted_chunks:
+                return None, f"문서에 청크가 없습니다: {file_name}"
+
+            # chunkIndex로 정렬
+            encrypted_chunks.sort(key=lambda x: x["chunkIndex"])
+
+            return encrypted_chunks, "암호화된 청크 조회 성공"
+
+        except Exception as e:
+            return None, f"암호화된 청크 조회 오류: {str(e)}"
+
     def delete_chunk_from_document(self, doc_id: str, chunk_index: int) -> Tuple[bool, str]:
         """
         특정 청크 삭제

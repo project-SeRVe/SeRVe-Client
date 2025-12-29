@@ -817,7 +817,7 @@ else:
                                     doc_name = doc.get('fileName', 'Unknown')
 
                                     chunks, chunk_msg = st.session_state.serve_client.download_chunks_from_document(
-                                        doc_id, repo_id
+                                        doc_name, repo_id
                                     )
 
                                     if chunks is not None:
@@ -1365,22 +1365,76 @@ else:
         if not st.session_state.current_repo:
             st.warning("저장소를 먼저 선택해주세요.")
         else:
-            # 탭 진입 시 자동으로 문서 목록 조회
-            if 'current_documents' not in st.session_state:
-                repo_id = get_current_repo_id()
-                docs, msg = st.session_state.serve_client.get_documents(repo_id)
-                if docs is not None:
-                    st.session_state.current_documents = docs
+            # 탭 진입 시 자동으로 문서 청크 목록 조회
+            if 'zero_trust_chunks_by_doc' not in st.session_state:
+                try:
+                    repo_id = get_current_repo_id()
+                    docs, msg = st.session_state.serve_client.get_documents(repo_id)
+
+                    if docs is not None:
+                        chunks_by_doc = {}
+                        for doc in docs:
+                            doc_id = doc.get('docId')
+                            doc_name = doc.get('fileName', 'Unknown')
+
+                            # 복호화된 청크 가져오기 (사용자 뷰용)
+                            chunks, chunk_msg = st.session_state.serve_client.download_chunks_from_document(
+                                doc_name, repo_id
+                            )
+
+                            # 암호화된 청크 가져오기 (서버 관리자 뷰용)
+                            encrypted_chunks, enc_msg = st.session_state.serve_client.get_encrypted_chunks_from_document(
+                                doc_name, repo_id
+                            )
+
+                            if chunks is not None and len(chunks) > 0:
+                                chunks_by_doc[doc_id] = {
+                                    'name': doc_name,
+                                    'chunks': chunks,
+                                    'encrypted_chunks': encrypted_chunks if encrypted_chunks else [],
+                                    'doc': doc
+                                }
+
+                        st.session_state.zero_trust_chunks_by_doc = chunks_by_doc
+                except Exception as e:
+                    st.error(f"문서 로드 실패: {str(e)}")
 
             # 새로고침 버튼
             if st.button("문서 목록 새로고침", key="refresh_docs_tab5"):
-                repo_id = get_current_repo_id()
-                docs, msg = st.session_state.serve_client.get_documents(repo_id)
-                if docs is not None:
-                    st.session_state.current_documents = docs
-                    st.success(f"{len(docs)}개 문서 로드됨")
-                else:
-                    st.error(msg)
+                try:
+                    repo_id = get_current_repo_id()
+                    docs, msg = st.session_state.serve_client.get_documents(repo_id)
+
+                    if docs is not None:
+                        chunks_by_doc = {}
+                        for doc in docs:
+                            doc_id = doc.get('docId')
+                            doc_name = doc.get('fileName', 'Unknown')
+
+                            # 복호화된 청크 가져오기 (사용자 뷰용)
+                            chunks, chunk_msg = st.session_state.serve_client.download_chunks_from_document(
+                                doc_name, repo_id
+                            )
+
+                            # 암호화된 청크 가져오기 (서버 관리자 뷰용)
+                            encrypted_chunks, enc_msg = st.session_state.serve_client.get_encrypted_chunks_from_document(
+                                doc_name, repo_id
+                            )
+
+                            if chunks is not None and len(chunks) > 0:
+                                chunks_by_doc[doc_id] = {
+                                    'name': doc_name,
+                                    'chunks': chunks,
+                                    'encrypted_chunks': encrypted_chunks if encrypted_chunks else [],
+                                    'doc': doc
+                                }
+
+                        st.session_state.zero_trust_chunks_by_doc = chunks_by_doc
+                        st.success(f"{len(chunks_by_doc)}개 문서 로드됨")
+                    else:
+                        st.error(msg)
+                except Exception as e:
+                    st.error(f"문서 로드 실패: {str(e)}")
 
             st.divider()
             col1, col2 = st.columns([1, 1])
@@ -1389,28 +1443,44 @@ else:
                 st.markdown("### 사용자 뷰 (복호화됨)")
                 st.success("클라이언트에서 복호화된 데이터를 볼 수 있습니다")
 
-                # 현재 저장소의 문서 목록 가져오기
-                if 'current_documents' in st.session_state and st.session_state.current_documents:
-                    for idx, doc in enumerate(st.session_state.current_documents[-3:]):  # 최근 3개만 표시
-                        doc_id = doc.get('documentId') or doc.get('docId')
-                        file_name = doc.get('originalFileName') or doc.get('fileName', 'Unknown')
-                        with st.expander(f"문서 {idx+1}: {file_name}", expanded=(idx==0)):
-                            # 클라이언트에서 복호화
+                # 현재 저장소의 문서 청크 목록 가져오기
+                if 'zero_trust_chunks_by_doc' in st.session_state and st.session_state.zero_trust_chunks_by_doc:
+                    chunks_by_doc = st.session_state.zero_trust_chunks_by_doc
+                    # createdAt 기준으로 정렬 후 최근 3개 문서만 표시
+                    sorted_items = sorted(
+                        chunks_by_doc.items(),
+                        key=lambda x: x[1]['doc'].get('createdAt', ''),
+                        reverse=True
+                    )
+                    doc_items = sorted_items[:3]
+
+                    for idx, (doc_id, doc_info) in enumerate(doc_items):
+                        file_name = doc_info['name']
+                        chunks = doc_info['chunks']
+
+                        with st.expander(f"문서 {idx+1}: {file_name} ({len(chunks)}개 청크)", expanded=(idx==0)):
+                            # 청크 데이터 복호화하여 표시
                             try:
-                                if doc_id:
-                                    decrypted = st.session_state.serve_client.download_document(doc_id)
-                                    if decrypted:
-                                        st.text_area(
-                                            "복호화된 내용:",
-                                            value=decrypted.decode('utf-8') if isinstance(decrypted, bytes) else str(decrypted),
-                                            height=150,
-                                            key=f"decrypted_{idx}"
-                                        )
+                                if chunks and len(chunks) > 0:
+                                    # 모든 청크 데이터를 합쳐서 표시
+                                    all_content = []
+                                    for chunk in chunks:
+                                        chunk_data = chunk.get('data', '')
+                                        if chunk_data:
+                                            all_content.append(chunk_data)
+
+                                    combined_content = '\n'.join(all_content)
+                                    st.text_area(
+                                        "복호화된 내용:",
+                                        value=combined_content,
+                                        height=200,
+                                        key=f"decrypted_{idx}"
+                                    )
                                 else:
-                                    st.error("문서 ID를 찾을 수 없습니다")
+                                    st.warning("청크가 없습니다")
                             except Exception as e:
                                 st.error(f"복호화 실패: {str(e)}")
-                                st.json(doc)
+                                st.json(doc_info['doc'])
                 else:
                     st.info("저장소에 문서가 없습니다.")
 
@@ -1419,42 +1489,34 @@ else:
                 st.error("서버는 암호화된 바이너리만 보며, 내용을 알 수 없습니다")
 
                 # 서버의 암호화된 데이터 보여주기
-                if 'current_documents' in st.session_state and st.session_state.current_documents:
-                    for idx, doc in enumerate(st.session_state.current_documents[-3:]):
-                        doc_id = doc.get('documentId') or doc.get('docId')
-                        file_name = doc.get('originalFileName') or doc.get('fileName', 'Unknown')
-                        with st.expander(f"문서 {idx+1} (서버 DB)", expanded=(idx==0)):
-                            st.json({
-                                "documentId": doc_id or 'Unknown',
-                                "originalFileName": file_name,
-                                "uploadedAt": doc.get('uploadedAt', 'Unknown'),
-                                "teamId": doc.get('teamId') or doc.get('Teamid', 'Unknown')
-                            })
+                if 'zero_trust_chunks_by_doc' in st.session_state and st.session_state.zero_trust_chunks_by_doc:
+                    chunks_by_doc = st.session_state.zero_trust_chunks_by_doc
+                    # createdAt 기준으로 정렬 후 최근 3개 문서만 표시
+                    sorted_items = sorted(
+                        chunks_by_doc.items(),
+                        key=lambda x: x[1]['doc'].get('createdAt', ''),
+                        reverse=True
+                    )
+                    doc_items = sorted_items[:3]
 
-                            # 암호화된 데이터 미리보기 (hex)
-                            try:
-                                if doc_id:
-                                    # 서버 API로 암호화된 데이터 가져오기
-                                    response = st.session_state.serve_client._make_request(
-                                        'GET',
-                                        f'/api/documents/{doc_id}/encrypted'
-                                    )
+                    for idx, (doc_id, doc_info) in enumerate(doc_items):
+                        file_name = doc_info['name']
+                        chunks = doc_info['chunks']
+                        encrypted_chunks = doc_info.get('encrypted_chunks', [])
+                        doc = doc_info['doc']
 
-                                    if response and 'encryptedData' in response:
-                                        encrypted_hex = response['encryptedData'][:200]  # 처음 200자만
-                                        st.code(f"암호화된 데이터 (Hex, 일부):\n{encrypted_hex}...", language="text")
-                                        st.caption("서버는 이 암호화된 바이너리 데이터만 저장하며, 복호화 키가 없어 내용을 알 수 없습니다.")
-                                    else:
-                                        # API가 없으면 시뮬레이션
-                                        st.code("암호화된 데이터 (시뮬레이션):\n4D8B7E2A1F3C9D0E5B8A2F1C7D4E9A0B3F6C1D8E5A2B7F9C3D0E6A1B8F4C2D9E...", language="text")
-                                        st.caption("서버는 이러한 암호화된 바이너리만 저장합니다 (Zero-Knowledge)")
-                                else:
-                                    st.code("암호화된 데이터 (시뮬레이션):\n4D8B7E2A1F3C9D0E5B8A2F1C7D4E9A0B3F6C1D8E5A2B7F9C3D0E6A1B8F4C2D9E...", language="text")
-                                    st.caption("서버는 이러한 암호화된 바이너리만 저장합니다 (Zero-Knowledge)")
-                            except Exception as e:
-                                # API가 없으면 시뮬레이션
-                                st.code("암호화된 데이터 (시뮬레이션):\n4D8B7E2A1F3C9D0E5B8A2F1C7D4E9A0B3F6C1D8E5A2B7F9C3D0E6A1B8F4C2D9E...", language="text")
-                                st.caption("서버는 이러한 암호화된 바이너리만 저장합니다 (Zero-Knowledge)")
+                        with st.expander(f"문서 {idx+1} (서버 DB - 암호화됨)", expanded=(idx==0)):
+                            # 서버에 저장된 암호화된 청크 데이터 표시
+                            if encrypted_chunks and len(encrypted_chunks) > 0:
+                                st.markdown("**암호화된 청크 데이터 (서버가 보는 내용):**")
+                                for i, enc_chunk in enumerate(encrypted_chunks[:3]):
+                                    encrypted_data = enc_chunk.get('encryptedData', '')
+                                    if encrypted_data:
+                                        preview = encrypted_data[:64] + "..." if len(encrypted_data) > 64 else encrypted_data
+                                        st.code(f"청크 {i}: {preview}", language=None)
+                                st.caption("서버는 암호화된 바이너리만 저장하며, 복호화 키가 없어 내용을 알 수 없습니다 (Zero-Knowledge)")
+                            else:
+                                st.warning("암호화된 청크 데이터를 가져올 수 없습니다.")
                 else:
                     st.info("저장소에 문서가 없습니다.")
 
@@ -1518,10 +1580,13 @@ else:
                             if event.get('event_type') == 'alert':
                                 src_ip = event.get('src_ip', 'N/A')
                                 dest_ip = event.get('dest_ip', 'N/A')
+                                http_url = event.get('http', {}).get('url', '')
 
                                 # 내부 통신 필터링 (172.28.0.1 -> 172.28.0.2)
+                                # 단, /api/sensor-data 경로는 표시
                                 if src_ip == '172.28.0.1' and dest_ip == '172.28.0.2':
-                                    continue
+                                    if '/api/sensor-data' not in http_url:
+                                        continue
 
                                 alerts.append({
                                     'timestamp': event.get('timestamp', 'N/A'),
