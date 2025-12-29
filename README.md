@@ -89,6 +89,27 @@
    TEAM_ID=your-team-id-here  # 저장소 ID 입력
    ```
 
+### Ollama 설정
+
+```bash
+# Ollama 설치
+curl -fsSL https://ollama.com/install.sh | sh
+
+# 모델 설치
+ollama pull llava:latest
+ollama pull nomic-embed-text:latest
+
+# 서비스 파일 편집
+sudo nano /etc/systemd/system/ollama.service
+# 이후 Environment 다음 라인에 OLLAMA_HOST 추가
+# Environment="OLLAMA_HOST=0.0.0.0:11434"
+
+# 서비스 재시작
+sudo systemctl daemon-reload
+sudo systemctl restart ollama
+sudo systemctl status ollama  # 확인
+```
+
 ### 실행
 
 ```bash
