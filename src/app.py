@@ -24,62 +24,9 @@ if 'serve_client' not in st.session_state:
     st.session_state.server_url = SERVER_URL
     st.session_state.success_message = None  # 성공 메시지 표시용
 
-    # 로컬 벡터DB 자동 로드 (디스크에 저장된 경우)
-    try:
-        vision = VisionEngine(use_multimodal=True)
-        loaded_vectorstore = vision.load_vector_store(
-            collection_name="serve_local_rag",
-            persist_directory="./local_vectorstore"
-        )
-        st.session_state.local_vectorstore = loaded_vectorstore
-        if loaded_vectorstore is None:
-            # 손상된 벡터스토어가 자동으로 정리되었을 수 있음
-            print("벡터스토어가 없거나 손상되어 초기화되었습니다.")
-    except Exception as e:
-        st.session_state.local_vectorstore = None
-        error_msg = str(e).lower()
-        print(f"벡터스토어 자동 로드 실패: {str(e)}")
-
-        # 읽기 전용 오류 또는 데이터베이스 오류 시 강력한 정리 수행
-        if "readonly" in error_msg or "database" in error_msg or "attempt to write" in error_msg:
-            print("손상된 벡터스토어 감지 - 강력한 정리 수행 중...")
-            try:
-                import shutil
-                import time
-                import gc
-
-                persist_dir = "./local_vectorstore"
-                if os.path.exists(persist_dir):
-                    # 가비지 컬렉션
-                    gc.collect()
-                    time.sleep(0.3)
-
-                    # 디렉토리 삭제 재시도
-                    max_retries = 3
-                    for retry in range(max_retries):
-                        try:
-                            shutil.rmtree(persist_dir)
-                            print("손상된 벡터스토어 디렉토리를 삭제했습니다.")
-                            break
-                        except Exception as retry_error:
-                            if retry < max_retries - 1:
-                                print(f"삭제 재시도 중... ({retry + 1}/{max_retries})")
-                                gc.collect()
-                                time.sleep(0.5)
-                            else:
-                                print(f"디렉토리 삭제 실패. 앱 재시작 후 다시 시도하거나 수동으로 '{persist_dir}' 디렉토리를 삭제해주세요.")
-            except Exception as cleanup_error:
-                print(f"정리 중 오류: {str(cleanup_error)}")
-        else:
-            # 다른 종류의 오류 - 일반 정리
-            try:
-                import shutil
-                persist_dir = "./local_vectorstore"
-                if os.path.exists(persist_dir):
-                    shutil.rmtree(persist_dir)
-                    print("벡터스토어 디렉토리를 삭제했습니다.")
-            except Exception as cleanup_error:
-                print(f"정리 중 오류: {str(cleanup_error)}")
+    # 로컬 벡터DB 초기화 (앱 시작 시 한 번만)
+    st.session_state.local_vectorstore = None
+    st.session_state.vectorstore_initialized = False
 
 # 서버 연결 확인 함수
 def check_server_connection(url):
@@ -226,6 +173,53 @@ elif not is_logged_in():
                             del st.session_state.current_documents
                         if 'current_members' in st.session_state:
                             del st.session_state.current_members
+
+                        # 로그인 성공 시 빈 벡터DB 자동 생성 (한 번만)
+                        if not st.session_state.get('vectorstore_initialized', False):
+                            try:
+                                import chromadb
+                                from chromadb.config import Settings
+                                from langchain_chroma import Chroma
+                                from vision_engine import VisionEngine
+
+                                persist_directory = os.path.abspath("./local_vectorstore")
+
+                                # 디렉토리가 없을 때만 생성
+                                if not os.path.exists(persist_directory):
+                                    os.makedirs(persist_directory, mode=0o777, exist_ok=True)
+
+                                # VisionEngine 인스턴스 생성
+                                vision = VisionEngine(use_multimodal=True)
+
+                                # ChromaDB 클라이언트 생성 또는 기존 것 사용
+                                settings = Settings(
+                                    allow_reset=True,
+                                    anonymized_telemetry=False,
+                                    is_persistent=True
+                                )
+                                client = chromadb.PersistentClient(path=persist_directory, settings=settings)
+
+                                # 벡터스토어 생성 또는 기존 것 로드
+                                vectorstore = Chroma(
+                                    collection_name="serve_local_rag",
+                                    embedding_function=vision._get_embeddings(),
+                                    client=client,
+                                    persist_directory=persist_directory
+                                )
+
+                                st.session_state.local_vectorstore = vectorstore
+                                st.session_state.vectorstore_initialized = True
+                            except Exception as e:
+                                # 에러 발생 시 기존 디렉토리 삭제 후 재시도
+                                try:
+                                    import shutil
+                                    if os.path.exists(persist_directory):
+                                        shutil.rmtree(persist_directory)
+                                except:
+                                    pass
+                                st.session_state.local_vectorstore = None
+                                st.session_state.vectorstore_initialized = False
+
                         st.success(msg)
                         st.rerun()
                     else:
@@ -271,7 +265,7 @@ else:
     # 사이드바: 사용자 정보 및 시스템 상태
     with st.sidebar:
         st.header("서버 연결 상태")
-        st.success(f"✓ {st.session_state.server_url}")
+        st.success(f"{st.session_state.server_url}")
         if st.button("서버 연결 변경", key="change_server_main"):
             st.session_state.server_connected = False
             st.session_state.serve_client.logout()
@@ -326,7 +320,7 @@ else:
             if 'my_repos' in st.session_state and st.session_state.my_repos:
                 for repo in st.session_state.my_repos:
                     repo_id = get_repo_id(repo)
-                    with st.expander(f"📁 {repo['name']} (ID: {repo_id})"):
+                    with st.expander(f"{repo['name']} (ID: {repo_id})"):
                         st.write(f"**설명:** {repo['description']}")
                         st.write(f"**타입:** {repo['type']}")
                         st.write(f"**소유자:** {repo['ownerEmail']}")
@@ -387,13 +381,13 @@ else:
         st.subheader("로컬 벡터DB 관리")
 
         # ========== 로컬 벡터DB 상태 표시 ==========
-        st.write("## 📊 벡터DB 상태")
+        st.write("## 벡터DB 상태")
         if st.session_state.local_vectorstore:
             col_status1, col_status2 = st.columns([3, 1])
             with col_status1:
-                st.success(f"✓ 로컬 벡터DB 활성화됨")
+                st.success(f"로컬 벡터DB 활성화됨")
             with col_status2:
-                if st.button("🗑️ 초기화", help="벡터DB를 삭제하고 새로 시작합니다"):
+                if st.button("초기화", help="벡터DB를 삭제하고 새로 시작합니다"):
                     try:
                         vision = VisionEngine(use_multimodal=True)
                         # ChromaDB 리소스를 안전하게 정리
@@ -416,81 +410,15 @@ else:
                         st.session_state.local_vectorstore = None
                         st.rerun()
         else:
-            st.info("로컬 벡터DB가 없습니다. 아래에서 새로 생성하세요.")
+            st.info("로컬 벡터DB가 활성화되지 않았습니다. 로그인하면 자동으로 생성됩니다.")
 
         st.divider()
 
-        # ========== 1. 이미지로 벡터DB 생성 ==========
-        st.write("## 1️⃣ 이미지로 벡터DB 생성")
-
-        if st.session_state.local_vectorstore:
-            st.info("💡 벡터DB가 이미 생성되어 있습니다. 새로 생성하려면 먼저 초기화하세요.")
-        else:
-            col_create1, col_create2 = st.columns(2)
-
-            with col_create1:
-                st.write("### 이미지 업로드")
-                uploaded_image_create = st.file_uploader(
-                    "이미지 선택 (JPG, PNG)",
-                    type=['jpg', 'png', 'jpeg'],
-                    key="create_image_file"
-                )
-
-                if uploaded_image_create:
-                    from PIL import Image
-                    image = Image.open(uploaded_image_create)
-                    st.image(image, caption="업로드된 이미지", width=300)
-
-            with col_create2:
-                st.write("### 캡션 입력")
-                image_document_name_create = st.text_input(
-                    "문서 이름",
-                    "Equipment Photos",
-                    key="create_image_doc_name"
-                )
-                image_caption_create = st.text_area(
-                    "이미지 설명 (캡션)",
-                    "Hydraulic valve Type-K, max pressure 500bar",
-                    height=100,
-                    key="create_image_caption"
-                )
-
-                st.info("💡 이미지와 캡션으로 멀티모달 벡터DB를 생성합니다.")
-
-                if st.button("🎨 이미지로 벡터DB 생성", type="primary", key="create_vectordb_btn"):
-                    if not uploaded_image_create:
-                        st.warning("이미지를 업로드해주세요.")
-                    elif not image_caption_create.strip():
-                        st.warning("캡션을 입력해주세요.")
-                    else:
-                        try:
-                            with st.spinner("벡터DB 생성 중..."):
-                                from vision_engine import VisionEngine
-                                vision = VisionEngine(use_multimodal=True)
-
-                                # Create vector store with first image
-                                image = Image.open(uploaded_image_create)
-                                vectorstore = vision.create_vector_store_with_image(
-                                    image,
-                                    image_caption_create,
-                                    collection_name="serve_local_rag",
-                                    persist_directory="./local_vectorstore",
-                                    document_name=image_document_name_create
-                                )
-
-                                st.session_state.local_vectorstore = vectorstore
-                                st.success("✅ 벡터DB가 생성되었습니다!")
-                                st.rerun()
-                        except Exception as e:
-                            st.error(f"❌ 벡터DB 생성 실패: {str(e)}")
-
-        st.divider()
-
-        # ========== 2. 이미지 추가 ==========
-        st.write("## 2️⃣ 이미지 추가")
+        # ========== 1. 이미지 추가 ==========
+        st.write("## 1. 이미지 추가")
 
         if not st.session_state.local_vectorstore:
-            st.warning("먼저 벡터DB를 생성하세요.")
+            st.warning("벡터DB가 초기화되지 않았습니다. 페이지를 새로고침하세요.")
         else:
             col_img1, col_img2 = st.columns(2)
 
@@ -521,9 +449,9 @@ else:
                     key="image_caption"
                 )
 
-                st.info("💡 이미지와 캡션이 멀티모달 벡터DB에 추가됩니다.")
+                st.info("이미지와 캡션이 멀티모달 벡터DB에 추가됩니다.")
 
-                if st.button("➕ 이미지를 벡터DB에 추가", type="primary", key="add_image_btn"):
+                if st.button("이미지를 벡터DB에 추가", type="primary", key="add_image_btn"):
                     if not uploaded_image:
                         st.warning("이미지를 업로드해주세요.")
                     elif not image_caption.strip():
@@ -542,33 +470,33 @@ else:
                                     document_name=image_document_name
                                 )
 
-                                st.success("✅ 이미지가 벡터DB에 추가되었습니다!")
+                                st.success("이미지가 벡터DB에 추가되었습니다!")
                                 st.rerun()
                         except Exception as e:
-                            st.error(f"❌ 이미지 추가 실패: {str(e)}")
+                            st.error(f"이미지 추가 실패: {str(e)}")
 
         st.divider()
 
-        # ========== 3. 청크 관리 (로컬 & 원격) ==========
-        st.write("## 3️⃣ 청크 관리(업로드, 다운로드, 삭제)")
+        # ========== 2. 청크 관리 (로컬 & 원격) ==========
+        st.write("## 2. 청크 관리(업로드, 다운로드, 삭제)")
 
         col_local, col_remote = st.columns(2)
 
         # ========== 왼쪽: 로컬 벡터 DB 청크 목록 ==========
         with col_local:
-            st.write("### 📊 로컬 저장소(벡터DB)")
+            st.write("### 로컬 저장소(벡터DB)")
 
             if not st.session_state.local_vectorstore:
                 st.info("로컬 벡터DB가 없습니다.")
             else:
-                if st.button("🔄 로컬 청크 목록 새로고침", key="refresh_local_chunks"):
+                if st.button("로컬 청크 목록 새로고침", key="refresh_local_chunks"):
                     try:
                         vision = VisionEngine(use_multimodal=True)
                         vector_data = vision.extract_vectors(st.session_state.local_vectorstore)
 
                         # 세션에 저장
                         st.session_state.local_chunks_data = vector_data
-                        st.success(f"✓ {len(vector_data['ids'])}개 청크 로드")
+                        st.success(f"{len(vector_data['ids'])}개 청크 로드")
                     except Exception as e:
                         st.error(f"청크 추출 실패: {str(e)}")
 
@@ -597,7 +525,7 @@ else:
                     with st.container(height=300):
                         for doc_name, chunk_indices in docs_by_name.items():
                             # 문서별 expander
-                            with st.expander(f"📄 {doc_name} ({len(chunk_indices)}개 청크)", expanded=True):
+                            with st.expander(f"{doc_name} ({len(chunk_indices)}개 청크)", expanded=True):
                                 # 문서 전체 선택 체크박스
                                 doc_select_key = f"select_doc_{doc_name}"
                                 doc_all_selected = all(idx in st.session_state.selected_local_chunks for idx in chunk_indices)
@@ -657,7 +585,7 @@ else:
                                             if image_path and os.path.exists(image_path):
                                                 st.image(image_path, width=120)
                                             else:
-                                                st.warning("🖼️ 이미지 없음")
+                                                st.warning("이미지 없음")
 
                                         with col_info:
                                             st.caption(f"**이미지 #{i}**")
@@ -699,7 +627,7 @@ else:
                             key="upload_local_chunks_docname"
                         )
 
-                        if st.button("⬆️ 선택한 청크 업로드", type="primary", key="upload_selected_local"):
+                        if st.button("선택한 청크 업로드", type="primary", key="upload_selected_local"):
                             if len(st.session_state.selected_local_chunks) == 0:
                                 st.warning("업로드할 청크를 선택해주세요.")
                             elif not upload_to_doc:
@@ -713,11 +641,12 @@ else:
                                     selected_indices = sorted(list(st.session_state.selected_local_chunks))
                                     chunks_data = []
                                     for idx, chunk_idx in enumerate(selected_indices):
+                                        embedding = vector_data['embeddings'][chunk_idx] if vector_data['embeddings'] is not None else None
                                         chunk_content = {
                                             'id': vector_data['ids'][chunk_idx],
-                                            'embedding': vector_data['embeddings'][chunk_idx] if vector_data['embeddings'] else None,
-                                            'document': vector_data['documents'][chunk_idx] if vector_data['documents'] else None,
-                                            'metadata': vector_data['metadatas'][chunk_idx] if vector_data['metadatas'] else None
+                                            'embedding': embedding.tolist() if embedding is not None else None,
+                                            'document': vector_data['documents'][chunk_idx] if vector_data['documents'] is not None else None,
+                                            'metadata': vector_data['metadatas'][chunk_idx] if vector_data['metadatas'] is not None else None
                                         }
 
                                         # NEW: Handle image chunks - embed image data as base64
@@ -761,7 +690,7 @@ else:
                                                     )
 
                                                     if success:
-                                                        st.success(f"✓ {len(chunks_data)}개 청크 업로드 완료!")
+                                                        st.success(f"{len(chunks_data)}개 청크 업로드 완료!")
                                                         # 선택 초기화
                                                         st.session_state.selected_local_chunks = set()
                                                         # 모든 청크 체크박스 상태 초기화
@@ -785,7 +714,7 @@ else:
                         st.write("")  # 간격 맞추기
                         st.write("")  # 간격 맞추기
 
-                        if st.button("🗑️ 선택한 청크 삭제", type="secondary", key="delete_selected_local"):
+                        if st.button("선택한 청크 삭제", type="secondary", key="delete_selected_local"):
                             if len(st.session_state.selected_local_chunks) == 0:
                                 st.warning("삭제할 청크를 선택해주세요.")
                             else:
@@ -819,9 +748,9 @@ else:
                                             except Exception as e:
                                                 print(f"벡터스토어 정리 중 오류: {str(e)}")
                                                 st.session_state.local_vectorstore = None
-                                            st.success(f"✓ 모든 청크가 삭제되어 로컬 벡터DB가 초기화되었습니다!")
+                                            st.success(f"모든 청크가 삭제되어 로컬 벡터DB가 초기화되었습니다!")
                                         else:
-                                            st.success(f"✓ {len(ids_to_delete)}개 청크가 로컬 벡터DB에서 삭제되었습니다!")
+                                            st.success(f"{len(ids_to_delete)}개 청크가 로컬 벡터DB에서 삭제되었습니다!")
 
                                         # 선택 초기화
                                         st.session_state.selected_local_chunks = set()
@@ -848,12 +777,12 @@ else:
 
             # ========== 오른쪽: 원격 저장소 청크 목록 ==========
             with col_remote:
-                st.write("### 🌐 원격 저장소")
+                st.write("### 원격 저장소")
 
                 if not st.session_state.current_repo:
                     st.warning("먼저 저장소를 선택해주세요. (저장소 관리 탭)")
                 else:
-                    if st.button("🔄 원격 청크 목록 새로고침", key="refresh_remote_chunks"):
+                    if st.button("원격 청크 목록 새로고침", key="refresh_remote_chunks"):
                         try:
                             repo_id = get_current_repo_id()
                             docs, msg = st.session_state.serve_client.get_documents(repo_id)
@@ -877,7 +806,7 @@ else:
 
                                 st.session_state.remote_chunks_by_doc = remote_chunks_by_doc
                                 total_chunks = sum(len(info['chunks']) for info in remote_chunks_by_doc.values())
-                                st.success(f"✓ {len(remote_chunks_by_doc)}개 문서, {total_chunks}개 청크 로드")
+                                st.success(f"{len(remote_chunks_by_doc)}개 문서, {total_chunks}개 청크 로드")
                             else:
                                 st.error(msg)
 
@@ -905,7 +834,7 @@ else:
                                     chunks = doc_info['chunks']
 
                                     # 문서 전체 선택 체크박스
-                                    with st.expander(f"📄 {doc_name} ({len(chunks)}개 청크)", expanded=True):
+                                    with st.expander(f"{doc_name} ({len(chunks)}개 청크)", expanded=True):
                                         # 문서별 선택 상태 초기화
                                         if doc_id not in st.session_state.selected_remote_chunks:
                                             st.session_state.selected_remote_chunks[doc_id] = set()
@@ -973,7 +902,7 @@ else:
 
                             with col_download:
                                 st.write("**청크 다운로드**")
-                                if st.button("⬇️ 선택한 청크 다운로드", type="primary", key="download_selected_remote"):
+                                if st.button("선택한 청크 다운로드", type="primary", key="download_selected_remote"):
                                     if total_selected == 0:
                                         st.warning("다운로드할 청크를 선택해주세요.")
                                     else:
@@ -1087,7 +1016,7 @@ else:
                                                         except Exception as e:
                                                             st.warning(f"청크 {chunk['chunk_index']} 추가 실패: {str(e)}")
 
-                                                    st.success(f"✓ {len(downloaded_chunks)}개 청크를 로컬 벡터DB에 추가했습니다!")
+                                                    st.success(f"{len(downloaded_chunks)}개 청크를 로컬 벡터DB에 추가했습니다!")
                                                     # 선택 초기화
                                                     st.session_state.selected_remote_chunks = {}
                                                     # 모든 원격 청크 체크박스 상태 초기화
@@ -1103,7 +1032,7 @@ else:
 
                             with col_delete:
                                 st.write("**청크 삭제**")
-                                if st.button("🗑️ 선택한 청크 삭제", type="secondary", key="delete_selected_remote"):
+                                if st.button("선택한 청크 삭제", type="secondary", key="delete_selected_remote"):
                                     if total_selected == 0:
                                         st.warning("삭제할 청크를 선택해주세요.")
                                     else:
@@ -1129,9 +1058,9 @@ else:
                                                                 failed_count += 1
 
                                             if deleted_count > 0:
-                                                st.success(f"✓ {deleted_count}개 청크 삭제 완료!")
+                                                st.success(f"{deleted_count}개 청크 삭제 완료!")
                                             if failed_count > 0:
-                                                st.error(f"✗ {failed_count}개 청크 삭제 실패")
+                                                st.error(f"{failed_count}개 청크 삭제 실패")
 
                                             # 선택 초기화
                                             st.session_state.selected_remote_chunks = {}
@@ -1148,11 +1077,11 @@ else:
                                         except Exception as e:
                                             st.error(f"삭제 오류: {str(e)}")
 
-        # ========== 4. 이미지 정리 (고아 파일 삭제) ==========
+        # ========== 3. 이미지 정리 (고아 파일 삭제) ==========
         st.divider()
-        st.write("## 4️⃣ 이미지 정리")
+        st.write("## 3. 이미지 정리")
 
-        if st.button("🧹 고아 이미지 파일 삭제", key="cleanup_orphaned", help="벡터DB에서 참조되지 않는 이미지 파일을 삭제합니다."):
+        if st.button("고아 이미지 파일 삭제", key="cleanup_orphaned", help="벡터DB에서 참조되지 않는 이미지 파일을 삭제합니다."):
             if st.session_state.local_vectorstore:
                 try:
                     with st.spinner("고아 이미지 파일 검색 및 삭제 중..."):
@@ -1161,9 +1090,9 @@ else:
                             st.session_state.local_vectorstore,
                             './rag_images'
                         )
-                        st.success("✅ 고아 이미지 정리 완료!")
+                        st.success("고아 이미지 정리 완료!")
                 except Exception as e:
-                    st.error(f"❌ 정리 실패: {str(e)}")
+                    st.error(f"정리 실패: {str(e)}")
             else:
                 st.warning("로컬 벡터DB가 없습니다.")
 
@@ -1203,7 +1132,7 @@ else:
 
                 if 'current_members' in st.session_state and st.session_state.current_members:
                     for member in st.session_state.current_members:
-                        with st.expander(f"👤 {member['email']} ({member['role']})"):
+                        with st.expander(f"{member['email']} ({member['role']})"):
                             st.write(f"**User ID:** {member['userId']}")
 
                             # 강퇴 버튼
@@ -1262,42 +1191,35 @@ else:
         # 이미지 선택 섹션
         st.write("### 이미지 선택")
 
-        image_source = st.radio(
-            "이미지 소스",
-            ["기본 이미지", "파일 업로드"],
-            horizontal=True
-        )
-
         selected_image = None
         image = None
         img_bytes = None
 
-        if image_source == "기본 이미지":
-            # 가상 카메라 (이미지 폴더 로드)
-            image_folder = "test_images"
-            if not os.path.exists(image_folder):
-                os.makedirs(image_folder)
-                st.warning(f"'{image_folder}' 폴더에 테스트 이미지를 넣어주세요.")
+        # 로컬 DB에서 이미지 가져오기
+        if st.session_state.local_vectorstore is not None:
+            try:
+                # vectorstore에서 모든 이미지 메타데이터 가져오기
+                all_data = st.session_state.local_vectorstore.get()
+                image_paths = []
 
-            image_files = [f for f in os.listdir(image_folder) if f.endswith(('jpg', 'png', 'jpeg'))]
-            if image_files:
-                selected_image = st.selectbox("이미지 선택", image_files)
-                if selected_image:
-                    img_path = os.path.join(image_folder, selected_image)
-                    image = Image.open(img_path)
-            else:
-                st.info("이미지 파일이 없습니다.")
+                if all_data and all_data.get('metadatas'):
+                    for metadata in all_data['metadatas']:
+                        if metadata and metadata.get('modality') == 'image':
+                            img_path = metadata.get('image_path')
+                            if img_path and os.path.exists(img_path):
+                                image_paths.append(img_path)
 
-        else:  # 파일 업로드
-            uploaded_file = st.file_uploader(
-                "이미지를 드래그 앤 드롭하거나 클릭하여 선택하세요",
-                type=['jpg', 'png', 'jpeg'],
-                help="분석할 이미지를 업로드하세요"
-            )
-
-            if uploaded_file:
-                image = Image.open(uploaded_file)
-                selected_image = uploaded_file.name
+                if image_paths:
+                    selected_image_path = st.selectbox("이미지 선택", image_paths)
+                    if selected_image_path:
+                        image = Image.open(selected_image_path)
+                        selected_image = os.path.basename(selected_image_path)
+                else:
+                    st.info("로컬 DB에 이미지가 없습니다.")
+            except Exception as e:
+                st.error(f"이미지 로드 실패: {str(e)}")
+        else:
+            st.warning("로컬 vectorstore가 초기화되지 않았습니다.")
 
         # 이미지가 선택되었으면 바이트로 변환
         if image:
@@ -1338,14 +1260,14 @@ else:
             # Tab B: 멀티모달 RAG (이미지 + 텍스트)
             with tab_b:
                 if not st.session_state.local_vectorstore:
-                    st.warning("⚠️ 로컬 벡터DB가 없습니다. Tab 2에서 생성하세요.")
+                    st.warning("로컬 벡터DB가 없습니다. Tab 2에서 생성하세요.")
                 else:
-                    st.info("✨ 이미지 유사도 검색 모드: 입력 이미지와 유사한 이미지를 DB에서 찾아 캡션을 RAG 컨텍스트로 사용합니다.")
+                    st.info("이미지 유사도 검색 모드: 입력 이미지와 유사한 이미지를 DB에서 찾아 캡션을 RAG 컨텍스트로 사용합니다.")
 
                     col_param1, col_param2 = st.columns(2)
                     with col_param1:
                         top_k_images = st.number_input(
-                            "🖼️ 검색할 유사 이미지 수",
+                            "검색할 유사 이미지 수",
                             value=3,
                             min_value=1,
                             max_value=10,
@@ -1353,7 +1275,7 @@ else:
                         )
                     with col_param2:
                         top_k_text = st.number_input(
-                            "📄 검색할 텍스트 청크 수",
+                            "검색할 텍스트 청크 수",
                             value=0,
                             min_value=0,
                             max_value=10,
@@ -1367,11 +1289,11 @@ else:
                         help="텍스트 청크도 함께 검색하려면 쿼리를 입력하세요."
                     )
 
-                    if st.button("🚀 분석 (이미지 유사도 + 벡터DB)", type="primary", key="multimodal_analyze_btn"):
+                    if st.button("분석 (이미지 유사도 + 벡터DB)", type="primary", key="multimodal_analyze_btn"):
                         if not img_bytes:
-                            st.warning("⚠️ 이미지를 선택해주세요.")
+                            st.warning("이미지를 선택해주세요.")
                         else:
-                            with st.spinner("🔍 이미지 유사도 검색 및 멀티모달 RAG 분석 중..."):
+                            with st.spinner("이미지 유사도 검색 및 멀티모달 RAG 분석 중..."):
                                 try:
                                     from vision_engine import VisionEngine
                                     vision = VisionEngine(use_multimodal=True)
@@ -1386,11 +1308,11 @@ else:
                                         use_image_search=True
                                     )
 
-                                    st.markdown("### 🤖 AI Analysis Result")
+                                    st.markdown("### AI Analysis Result")
                                     st.write(result)
 
                                     # Show retrieved similar images
-                                    with st.expander("🔎 검색된 유사 이미지 보기"):
+                                    with st.expander("검색된 유사 이미지 보기"):
                                         similar_images = vision.similarity_search_by_image(
                                             img_bytes,
                                             st.session_state.local_vectorstore,
@@ -1406,9 +1328,9 @@ else:
                                                 img_path = doc.metadata.get('image_path')
                                                 if img_path and os.path.exists(img_path):
                                                     st.image(img_path, width=250)
-                                                st.info(f"📝 {doc.metadata.get('caption', 'No caption')}")
+                                                st.info(f"{doc.metadata.get('caption', 'No caption')}")
                                                 st.divider()
 
                                 except Exception as e:
-                                    st.error(f"❌ 멀티모달 RAG 분석 실패: {str(e)}")
+                                    st.error(f"멀티모달 RAG 분석 실패: {str(e)}")
                                     st.exception(e)
