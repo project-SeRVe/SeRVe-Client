@@ -20,7 +20,10 @@ class CLIPEmbeddings:
             model_name: Name of the CLIP model to use (default: clip-ViT-B-32)
                        This model produces 512-dimensional embeddings
         """
-        self.model = SentenceTransformer(model_name)
+        import torch
+        # Explicitly set device to avoid meta tensor issues
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.model = SentenceTransformer(model_name, device=device)
         self.model_name = model_name
 
     def embed_text(self, text: str) -> List[float]:

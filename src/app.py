@@ -24,62 +24,10 @@ if 'serve_client' not in st.session_state:
     st.session_state.server_url = SERVER_URL
     st.session_state.success_message = None  # 성공 메시지 표시용
 
-    # 로컬 벡터DB 자동 로드 (디스크에 저장된 경우)
-    try:
-        vision = VisionEngine(use_multimodal=True)
-        loaded_vectorstore = vision.load_vector_store(
-            collection_name="serve_local_rag",
-            persist_directory="./local_vectorstore"
-        )
-        st.session_state.local_vectorstore = loaded_vectorstore
-        if loaded_vectorstore is None:
-            # 손상된 벡터스토어가 자동으로 정리되었을 수 있음
-            print("벡터스토어가 없거나 손상되어 초기화되었습니다.")
-    except Exception as e:
-        st.session_state.local_vectorstore = None
-        error_msg = str(e).lower()
-        print(f"벡터스토어 자동 로드 실패: {str(e)}")
-
-        # 읽기 전용 오류 또는 데이터베이스 오류 시 강력한 정리 수행
-        if "readonly" in error_msg or "database" in error_msg or "attempt to write" in error_msg:
-            print("손상된 벡터스토어 감지 - 강력한 정리 수행 중...")
-            try:
-                import shutil
-                import time
-                import gc
-
-                persist_dir = "./local_vectorstore"
-                if os.path.exists(persist_dir):
-                    # 가비지 컬렉션
-                    gc.collect()
-                    time.sleep(0.3)
-
-                    # 디렉토리 삭제 재시도
-                    max_retries = 3
-                    for retry in range(max_retries):
-                        try:
-                            shutil.rmtree(persist_dir)
-                            print("손상된 벡터스토어 디렉토리를 삭제했습니다.")
-                            break
-                        except Exception as retry_error:
-                            if retry < max_retries - 1:
-                                print(f"삭제 재시도 중... ({retry + 1}/{max_retries})")
-                                gc.collect()
-                                time.sleep(0.5)
-                            else:
-                                print(f"디렉토리 삭제 실패. 앱 재시작 후 다시 시도하거나 수동으로 '{persist_dir}' 디렉토리를 삭제해주세요.")
-            except Exception as cleanup_error:
-                print(f"정리 중 오류: {str(cleanup_error)}")
-        else:
-            # 다른 종류의 오류 - 일반 정리
-            try:
-                import shutil
-                persist_dir = "./local_vectorstore"
-                if os.path.exists(persist_dir):
-                    shutil.rmtree(persist_dir)
-                    print("벡터스토어 디렉토리를 삭제했습니다.")
-            except Exception as cleanup_error:
-                print(f"정리 중 오류: {str(cleanup_error)}")
+    # 로컬 벡터DB 초기화 (앱 시작 시 한 번만)
+    st.session_state.local_vectorstore = None
+    st.session_state.vectorstore_initialized = False
+    st.session_state.persist_directory = os.environ.get('VECTORSTORE_PATH', os.path.abspath("./local_vectorstore"))
 
 # 서버 연결 확인 함수
 def check_server_connection(url):
@@ -226,6 +174,74 @@ elif not is_logged_in():
                             del st.session_state.current_documents
                         if 'current_members' in st.session_state:
                             del st.session_state.current_members
+
+                        # 로그인 성공 시 빈 벡터DB 자동 생성 (한 번만)
+                        if not st.session_state.get('vectorstore_initialized', False):
+                            try:
+                                import chromadb
+                                from chromadb.config import Settings
+                                from langchain_chroma import Chroma
+                                from vision_engine import VisionEngine
+
+                                # session_state에서 persist_directory 가져오기
+                                persist_directory = st.session_state.persist_directory
+                                print(f"[DEBUG] persist_directory from session_state: {persist_directory}")
+                                print(f"[DEBUG] VECTORSTORE_PATH env var: {os.environ.get('VECTORSTORE_PATH', 'NOT SET')}")
+
+                                # 디렉토리가 없을 때만 생성
+                                if not os.path.exists(persist_directory):
+                                    os.makedirs(persist_directory, mode=0o777, exist_ok=True)
+                                    print(f"[DEBUG] 벡터스토어 디렉토리 생성: {persist_directory}")
+                                else:
+                                    print(f"[DEBUG] 벡터스토어 디렉토리 존재: {persist_directory}")
+
+                                # VisionEngine 인스턴스 생성
+                                print(f"[DEBUG] VisionEngine 초기화 시작...")
+                                vision = VisionEngine(use_multimodal=True)
+                                print(f"[DEBUG] VisionEngine 초기화 완료")
+
+                                # ChromaDB 클라이언트 생성 또는 기존 것 사용
+                                print(f"[DEBUG] ChromaDB 클라이언트 생성 시작...")
+                                settings = Settings(
+                                    allow_reset=True,
+                                    anonymized_telemetry=False,
+                                    is_persistent=True
+                                )
+                                client = chromadb.PersistentClient(path=persist_directory, settings=settings)
+                                print(f"[DEBUG] ChromaDB 클라이언트 생성 완료")
+
+                                # 벡터스토어 생성 또는 기존 것 로드
+                                print(f"[DEBUG] Chroma 벡터스토어 생성 시작...")
+                                print(f"[DEBUG] embedding_function 가져오기 시작...")
+                                embedding_func = vision._get_embeddings()
+                                print(f"[DEBUG] embedding_function 가져오기 완료")
+                                print(f"[DEBUG] Chroma() 생성자 호출 시작...")
+                                vectorstore = Chroma(
+                                    collection_name="serve_edge_rag",
+                                    embedding_function=embedding_func,
+                                    client=client,
+                                    persist_directory=persist_directory
+                                )
+                                print(f"[DEBUG] Chroma() 생성자 호출 완료")
+                                print(f"[DEBUG] Chroma 벡터스토어 생성 완료")
+
+                                st.session_state.local_vectorstore = vectorstore
+                                st.session_state.vectorstore_initialized = True
+                                print(f"[DEBUG] 벡터DB 초기화 완료 (청크 수: {vectorstore._collection.count()})")
+                            except Exception as e:
+                                print(f"[ERROR] 벡터DB 초기화 실패: {str(e)}")
+                                import traceback
+                                print(f"[ERROR] Traceback: {traceback.format_exc()}")
+                                # 에러 발생 시 기존 디렉토리 삭제 후 재시도
+                                try:
+                                    import shutil
+                                    if os.path.exists(persist_directory):
+                                        shutil.rmtree(persist_directory)
+                                except:
+                                    pass
+                                st.session_state.local_vectorstore = None
+                                st.session_state.vectorstore_initialized = False
+
                         st.success(msg)
                         st.rerun()
                     else:
@@ -271,7 +287,7 @@ else:
     # 사이드바: 사용자 정보 및 시스템 상태
     with st.sidebar:
         st.header("서버 연결 상태")
-        st.success(f"✓ {st.session_state.server_url}")
+        st.success(f"{st.session_state.server_url}")
         if st.button("서버 연결 변경", key="change_server_main"):
             st.session_state.server_connected = False
             st.session_state.serve_client.logout()
@@ -294,7 +310,7 @@ else:
         st.divider()
 
     # 메인 탭
-    tab1, tab2, tab3, tab4 = st.tabs(["원격 저장소 관리", "문서 관리", "멤버 관리", "추론"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["원격 저장소 관리", "문서 관리", "멤버 관리", "추론", "서버 관리자 뷰 (Zero-Trust 검증)", "보안 모니터링 (IDS)"])
 
     # ==================== 탭 1: 저장소 관리 ====================
     with tab1:
@@ -326,7 +342,7 @@ else:
             if 'my_repos' in st.session_state and st.session_state.my_repos:
                 for repo in st.session_state.my_repos:
                     repo_id = get_repo_id(repo)
-                    with st.expander(f"📁 {repo['name']} (ID: {repo_id})"):
+                    with st.expander(f"{repo['name']} (ID: {repo_id})"):
                         st.write(f"**설명:** {repo['description']}")
                         st.write(f"**타입:** {repo['type']}")
                         st.write(f"**소유자:** {repo['ownerEmail']}")
@@ -387,19 +403,19 @@ else:
         st.subheader("로컬 벡터DB 관리")
 
         # ========== 로컬 벡터DB 상태 표시 ==========
-        st.write("## 📊 벡터DB 상태")
+        st.write("## 벡터DB 상태")
         if st.session_state.local_vectorstore:
             col_status1, col_status2 = st.columns([3, 1])
             with col_status1:
-                st.success(f"✓ 로컬 벡터DB 활성화됨")
+                st.success(f"로컬 벡터DB 활성화됨")
             with col_status2:
-                if st.button("🗑️ 초기화", help="벡터DB를 삭제하고 새로 시작합니다"):
+                if st.button("초기화", help="벡터DB를 삭제하고 새로 시작합니다"):
                     try:
                         vision = VisionEngine(use_multimodal=True)
                         # ChromaDB 리소스를 안전하게 정리
                         vision.cleanup_vector_store(
                             st.session_state.local_vectorstore,
-                            persist_directory="./local_vectorstore"
+                            persist_directory=st.session_state.persist_directory
                         )
                         # 추가 정리
                         import gc
@@ -416,81 +432,15 @@ else:
                         st.session_state.local_vectorstore = None
                         st.rerun()
         else:
-            st.info("로컬 벡터DB가 없습니다. 아래에서 새로 생성하세요.")
+            st.info("로컬 벡터DB가 활성화되지 않았습니다. 로그인하면 자동으로 생성됩니다.")
 
         st.divider()
 
-        # ========== 1. 이미지로 벡터DB 생성 ==========
-        st.write("## 1️⃣ 이미지로 벡터DB 생성")
-
-        if st.session_state.local_vectorstore:
-            st.info("💡 벡터DB가 이미 생성되어 있습니다. 새로 생성하려면 먼저 초기화하세요.")
-        else:
-            col_create1, col_create2 = st.columns(2)
-
-            with col_create1:
-                st.write("### 이미지 업로드")
-                uploaded_image_create = st.file_uploader(
-                    "이미지 선택 (JPG, PNG)",
-                    type=['jpg', 'png', 'jpeg'],
-                    key="create_image_file"
-                )
-
-                if uploaded_image_create:
-                    from PIL import Image
-                    image = Image.open(uploaded_image_create)
-                    st.image(image, caption="업로드된 이미지", width=300)
-
-            with col_create2:
-                st.write("### 캡션 입력")
-                image_document_name_create = st.text_input(
-                    "문서 이름",
-                    "Equipment Photos",
-                    key="create_image_doc_name"
-                )
-                image_caption_create = st.text_area(
-                    "이미지 설명 (캡션)",
-                    "Hydraulic valve Type-K, max pressure 500bar",
-                    height=100,
-                    key="create_image_caption"
-                )
-
-                st.info("💡 이미지와 캡션으로 멀티모달 벡터DB를 생성합니다.")
-
-                if st.button("🎨 이미지로 벡터DB 생성", type="primary", key="create_vectordb_btn"):
-                    if not uploaded_image_create:
-                        st.warning("이미지를 업로드해주세요.")
-                    elif not image_caption_create.strip():
-                        st.warning("캡션을 입력해주세요.")
-                    else:
-                        try:
-                            with st.spinner("벡터DB 생성 중..."):
-                                from vision_engine import VisionEngine
-                                vision = VisionEngine(use_multimodal=True)
-
-                                # Create vector store with first image
-                                image = Image.open(uploaded_image_create)
-                                vectorstore = vision.create_vector_store_with_image(
-                                    image,
-                                    image_caption_create,
-                                    collection_name="serve_local_rag",
-                                    persist_directory="./local_vectorstore",
-                                    document_name=image_document_name_create
-                                )
-
-                                st.session_state.local_vectorstore = vectorstore
-                                st.success("✅ 벡터DB가 생성되었습니다!")
-                                st.rerun()
-                        except Exception as e:
-                            st.error(f"❌ 벡터DB 생성 실패: {str(e)}")
-
-        st.divider()
-
-        # ========== 2. 이미지 추가 ==========
-        st.write("## 2️⃣ 이미지 추가")
+        # ========== 1. 이미지 추가 ==========
+        st.write("## 1. 이미지 추가")
 
         if not st.session_state.local_vectorstore:
-            st.warning("먼저 벡터DB를 생성하세요.")
+            st.warning("벡터DB가 초기화되지 않았습니다. 페이지를 새로고침하세요.")
         else:
             col_img1, col_img2 = st.columns(2)
 
@@ -521,9 +471,9 @@ else:
                     key="image_caption"
                 )
 
-                st.info("💡 이미지와 캡션이 멀티모달 벡터DB에 추가됩니다.")
+                st.info("이미지와 캡션이 멀티모달 벡터DB에 추가됩니다.")
 
-                if st.button("➕ 이미지를 벡터DB에 추가", type="primary", key="add_image_btn"):
+                if st.button("이미지를 벡터DB에 추가", type="primary", key="add_image_btn"):
                     if not uploaded_image:
                         st.warning("이미지를 업로드해주세요.")
                     elif not image_caption.strip():
@@ -542,33 +492,33 @@ else:
                                     document_name=image_document_name
                                 )
 
-                                st.success("✅ 이미지가 벡터DB에 추가되었습니다!")
+                                st.success("이미지가 벡터DB에 추가되었습니다!")
                                 st.rerun()
                         except Exception as e:
-                            st.error(f"❌ 이미지 추가 실패: {str(e)}")
+                            st.error(f"이미지 추가 실패: {str(e)}")
 
         st.divider()
 
-        # ========== 3. 청크 관리 (로컬 & 원격) ==========
-        st.write("## 3️⃣ 청크 관리(업로드, 다운로드, 삭제)")
+        # ========== 2. 청크 관리 (로컬 & 원격) ==========
+        st.write("## 2. 청크 관리(업로드, 다운로드, 삭제)")
 
         col_local, col_remote = st.columns(2)
 
         # ========== 왼쪽: 로컬 벡터 DB 청크 목록 ==========
         with col_local:
-            st.write("### 📊 로컬 저장소(벡터DB)")
+            st.write("### 로컬 저장소(벡터DB)")
 
             if not st.session_state.local_vectorstore:
                 st.info("로컬 벡터DB가 없습니다.")
             else:
-                if st.button("🔄 로컬 청크 목록 새로고침", key="refresh_local_chunks"):
+                if st.button("로컬 청크 목록 새로고침", key="refresh_local_chunks"):
                     try:
                         vision = VisionEngine(use_multimodal=True)
                         vector_data = vision.extract_vectors(st.session_state.local_vectorstore)
 
                         # 세션에 저장
                         st.session_state.local_chunks_data = vector_data
-                        st.success(f"✓ {len(vector_data['ids'])}개 청크 로드")
+                        st.success(f"{len(vector_data['ids'])}개 청크 로드")
                     except Exception as e:
                         st.error(f"청크 추출 실패: {str(e)}")
 
@@ -597,7 +547,7 @@ else:
                     with st.container(height=300):
                         for doc_name, chunk_indices in docs_by_name.items():
                             # 문서별 expander
-                            with st.expander(f"📄 {doc_name} ({len(chunk_indices)}개 청크)", expanded=True):
+                            with st.expander(f"{doc_name} ({len(chunk_indices)}개 청크)", expanded=True):
                                 # 문서 전체 선택 체크박스
                                 doc_select_key = f"select_doc_{doc_name}"
                                 doc_all_selected = all(idx in st.session_state.selected_local_chunks for idx in chunk_indices)
@@ -657,7 +607,7 @@ else:
                                             if image_path and os.path.exists(image_path):
                                                 st.image(image_path, width=120)
                                             else:
-                                                st.warning("🖼️ 이미지 없음")
+                                                st.warning("이미지 없음")
 
                                         with col_info:
                                             st.caption(f"**이미지 #{i}**")
@@ -699,7 +649,7 @@ else:
                             key="upload_local_chunks_docname"
                         )
 
-                        if st.button("⬆️ 선택한 청크 업로드", type="primary", key="upload_selected_local"):
+                        if st.button("선택한 청크 업로드", type="primary", key="upload_selected_local"):
                             if len(st.session_state.selected_local_chunks) == 0:
                                 st.warning("업로드할 청크를 선택해주세요.")
                             elif not upload_to_doc:
@@ -713,11 +663,12 @@ else:
                                     selected_indices = sorted(list(st.session_state.selected_local_chunks))
                                     chunks_data = []
                                     for idx, chunk_idx in enumerate(selected_indices):
+                                        embedding = vector_data['embeddings'][chunk_idx] if vector_data['embeddings'] is not None else None
                                         chunk_content = {
                                             'id': vector_data['ids'][chunk_idx],
-                                            'embedding': vector_data['embeddings'][chunk_idx] if vector_data['embeddings'] else None,
-                                            'document': vector_data['documents'][chunk_idx] if vector_data['documents'] else None,
-                                            'metadata': vector_data['metadatas'][chunk_idx] if vector_data['metadatas'] else None
+                                            'embedding': embedding.tolist() if embedding is not None else None,
+                                            'document': vector_data['documents'][chunk_idx] if vector_data['documents'] is not None else None,
+                                            'metadata': vector_data['metadatas'][chunk_idx] if vector_data['metadatas'] is not None else None
                                         }
 
                                         # NEW: Handle image chunks - embed image data as base64
@@ -761,7 +712,7 @@ else:
                                                     )
 
                                                     if success:
-                                                        st.success(f"✓ {len(chunks_data)}개 청크 업로드 완료!")
+                                                        st.success(f"{len(chunks_data)}개 청크 업로드 완료!")
                                                         # 선택 초기화
                                                         st.session_state.selected_local_chunks = set()
                                                         # 모든 청크 체크박스 상태 초기화
@@ -785,7 +736,7 @@ else:
                         st.write("")  # 간격 맞추기
                         st.write("")  # 간격 맞추기
 
-                        if st.button("🗑️ 선택한 청크 삭제", type="secondary", key="delete_selected_local"):
+                        if st.button("선택한 청크 삭제", type="secondary", key="delete_selected_local"):
                             if len(st.session_state.selected_local_chunks) == 0:
                                 st.warning("삭제할 청크를 선택해주세요.")
                             else:
@@ -807,7 +758,7 @@ else:
                                                 # 벡터스토어 정리
                                                 vision.cleanup_vector_store(
                                                     st.session_state.local_vectorstore,
-                                                    persist_directory="./local_vectorstore"
+                                                    persist_directory=st.session_state.persist_directory
                                                 )
                                                 # 추가 정리
                                                 import gc
@@ -819,9 +770,9 @@ else:
                                             except Exception as e:
                                                 print(f"벡터스토어 정리 중 오류: {str(e)}")
                                                 st.session_state.local_vectorstore = None
-                                            st.success(f"✓ 모든 청크가 삭제되어 로컬 벡터DB가 초기화되었습니다!")
+                                            st.success(f"모든 청크가 삭제되어 로컬 벡터DB가 초기화되었습니다!")
                                         else:
-                                            st.success(f"✓ {len(ids_to_delete)}개 청크가 로컬 벡터DB에서 삭제되었습니다!")
+                                            st.success(f"{len(ids_to_delete)}개 청크가 로컬 벡터DB에서 삭제되었습니다!")
 
                                         # 선택 초기화
                                         st.session_state.selected_local_chunks = set()
@@ -848,12 +799,12 @@ else:
 
             # ========== 오른쪽: 원격 저장소 청크 목록 ==========
             with col_remote:
-                st.write("### 🌐 원격 저장소")
+                st.write("### 원격 저장소")
 
                 if not st.session_state.current_repo:
                     st.warning("먼저 저장소를 선택해주세요. (저장소 관리 탭)")
                 else:
-                    if st.button("🔄 원격 청크 목록 새로고침", key="refresh_remote_chunks"):
+                    if st.button("원격 청크 목록 새로고침", key="refresh_remote_chunks"):
                         try:
                             repo_id = get_current_repo_id()
                             docs, msg = st.session_state.serve_client.get_documents(repo_id)
@@ -866,7 +817,7 @@ else:
                                     doc_name = doc.get('fileName', 'Unknown')
 
                                     chunks, chunk_msg = st.session_state.serve_client.download_chunks_from_document(
-                                        doc_id, repo_id
+                                        doc_name, repo_id
                                     )
 
                                     if chunks is not None:
@@ -877,7 +828,7 @@ else:
 
                                 st.session_state.remote_chunks_by_doc = remote_chunks_by_doc
                                 total_chunks = sum(len(info['chunks']) for info in remote_chunks_by_doc.values())
-                                st.success(f"✓ {len(remote_chunks_by_doc)}개 문서, {total_chunks}개 청크 로드")
+                                st.success(f"{len(remote_chunks_by_doc)}개 문서, {total_chunks}개 청크 로드")
                             else:
                                 st.error(msg)
 
@@ -905,7 +856,7 @@ else:
                                     chunks = doc_info['chunks']
 
                                     # 문서 전체 선택 체크박스
-                                    with st.expander(f"📄 {doc_name} ({len(chunks)}개 청크)", expanded=True):
+                                    with st.expander(f"{doc_name} ({len(chunks)}개 청크)", expanded=True):
                                         # 문서별 선택 상태 초기화
                                         if doc_id not in st.session_state.selected_remote_chunks:
                                             st.session_state.selected_remote_chunks[doc_id] = set()
@@ -973,7 +924,7 @@ else:
 
                             with col_download:
                                 st.write("**청크 다운로드**")
-                                if st.button("⬇️ 선택한 청크 다운로드", type="primary", key="download_selected_remote"):
+                                if st.button("선택한 청크 다운로드", type="primary", key="download_selected_remote"):
                                     if total_selected == 0:
                                         st.warning("다운로드할 청크를 선택해주세요.")
                                     else:
@@ -1087,7 +1038,7 @@ else:
                                                         except Exception as e:
                                                             st.warning(f"청크 {chunk['chunk_index']} 추가 실패: {str(e)}")
 
-                                                    st.success(f"✓ {len(downloaded_chunks)}개 청크를 로컬 벡터DB에 추가했습니다!")
+                                                    st.success(f"{len(downloaded_chunks)}개 청크를 로컬 벡터DB에 추가했습니다!")
                                                     # 선택 초기화
                                                     st.session_state.selected_remote_chunks = {}
                                                     # 모든 원격 청크 체크박스 상태 초기화
@@ -1103,7 +1054,7 @@ else:
 
                             with col_delete:
                                 st.write("**청크 삭제**")
-                                if st.button("🗑️ 선택한 청크 삭제", type="secondary", key="delete_selected_remote"):
+                                if st.button("선택한 청크 삭제", type="secondary", key="delete_selected_remote"):
                                     if total_selected == 0:
                                         st.warning("삭제할 청크를 선택해주세요.")
                                     else:
@@ -1129,9 +1080,9 @@ else:
                                                                 failed_count += 1
 
                                             if deleted_count > 0:
-                                                st.success(f"✓ {deleted_count}개 청크 삭제 완료!")
+                                                st.success(f"{deleted_count}개 청크 삭제 완료!")
                                             if failed_count > 0:
-                                                st.error(f"✗ {failed_count}개 청크 삭제 실패")
+                                                st.error(f"{failed_count}개 청크 삭제 실패")
 
                                             # 선택 초기화
                                             st.session_state.selected_remote_chunks = {}
@@ -1148,11 +1099,11 @@ else:
                                         except Exception as e:
                                             st.error(f"삭제 오류: {str(e)}")
 
-        # ========== 4. 이미지 정리 (고아 파일 삭제) ==========
+        # ========== 3. 이미지 정리 (고아 파일 삭제) ==========
         st.divider()
-        st.write("## 4️⃣ 이미지 정리")
+        st.write("## 3. 이미지 정리")
 
-        if st.button("🧹 고아 이미지 파일 삭제", key="cleanup_orphaned", help="벡터DB에서 참조되지 않는 이미지 파일을 삭제합니다."):
+        if st.button("고아 이미지 파일 삭제", key="cleanup_orphaned", help="벡터DB에서 참조되지 않는 이미지 파일을 삭제합니다."):
             if st.session_state.local_vectorstore:
                 try:
                     with st.spinner("고아 이미지 파일 검색 및 삭제 중..."):
@@ -1161,9 +1112,9 @@ else:
                             st.session_state.local_vectorstore,
                             './rag_images'
                         )
-                        st.success("✅ 고아 이미지 정리 완료!")
+                        st.success("고아 이미지 정리 완료!")
                 except Exception as e:
-                    st.error(f"❌ 정리 실패: {str(e)}")
+                    st.error(f"정리 실패: {str(e)}")
             else:
                 st.warning("로컬 벡터DB가 없습니다.")
 
@@ -1203,7 +1154,7 @@ else:
 
                 if 'current_members' in st.session_state and st.session_state.current_members:
                     for member in st.session_state.current_members:
-                        with st.expander(f"👤 {member['email']} ({member['role']})"):
+                        with st.expander(f"{member['email']} ({member['role']})"):
                             st.write(f"**User ID:** {member['userId']}")
 
                             # 강퇴 버튼
@@ -1262,42 +1213,35 @@ else:
         # 이미지 선택 섹션
         st.write("### 이미지 선택")
 
-        image_source = st.radio(
-            "이미지 소스",
-            ["기본 이미지", "파일 업로드"],
-            horizontal=True
-        )
-
         selected_image = None
         image = None
         img_bytes = None
 
-        if image_source == "기본 이미지":
-            # 가상 카메라 (이미지 폴더 로드)
-            image_folder = "test_images"
-            if not os.path.exists(image_folder):
-                os.makedirs(image_folder)
-                st.warning(f"'{image_folder}' 폴더에 테스트 이미지를 넣어주세요.")
+        # 로컬 DB에서 이미지 가져오기
+        if st.session_state.local_vectorstore is not None:
+            try:
+                # vectorstore에서 모든 이미지 메타데이터 가져오기
+                all_data = st.session_state.local_vectorstore.get()
+                image_paths = []
 
-            image_files = [f for f in os.listdir(image_folder) if f.endswith(('jpg', 'png', 'jpeg'))]
-            if image_files:
-                selected_image = st.selectbox("이미지 선택", image_files)
-                if selected_image:
-                    img_path = os.path.join(image_folder, selected_image)
-                    image = Image.open(img_path)
-            else:
-                st.info("이미지 파일이 없습니다.")
+                if all_data and all_data.get('metadatas'):
+                    for metadata in all_data['metadatas']:
+                        if metadata and metadata.get('modality') == 'image':
+                            img_path = metadata.get('image_path')
+                            if img_path and os.path.exists(img_path):
+                                image_paths.append(img_path)
 
-        else:  # 파일 업로드
-            uploaded_file = st.file_uploader(
-                "이미지를 드래그 앤 드롭하거나 클릭하여 선택하세요",
-                type=['jpg', 'png', 'jpeg'],
-                help="분석할 이미지를 업로드하세요"
-            )
-
-            if uploaded_file:
-                image = Image.open(uploaded_file)
-                selected_image = uploaded_file.name
+                if image_paths:
+                    selected_image_path = st.selectbox("이미지 선택", image_paths)
+                    if selected_image_path:
+                        image = Image.open(selected_image_path)
+                        selected_image = os.path.basename(selected_image_path)
+                else:
+                    st.info("로컬 DB에 이미지가 없습니다.")
+            except Exception as e:
+                st.error(f"이미지 로드 실패: {str(e)}")
+        else:
+            st.warning("로컬 vectorstore가 초기화되지 않았습니다.")
 
         # 이미지가 선택되었으면 바이트로 변환
         if image:
@@ -1338,14 +1282,14 @@ else:
             # Tab B: 멀티모달 RAG (이미지 + 텍스트)
             with tab_b:
                 if not st.session_state.local_vectorstore:
-                    st.warning("⚠️ 로컬 벡터DB가 없습니다. Tab 2에서 생성하세요.")
+                    st.warning("로컬 벡터DB가 없습니다. Tab 2에서 생성하세요.")
                 else:
-                    st.info("✨ 이미지 유사도 검색 모드: 입력 이미지와 유사한 이미지를 DB에서 찾아 캡션을 RAG 컨텍스트로 사용합니다.")
+                    st.info("이미지 유사도 검색 모드: 입력 이미지와 유사한 이미지를 DB에서 찾아 캡션을 RAG 컨텍스트로 사용합니다.")
 
                     col_param1, col_param2 = st.columns(2)
                     with col_param1:
                         top_k_images = st.number_input(
-                            "🖼️ 검색할 유사 이미지 수",
+                            "검색할 유사 이미지 수",
                             value=3,
                             min_value=1,
                             max_value=10,
@@ -1353,7 +1297,7 @@ else:
                         )
                     with col_param2:
                         top_k_text = st.number_input(
-                            "📄 검색할 텍스트 청크 수",
+                            "검색할 텍스트 청크 수",
                             value=0,
                             min_value=0,
                             max_value=10,
@@ -1367,11 +1311,11 @@ else:
                         help="텍스트 청크도 함께 검색하려면 쿼리를 입력하세요."
                     )
 
-                    if st.button("🚀 분석 (이미지 유사도 + 벡터DB)", type="primary", key="multimodal_analyze_btn"):
+                    if st.button("분석 (이미지 유사도 + 벡터DB)", type="primary", key="multimodal_analyze_btn"):
                         if not img_bytes:
-                            st.warning("⚠️ 이미지를 선택해주세요.")
+                            st.warning("이미지를 선택해주세요.")
                         else:
-                            with st.spinner("🔍 이미지 유사도 검색 및 멀티모달 RAG 분석 중..."):
+                            with st.spinner("이미지 유사도 검색 및 멀티모달 RAG 분석 중..."):
                                 try:
                                     from vision_engine import VisionEngine
                                     vision = VisionEngine(use_multimodal=True)
@@ -1386,11 +1330,11 @@ else:
                                         use_image_search=True
                                     )
 
-                                    st.markdown("### 🤖 AI Analysis Result")
+                                    st.markdown("### AI Analysis Result")
                                     st.write(result)
 
                                     # Show retrieved similar images
-                                    with st.expander("🔎 검색된 유사 이미지 보기"):
+                                    with st.expander("검색된 유사 이미지 보기"):
                                         similar_images = vision.similarity_search_by_image(
                                             img_bytes,
                                             st.session_state.local_vectorstore,
@@ -1406,9 +1350,323 @@ else:
                                                 img_path = doc.metadata.get('image_path')
                                                 if img_path and os.path.exists(img_path):
                                                     st.image(img_path, width=250)
-                                                st.info(f"📝 {doc.metadata.get('caption', 'No caption')}")
+                                                st.info(f"{doc.metadata.get('caption', 'No caption')}")
                                                 st.divider()
 
                                 except Exception as e:
-                                    st.error(f"❌ 멀티모달 RAG 분석 실패: {str(e)}")
+                                    st.error(f"멀티모달 RAG 분석 실패: {str(e)}")
                                     st.exception(e)
+
+    # ==================== 탭 5: 서버 관리자 뷰 (Zero-Trust 검증) ====================
+    with tab5:
+        st.subheader("서버 관리자 뷰 (Zero-Trust 검증)")
+        st.info("이 화면은 서버 관리자가 데이터베이스를 직접 조회했을 때 보이는 내용을 시뮬레이션합니다. 암호화된 데이터만 보이며, 실제 내용을 확인할 수 없습니다.")
+
+        if not st.session_state.current_repo:
+            st.warning("저장소를 먼저 선택해주세요.")
+        else:
+            # 탭 진입 시 자동으로 문서 청크 목록 조회
+            if 'zero_trust_chunks_by_doc' not in st.session_state:
+                try:
+                    repo_id = get_current_repo_id()
+                    docs, msg = st.session_state.serve_client.get_documents(repo_id)
+
+                    if docs is not None:
+                        chunks_by_doc = {}
+                        for doc in docs:
+                            doc_id = doc.get('docId')
+                            doc_name = doc.get('fileName', 'Unknown')
+
+                            # 복호화된 청크 가져오기 (사용자 뷰용)
+                            chunks, chunk_msg = st.session_state.serve_client.download_chunks_from_document(
+                                doc_name, repo_id
+                            )
+
+                            # 암호화된 청크 가져오기 (서버 관리자 뷰용)
+                            encrypted_chunks, enc_msg = st.session_state.serve_client.get_encrypted_chunks_from_document(
+                                doc_name, repo_id
+                            )
+
+                            if chunks is not None and len(chunks) > 0:
+                                chunks_by_doc[doc_id] = {
+                                    'name': doc_name,
+                                    'chunks': chunks,
+                                    'encrypted_chunks': encrypted_chunks if encrypted_chunks else [],
+                                    'doc': doc
+                                }
+
+                        st.session_state.zero_trust_chunks_by_doc = chunks_by_doc
+                except Exception as e:
+                    st.error(f"문서 로드 실패: {str(e)}")
+
+            # 새로고침 버튼
+            if st.button("문서 목록 새로고침", key="refresh_docs_tab5"):
+                try:
+                    repo_id = get_current_repo_id()
+                    docs, msg = st.session_state.serve_client.get_documents(repo_id)
+
+                    if docs is not None:
+                        chunks_by_doc = {}
+                        for doc in docs:
+                            doc_id = doc.get('docId')
+                            doc_name = doc.get('fileName', 'Unknown')
+
+                            # 복호화된 청크 가져오기 (사용자 뷰용)
+                            chunks, chunk_msg = st.session_state.serve_client.download_chunks_from_document(
+                                doc_name, repo_id
+                            )
+
+                            # 암호화된 청크 가져오기 (서버 관리자 뷰용)
+                            encrypted_chunks, enc_msg = st.session_state.serve_client.get_encrypted_chunks_from_document(
+                                doc_name, repo_id
+                            )
+
+                            if chunks is not None and len(chunks) > 0:
+                                chunks_by_doc[doc_id] = {
+                                    'name': doc_name,
+                                    'chunks': chunks,
+                                    'encrypted_chunks': encrypted_chunks if encrypted_chunks else [],
+                                    'doc': doc
+                                }
+
+                        st.session_state.zero_trust_chunks_by_doc = chunks_by_doc
+                        st.success(f"{len(chunks_by_doc)}개 문서 로드됨")
+                    else:
+                        st.error(msg)
+                except Exception as e:
+                    st.error(f"문서 로드 실패: {str(e)}")
+
+            st.divider()
+            col1, col2 = st.columns([1, 1])
+
+            with col1:
+                st.markdown("### 사용자 뷰 (복호화됨)")
+                st.success("클라이언트에서 복호화된 데이터를 볼 수 있습니다")
+
+                # 현재 저장소의 문서 청크 목록 가져오기
+                if 'zero_trust_chunks_by_doc' in st.session_state and st.session_state.zero_trust_chunks_by_doc:
+                    chunks_by_doc = st.session_state.zero_trust_chunks_by_doc
+                    # createdAt 기준으로 정렬 후 최근 3개 문서만 표시
+                    sorted_items = sorted(
+                        chunks_by_doc.items(),
+                        key=lambda x: x[1]['doc'].get('createdAt', ''),
+                        reverse=True
+                    )
+                    doc_items = sorted_items[:3]
+
+                    for idx, (doc_id, doc_info) in enumerate(doc_items):
+                        file_name = doc_info['name']
+                        chunks = doc_info['chunks']
+
+                        with st.expander(f"문서 {idx+1}: {file_name} ({len(chunks)}개 청크)", expanded=(idx==0)):
+                            # 청크 데이터 복호화하여 표시
+                            try:
+                                if chunks and len(chunks) > 0:
+                                    # 모든 청크 데이터를 합쳐서 표시
+                                    all_content = []
+                                    for chunk in chunks:
+                                        chunk_data = chunk.get('data', '')
+                                        if chunk_data:
+                                            all_content.append(chunk_data)
+
+                                    combined_content = '\n'.join(all_content)
+                                    st.text_area(
+                                        "복호화된 내용:",
+                                        value=combined_content,
+                                        height=200,
+                                        key=f"decrypted_{idx}"
+                                    )
+                                else:
+                                    st.warning("청크가 없습니다")
+                            except Exception as e:
+                                st.error(f"복호화 실패: {str(e)}")
+                                st.json(doc_info['doc'])
+                else:
+                    st.info("저장소에 문서가 없습니다.")
+
+            with col2:
+                st.markdown("### 서버 관리자 뷰 (암호화됨)")
+                st.error("서버는 암호화된 바이너리만 보며, 내용을 알 수 없습니다")
+
+                # 서버의 암호화된 데이터 보여주기
+                if 'zero_trust_chunks_by_doc' in st.session_state and st.session_state.zero_trust_chunks_by_doc:
+                    chunks_by_doc = st.session_state.zero_trust_chunks_by_doc
+                    # createdAt 기준으로 정렬 후 최근 3개 문서만 표시
+                    sorted_items = sorted(
+                        chunks_by_doc.items(),
+                        key=lambda x: x[1]['doc'].get('createdAt', ''),
+                        reverse=True
+                    )
+                    doc_items = sorted_items[:3]
+
+                    for idx, (doc_id, doc_info) in enumerate(doc_items):
+                        file_name = doc_info['name']
+                        chunks = doc_info['chunks']
+                        encrypted_chunks = doc_info.get('encrypted_chunks', [])
+                        doc = doc_info['doc']
+
+                        with st.expander(f"문서 {idx+1} (서버 DB - 암호화됨)", expanded=(idx==0)):
+                            # 서버에 저장된 암호화된 청크 데이터 표시
+                            if encrypted_chunks and len(encrypted_chunks) > 0:
+                                st.markdown("**암호화된 청크 데이터 (서버가 보는 내용):**")
+                                for i, enc_chunk in enumerate(encrypted_chunks[:3]):
+                                    encrypted_data = enc_chunk.get('encryptedData', '')
+                                    if encrypted_data:
+                                        preview = encrypted_data[:64] + "..." if len(encrypted_data) > 64 else encrypted_data
+                                        st.code(f"청크 {i}: {preview}", language=None)
+                                st.caption("서버는 암호화된 바이너리만 저장하며, 복호화 키가 없어 내용을 알 수 없습니다 (Zero-Knowledge)")
+                            else:
+                                st.warning("암호화된 청크 데이터를 가져올 수 없습니다.")
+                else:
+                    st.info("저장소에 문서가 없습니다.")
+
+            st.divider()
+            st.markdown("### Zero-Trust 아키텍처 설명")
+            st.markdown("""
+            **클라이언트 측 암호화 (Client-Side Encryption)**:
+            - 모든 데이터는 클라이언트에서 암호화된 후 서버로 전송됩니다
+            - 서버는 암호화 키를 보유하지 않으며, 암호화된 바이너리만 저장합니다
+            - 복호화 키는 팀 멤버의 공개키로 암호화되어 각 멤버만 접근 가능합니다
+
+            **Envelope Encryption**:
+            - DEK (Data Encryption Key): 실제 데이터를 암호화하는 대칭키
+            - KEK (Key Encryption Key): 각 멤버의 공개키로 DEK를 암호화
+            - 서버는 암호화된 DEK만 저장하며, 복호화할 수 없습니다
+
+            **결과**:
+            - 서버 관리자도 데이터 내용을 볼 수 없습니다
+            - 서버 해킹 시에도 데이터 유출 불가능
+            - True Zero-Trust Architecture
+            """)
+
+    # ==================== 탭 6: 보안 모니터링 (IDS) ====================
+    with tab6:
+        st.subheader("보안 모니터링 (Suricata IDS)")
+        st.info("Suricata IDS가 감지한 공격 이벤트를 실시간으로 모니터링합니다.")
+
+        col_header1, col_header2 = st.columns([3, 1])
+
+        with col_header1:
+            st.markdown("### 최근 보안 이벤트")
+
+        with col_header2:
+            if st.button("새로고침", key="refresh_ids_logs"):
+                st.rerun()
+
+        # Suricata 로그 파일 경로
+        suricata_log_path = "/var/log/suricata/eve.json"
+
+        try:
+            import json
+            from datetime import datetime
+
+            # 로그 파일이 존재하는지 확인
+            if not os.path.exists(suricata_log_path):
+                st.warning(f"Suricata 로그 파일을 찾을 수 없습니다: {suricata_log_path}")
+                st.info("Suricata IDS가 실행 중인지 확인해주세요.")
+            else:
+                # 로그 파일 읽기
+                alerts = []
+
+                with open(suricata_log_path, 'r') as f:
+                    # 파일을 역순으로 읽어서 최근 이벤트부터 표시
+                    lines = f.readlines()
+
+                    for line in reversed(lines[-100:]):  # 최근 100줄만 읽기
+                        try:
+                            event = json.loads(line.strip())
+
+                            # alert 이벤트만 필터링
+                            if event.get('event_type') == 'alert':
+                                src_ip = event.get('src_ip', 'N/A')
+                                dest_ip = event.get('dest_ip', 'N/A')
+                                http_url = event.get('http', {}).get('url', '')
+
+                                # 내부 통신 필터링 (172.28.0.1 -> 172.28.0.2)
+                                # 단, /api/sensor-data 경로는 표시
+                                if src_ip == '172.28.0.1' and dest_ip == '172.28.0.2':
+                                    if '/api/sensor-data' not in http_url:
+                                        continue
+
+                                alerts.append({
+                                    'timestamp': event.get('timestamp', 'N/A'),
+                                    'signature': event.get('alert', {}).get('signature', 'Unknown'),
+                                    'category': event.get('alert', {}).get('category', 'Unknown'),
+                                    'severity': event.get('alert', {}).get('severity', 'N/A'),
+                                    'src_ip': src_ip,
+                                    'dest_ip': dest_ip,
+                                    'dest_port': event.get('dest_port', 'N/A'),
+                                    'proto': event.get('proto', 'N/A')
+                                })
+
+                                # 최대 50개까지만 표시
+                                if len(alerts) >= 50:
+                                    break
+                        except json.JSONDecodeError:
+                            continue
+
+                if not alerts:
+                    st.success("감지된 공격이 없습니다. 시스템이 안전합니다.")
+                else:
+                    st.warning(f"**총 {len(alerts)}개의 보안 이벤트 감지됨**")
+
+                    # 공격 유형별 통계
+                    st.markdown("#### 공격 유형 통계")
+                    attack_types = {}
+                    for alert in alerts:
+                        category = alert['category']
+                        attack_types[category] = attack_types.get(category, 0) + 1
+
+                    col_stat1, col_stat2, col_stat3 = st.columns(3)
+
+                    stats_items = list(attack_types.items())
+                    for i, (attack_type, count) in enumerate(stats_items):
+                        if i % 3 == 0:
+                            col_stat1.metric(attack_type, f"{count}건")
+                        elif i % 3 == 1:
+                            col_stat2.metric(attack_type, f"{count}건")
+                        else:
+                            col_stat3.metric(attack_type, f"{count}건")
+
+                    st.divider()
+
+                    # 상세 이벤트 목록
+                    st.markdown("#### 상세 이벤트 목록")
+
+                    # 심각도별 레이블
+                    severity_labels = {
+                        1: "[HIGH]",
+                        2: "[MEDIUM]",
+                        3: "[LOW]"
+                    }
+
+                    # 테이블 형식으로 표시
+                    for idx, alert in enumerate(alerts):
+                        severity_label = severity_labels.get(alert['severity'], "[UNKNOWN]")
+
+                        with st.expander(
+                            f"{severity_label} [{alert['timestamp']}] {alert['signature']}",
+                            expanded=(idx < 5)  # 처음 5개만 펼치기
+                        ):
+                            col_detail1, col_detail2 = st.columns(2)
+
+                            with col_detail1:
+                                st.markdown(f"**공격 유형:** {alert['category']}")
+                                st.markdown(f"**심각도:** {alert['severity']} (1=High, 2=Medium, 3=Low)")
+                                st.markdown(f"**프로토콜:** {alert['proto']}")
+
+                            with col_detail2:
+                                st.markdown(f"**출발지 IP:** `{alert['src_ip']}`")
+                                st.markdown(f"**목적지 IP:** `{alert['dest_ip']}`")
+                                st.markdown(f"**목적지 포트:** `{alert['dest_port']}`")
+
+                    st.divider()
+                    st.caption(f"로그 파일: {suricata_log_path}")
+
+        except PermissionError:
+            st.error("권한 오류: Suricata 로그 파일에 접근할 수 없습니다.")
+            st.info("Docker 컨테이너를 실행할 때 볼륨 마운트를 확인하세요:\n`docker run -v /var/log/suricata:/var/log/suricata ...`")
+        except Exception as e:
+            st.error(f"로그 파일 읽기 실패: {str(e)}")
+            import traceback
+            st.code(traceback.format_exc())
