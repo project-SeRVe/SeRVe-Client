@@ -8,7 +8,8 @@ setup(
     install_requires=[
         'click',
         'requests',
-        'tink'
+        'tink',
+        'numpy'
     ],
     entry_points='''
         [console_scripts]

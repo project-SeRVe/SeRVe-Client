@@ -2,6 +2,7 @@ import click
 import sqlite3
 import os
 from .context import CLIContext
+from .npz_utils import npz_to_chunks, chunks_to_npz
 
 @click.group()
 def data():
@@ -12,23 +13,31 @@ def data():
 @click.argument('team-id')
 @click.argument('task-name')
 @click.argument('data-id')
+@click.option('--file', 'npz_file', required=True, help="로봇 trajectory npz 파일 경로")
 @click.option('--description', help="작업에 대한 설명", default="")
 @click.option('--robot-id', help="작업의 출처(로봇 id)", default="")
-def upload(team_id, task_name, data_id, description, robot_id):
+def upload(team_id, task_name, data_id, npz_file, description, robot_id):
     """데모 데이터 업로드"""
     ctx = CLIContext()
     ctx.ensure_private_key()  # Requires private key for encryption
 
-    click.echo(f"[+] Uploading {data_id} for '{task_name}' in repository {team_id}...")
-    # The spec dictates: "[description]", "[robot-id]".
-    # Because vector chunking is file-based in ServeClient (`upload_chunks_to_document` or `upload_document`),
-    # we simulate the demo upload by serializing the metadata.
+    click.echo(f"[+] Uploading NPZ file '{npz_file}' as {data_id} for '{task_name}' in repository {team_id}...")
     
-    metadata = f"Task: {task_name}\nDataID: {data_id}\nDesc: {description}\nRobotID: {robot_id}"
+    # Check if file exists
+    if not os.path.exists(npz_file):
+        click.echo(click.style(f"❌ 파일을 찾을 수 없습니다: {npz_file}", fg="red"))
+        return
     
-    # Simulate a chunk for demo purposes
-    chunk_data = [{"chunkIndex": 0, "data": metadata}]
+    try:
+        # Serialize NPZ file to chunks
+        click.echo("[+] Reading and serializing NPZ file...")
+        chunk_data = npz_to_chunks(npz_file)
+        click.echo(f"[+] NPZ file split into {len(chunk_data)} chunks")
+    except Exception as e:
+        click.echo(click.style(f"❌ NPZ 파일 처리 실패: {e}", fg="red"))
+        return
     
+    # Upload encrypted chunks via SDK
     success, msg = ctx.client.upload_chunks_to_document(
         file_name=f"{task_name}_{data_id}",
         repo_id=team_id,
@@ -98,58 +107,61 @@ def list(team_id):
 @click.argument('team-id')
 @click.argument('task-name')
 @click.argument('data-id')
+@click.option('--output', 'output_file', required=True, help="다운로드할 NPZ 파일 경로")
 @click.option('--db-url', help="저장할 로컬 데이터베이스 연결 URL (기본값: sqlite:///local.db)", default="sqlite:///local.db")
-def download(team_id, task_name, data_id, db_url):
+def download(team_id, task_name, data_id, output_file, db_url):
     """데모 데이터 다운로드"""
     ctx = CLIContext()
     ctx.ensure_private_key()
 
-    click.echo(f"[+] Downloading data {data_id} to database '{db_url}'...")
-    # Map to `download_chunks_from_document` in client (which uses sync under the hood)
+    click.echo(f"[+] Downloading data {data_id} and saving to '{output_file}'...")
+    # Download and decrypt chunks from server
     chunks, msg = ctx.client.download_chunks_from_document(f"{task_name}_{data_id}", team_id)
     
     if chunks is None:
-         click.echo(click.style(f"❌ 다운로드 실패: {msg}", fg="red"))
-    else:
-         # Save to local database
-         db_path = "local.db"
-         if db_url.startswith("sqlite:///"):
-             parsed_path = db_url.replace("sqlite:///", "")
-             # If it's an absolute path (e.g. sqlite:////tmp/local.db), it will have a leading slash after replace
-             # If it was sqlite:///local.db, it will be local.db
-             db_path = parsed_path
-             
-         try:
-             conn = sqlite3.connect(db_path)
-             cursor = conn.cursor()
-             # Create table if it doesn't exist
-             cursor.execute('''
-                 CREATE TABLE IF NOT EXISTS downloaded_data (
-                     team_id TEXT,
-                     task_name TEXT,
-                     data_id TEXT,
-                     download_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                     UNIQUE(team_id, data_id)
-                 )
-             ''')
-             # Insert or replace record
-             cursor.execute('''
-                 INSERT OR REPLACE INTO downloaded_data (team_id, task_name, data_id)
-                 VALUES (?, ?, ?)
-             ''', (team_id, task_name, data_id))
-             
-             # Example of storing actual chunk locally could be added here
-             
-             conn.commit()
-             conn.close()
-         except Exception as e:
-             click.echo(click.style(f"⚠️ 데이터베이스 기록 중 오류 발생: {e}", fg="yellow"))
-         
-         click.echo(click.style(f"✅ 다운로드 완료! (복호화된 청크 수: {len(chunks)})", fg="green"))
-         # Extract first chunk data to show preview
-         if len(chunks) > 0:
-             preview = chunks[0].get("data", "")[:50].replace('\n', ' ')
-             click.echo(f"   [Preview]: {preview}...")
+        click.echo(click.style(f"❌ 다운로드 실패: {msg}", fg="red"))
+        return
+    
+    # Reconstruct NPZ file from chunks
+    try:
+        click.echo(f"[+] Reconstructing NPZ file from {len(chunks)} chunks...")
+        chunks_to_npz(chunks, output_file)
+        click.echo(click.style(f"✅ NPZ 파일 복원 성공: {output_file}", fg="green"))
+    except Exception as e:
+        click.echo(click.style(f"❌ NPZ 파일 복원 실패: {e}", fg="red"))
+        return
+    
+    # Save to local database tracking
+    db_path = "local.db"
+    if db_url.startswith("sqlite:///"):
+        parsed_path = db_url.replace("sqlite:///", "")
+        db_path = parsed_path
+        
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        # Create table if it doesn't exist
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS downloaded_data (
+                team_id TEXT,
+                task_name TEXT,
+                data_id TEXT,
+                output_file TEXT,
+                download_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(team_id, data_id)
+            )
+        ''')
+        # Insert or replace record
+        cursor.execute('''
+            INSERT OR REPLACE INTO downloaded_data (team_id, task_name, data_id, output_file)
+            VALUES (?, ?, ?, ?)
+        ''', (team_id, task_name, data_id, output_file))
+        
+        conn.commit()
+        conn.close()
+        click.echo(click.style(f"✅ 로컬 DB 기록 완료!", fg="green"))
+    except Exception as e:
+        click.echo(click.style(f"⚠️ 데이터베이스 기록 중 오류 발생: {e}", fg="yellow"))
 
 @data.command()
 @click.argument('team-id')
