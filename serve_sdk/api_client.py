@@ -104,12 +104,16 @@ class ApiClient:
         except Exception as e:
             return False, f"로그인 오류: {str(e)}"
 
-    def reset_password(self, email: str, new_password: str) -> Tuple[bool, str]:
+    def reset_password(self, email: str, new_password: str, encrypted_private_key: str = None) -> Tuple[bool, str]:
         """비밀번호 재설정"""
         try:
+            payload = {"email": email, "newPassword": new_password}
+            if encrypted_private_key:
+                payload["encryptedPrivateKey"] = encrypted_private_key
+                
             resp = self.session.post(
                 f"{self.server_url}/auth/reset-password",
-                json={"email": email, "newPassword": new_password}
+                json=payload
             )
             success, _ = self._handle_response(resp)
             return success, "비밀번호 재설정 성공" if success else "비밀번호 재설정 실패"

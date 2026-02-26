@@ -187,7 +187,15 @@ class ServeClient:
 
     def reset_password(self, email: str, new_password: str) -> Tuple[bool, str]:
         """비밀번호 재설정"""
-        return self.api.reset_password(email, new_password)
+        try:
+            try:
+                private_key = self.session.get_private_key()
+                encrypted_private_key = self.crypto.encrypt_private_key(private_key, new_password)
+            except Exception:
+                encrypted_private_key = None
+            return self.api.reset_password(email, new_password, encrypted_private_key)
+        except Exception as e:
+            return False, f"비밀번호 재설정 오류: {str(e)}"
 
     def withdraw(self) -> Tuple[bool, str]:
         """회원 탈퇴"""
@@ -764,7 +772,21 @@ class ServeClient:
         self._ensure_authenticated()
 
         try:
-            # 1. 서버에서 변경된 청크들 조회
+            # 1. 문서 정보 가져오기 (encryptedDEK 확인용)
+            success, documents = self.api.get_documents(repo_id, self.session.access_token)
+            if not success:
+                return None, f"문서 조회 실패: {documents}"
+                
+            document_info = None
+            for doc in documents:
+                if doc.get("docId") == doc_id:
+                    document_info = doc
+                    break
+                    
+            if not document_info:
+                return None, "해당 문서를 찾을 수 없습니다."
+
+            # 2. 서버에서 변경된 청크들 조회
             success, chunks = self.api.sync_document_chunks(
                 doc_id, last_version, self.session.access_token
             )
@@ -775,10 +797,25 @@ class ServeClient:
             if not chunks:
                 return [], "변경사항 없음"
 
-            # 2. 팀 키 가져오기
+            # 3. 팀 키 가져오기
             team_key = self._ensure_team_key(repo_id)
+            
+            # 4. DEK 언래핑
+            encrypted_dek_bytes = document_info.get("encryptedDEK")
+            if not encrypted_dek_bytes:
+                return None, "문서에 암호화된 DEK가 없습니다."
+                
+            import base64
+            if isinstance(encrypted_dek_bytes, list):
+                encrypted_dek = base64.b64encode(bytes(encrypted_dek_bytes)).decode('utf-8')
+            elif isinstance(encrypted_dek_bytes, bytes):
+                encrypted_dek = base64.b64encode(encrypted_dek_bytes).decode('utf-8')
+            else:
+                encrypted_dek = encrypted_dek_bytes
+                
+            dek = self.crypto.unwrap_key_with_aes(encrypted_dek, team_key)
 
-            # 3. 각 청크 복호화 (삭제되지 않은 경우에만)
+            # 5. 각 청크 복호화 (DEK 사용)
             decrypted_chunks = []
             for chunk in chunks:
                 chunk_index = chunk["chunkIndex"]
@@ -797,11 +834,10 @@ class ServeClient:
 
                     # byte[] → Base64 변환 (필요시)
                     if isinstance(encrypted_blob, list):
-                        import base64
                         encrypted_blob = base64.b64encode(bytes(encrypted_blob)).decode('utf-8')
 
-                    # 복호화
-                    plaintext = self.crypto.decrypt_data(encrypted_blob, team_key)
+                    # 복호화 (DEK 적용)
+                    plaintext = self.crypto.decrypt_data(encrypted_blob, dek)
                     result_chunk["data"] = plaintext
                 else:
                     result_chunk["data"] = None
@@ -831,6 +867,14 @@ class ServeClient:
         self._ensure_authenticated()
 
         try:
+            import base64
+            # 0. 문서 목록 먼저 조회 (DEK 찾기용)
+            success, documents = self.api.get_documents(repo_id, self.session.access_token)
+            if not success:
+                return None, f"문서 메타데이터 동기화 실패: {documents}"
+                
+            doc_catalogue = {doc["docId"]: doc.get("encryptedDEK") for doc in documents}
+
             # 1. 서버에서 팀 전체 변경된 청크들 조회
             success, chunks = self.api.sync_team_chunks(
                 repo_id, last_version, self.session.access_token
@@ -844,8 +888,11 @@ class ServeClient:
 
             # 2. 팀 키 가져오기
             team_key = self._ensure_team_key(repo_id)
+            
+            # 3. 문서별 DEK 캐시
+            dek_cache = {}
 
-            # 3. 문서별로 그룹핑하면서 복호화
+            # 4. 문서별로 그룹핑하면서 복호화
             documents_chunks = {}
             for chunk in chunks:
                 doc_id = chunk["documentId"]
@@ -863,14 +910,28 @@ class ServeClient:
                 if not is_deleted:
                     encrypted_blob = chunk["encryptedBlob"]
 
+                    if doc_id not in dek_cache:
+                        dek_b64 = doc_catalogue.get(doc_id)
+                        if not dek_b64:
+                            continue # DEK 없음
+                        if isinstance(dek_b64, list):
+                            dek_b64 = base64.b64encode(bytes(dek_b64)).decode('utf-8')
+                        elif isinstance(dek_b64, bytes):
+                            dek_b64 = base64.b64encode(dek_b64).decode('utf-8')
+                        dek_cache[doc_id] = self.crypto.unwrap_key_with_aes(dek_b64, team_key)
+                        
+                    dek = dek_cache[doc_id]
+
                     # byte[] → Base64 변환 (필요시)
                     if isinstance(encrypted_blob, list):
-                        import base64
                         encrypted_blob = base64.b64encode(bytes(encrypted_blob)).decode('utf-8')
 
-                    # 복호화
-                    plaintext = self.crypto.decrypt_data(encrypted_blob, team_key)
-                    result_chunk["data"] = plaintext
+                    # 복호화 (DEK 적용)
+                    try:
+                        plaintext = self.crypto.decrypt_data(encrypted_blob, dek)
+                        result_chunk["data"] = plaintext
+                    except Exception as e:
+                        result_chunk["data"] = f"[Decryption Error: {e}]"
                 else:
                     result_chunk["data"] = None
 

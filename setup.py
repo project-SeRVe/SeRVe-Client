@@ -1,0 +1,17 @@
+from setuptools import setup, find_packages
+
+setup(
+    name='serve',
+    version='0.1.0',
+    packages=find_packages(where='src'),
+    package_dir={'': 'src'},
+    install_requires=[
+        'click',
+        'requests',
+        'tink'
+    ],
+    entry_points='''
+        [console_scripts]
+        serve=cli.main:cli
+    ''',
+)
