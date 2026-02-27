@@ -1,13 +1,25 @@
 import click
 import sqlite3
 import os
+from pathlib import Path
 from .context import CLIContext
 from .npz_utils import npz_to_chunks, chunks_to_npz
+from .npz_validator import validate_npz
+from .preprocess import preprocess_command
+from .validate import validate_command
+from .review import review_command
+from .build_index import build_index_command
 
 @click.group()
 def data():
     """데모 데이터 관리"""
     pass
+
+# Register preprocess command
+data.add_command(preprocess_command)
+data.add_command(validate_command)
+data.add_command(review_command)
+data.add_command(build_index_command)
 
 @data.command()
 @click.argument('team-id')
@@ -178,3 +190,86 @@ def pull(team_id, db_url):
          click.echo(click.style(f"✅ 동기화 완료! (가져온 암호화 청크 수: {len(chunks_or_msg)})", fg="green"))
     else:
          click.echo(click.style(f"❌ 동기화 실패: {chunks_or_msg}", fg="red"))
+
+@data.command(name='upload-scenario')
+@click.argument('team-id')
+@click.argument('scenario-name')
+@click.argument('scenario-dir', type=click.Path(exists=True))
+@click.option('--description', help="시나리오 설명", default="")
+@click.option('--force', is_flag=True, help="이미 업로드된 데모도 재업로드")
+def upload_scenario(team_id, scenario_name, scenario_dir, description, force):
+    """
+    시나리오 단위로 여러 데모를 묶어서 암호화/업로드
+    
+    시나리오 디렉토리 구조:
+    scenario_name/
+        demo1/processed_demo.npz
+        demo2/processed_demo.npz
+        demo3/processed_demo.npz
+    """
+    ctx = CLIContext()
+    ctx.ensure_private_key()
+    
+    scenario_path = Path(scenario_dir)
+    click.echo(f"[+] Uploading scenario '{scenario_name}' from {scenario_path}...")
+    
+    # Find all processed_demo.npz files
+    demo_files = list(scenario_path.rglob('processed_demo.npz'))
+    
+    if not demo_files:
+        click.echo(click.style(f"❌ No processed_demo.npz files found in {scenario_path}", fg="red"))
+        return
+    
+    click.echo(f"[+] Found {len(demo_files)} demo(s) in scenario")
+    
+    # Upload each demo with scenario prefix
+    success_count = 0
+    fail_count = 0
+    
+    for demo_file in demo_files:
+        # Extract demo ID from path
+        rel_path = demo_file.relative_to(scenario_path)
+        demo_id = rel_path.parent.name if rel_path.parent != Path('.') else 'demo'
+        
+        click.echo(f"\n[+] Processing {demo_id}...")
+        
+        # Validate NPZ format
+        valid, errors = validate_npz(str(demo_file), strict=False)
+        if not valid:
+            click.echo(click.style(f"  ⚠️  Validation warnings:", fg="yellow"))
+            for err in errors[:3]:  # Show first 3 errors
+                click.echo(click.style(f"    - {err}", fg="yellow"))
+            if not force:
+                click.echo(click.style(f"  ❌ Skipping (use --force to upload anyway)", fg="red"))
+                fail_count += 1
+                continue
+        
+        try:
+            # Serialize NPZ to chunks
+            chunk_data = npz_to_chunks(str(demo_file))
+            
+            # Upload with scenario prefix
+            file_name = f"{scenario_name}_{demo_id}"
+            success, msg = ctx.client.upload_chunks_to_document(
+                file_name=file_name,
+                repo_id=team_id,
+                chunks_data=chunk_data
+            )
+            
+            if success:
+                click.echo(click.style(f"  ✅ Uploaded: {file_name}", fg="green"))
+                success_count += 1
+            else:
+                click.echo(click.style(f"  ❌ Failed: {msg}", fg="red"))
+                fail_count += 1
+        
+        except Exception as e:
+            click.echo(click.style(f"  ❌ Error: {e}", fg="red"))
+            fail_count += 1
+    
+    # Summary
+    click.echo(f"\n{'='*60}")
+    click.echo(f"Scenario upload complete: {success_count} succeeded, {fail_count} failed")
+    if success_count > 0:
+        click.echo(click.style(f"✅ Successfully uploaded {success_count} demo(s) for scenario '{scenario_name}'", fg="green"))
+

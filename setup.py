@@ -9,7 +9,11 @@ setup(
         'click',
         'requests',
         'tink',
-        'numpy'
+        'numpy',
+        'h5py',
+        'Pillow',
+        'torch',
+        'torchvision'
     ],
     entry_points='''
         [console_scripts]

@@ -3,6 +3,9 @@ Utilities for handling NPZ files (NumPy compressed archive format).
 
 This module provides functions to serialize robot trajectory data stored in .npz files
 into encrypted chunks for upload, and to deserialize downloaded chunks back into .npz files.
+
+Supports both legacy format (joint_positions, velocities, etc.) and canonical format
+(state, actions, RGB images, embeddings, prompt) from ricl_openpi_libero.
 """
 
 import numpy as np
