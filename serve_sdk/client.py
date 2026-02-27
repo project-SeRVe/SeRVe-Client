@@ -520,20 +520,20 @@ class ServeClient:
 
     # ==================== 벡터 청크 API ====================
 
-    def upload_chunks_to_document(self, file_name: str, repo_id: str, chunks_data: List[Dict[str, Any]]) -> Tuple[bool, str]:
+    def upload_chunks_to_document(self, file_name: str, repo_id: str, chunks_data: List[Dict[str, Any]], dek=None) -> Tuple[bool, str]:
         """
         벡터 청크 배치 업로드 (Envelope Encryption 적용)
 
         Envelope Encryption:
-        1. DEK(Data Encryption Key) 생성 - 문서별 랜덤 키
+        1. DEK(Data Encryption Key) 생성 - 문서별 랜덤 키 (또는 외부에서 제공)
         2. DEK로 청크 데이터 암호화
         3. 팀 키(KEK)로 DEK 래핑(암호화)
-        4. 암호화된 DEK를 서버에 전송
 
         Args:
             file_name: 파일명 (문서 식별용)
             repo_id: 저장소 ID (팀 ID, 팀 키 조회용)
             chunks_data: 청크 데이터 목록 [{"chunkIndex": int, "data": str (평문)}, ...]
+            dek: (선택) Data Encryption Key. 제공되지 않으면 자동 생성. 시나리오 단위 업로드 시 사용.
 
         Returns:
             (성공 여부, 메시지)
@@ -544,8 +544,10 @@ class ServeClient:
             # 1. 팀 키 가져오기 (KEK - Key Encryption Key)
             team_key = self._ensure_team_key(repo_id)
 
-            # 2. DEK(Data Encryption Key) 생성 - 문서별 랜덤 키
-            dek = self.crypto.generate_aes_key()
+            # 2. DEK(Data Encryption Key) 생성 또는 재사용
+            if dek is None:
+                dek = self.crypto.generate_aes_key()  # 문서별 랜덤 키
+            # else: 시나리오 단위 업로드 시 외부에서 제공된 DEK 재사용
 
             # 3. 각 청크를 DEK로 암호화
             encrypted_chunks = []

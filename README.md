@@ -277,6 +277,7 @@ serve reasoning basic franka "pick up object"
 | `upload-scenario` | 시나리오 단위 업로드 | `serve data upload-scenario team-id scenario-name ./approved/scenario` |
 | `upload` | 단일 데모 업로드 | `serve data upload team-id task-name data-id` |
 | `download` | 데모 다운로드 | `serve data download team-id task-name data-id` |
+| `download-scenario` | 시나리오 단위 다운로드 | `serve data download-scenario team-id scenario-name --output-dir ./downloads` |
 | `list` | 데모 목록 조회 | `serve data list team-id` |
 | `pull` | 전체 동기화 | `serve data pull team-id sqlite:///local.db` |
 
@@ -385,6 +386,8 @@ DEK (Data Encryption Key) (임시 생성)
 ```
 [업로드 시]
 1. DEK 생성 (AES-256-GCM, 랜덤)
+   - 시나리오 단위 업로드: 하나의 DEK를 모든 에피소드가 공유
+   - 단일 데모 업로드: 에피소드마다 개별 DEK 생성
 2. 데이터를 DEK로 암호화
 3. DEK를 팀 키(KEK)로 래핑
 4. 서버에 전송: {encryptedData, encryptedDEK}
@@ -397,7 +400,7 @@ DEK (Data Encryption Key) (임시 생성)
 장점:
 - 대량 데이터는 빠른 대칭키(DEK)로 암호화
 - 멤버 추가 시 DEK만 재래핑 (데이터 재암호화 불필요)
-```
+- 시나리오 단위 업로드: 같은 태스크의 모든 에피소드가 하나의 DEK 공유 → 효율적 관리
 
 ### Lazy Loading 패턴
 

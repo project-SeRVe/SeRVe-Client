@@ -222,6 +222,10 @@ def upload_scenario(team_id, scenario_name, scenario_dir, description, force):
     
     click.echo(f"[+] Found {len(demo_files)} demo(s) in scenario")
     
+    # Generate single DEK for entire scenario (shared encryption key)
+    scenario_dek = ctx.client.crypto.generate_aes_key()
+    click.echo(f"[+] Generated shared encryption key for scenario '{scenario_name}'")
+    
     # Upload each demo with scenario prefix
     success_count = 0
     fail_count = 0
@@ -248,12 +252,13 @@ def upload_scenario(team_id, scenario_name, scenario_dir, description, force):
             # Serialize NPZ to chunks
             chunk_data = npz_to_chunks(str(demo_file))
             
-            # Upload with scenario prefix
+            # Upload with scenario prefix, using shared DEK
             file_name = f"{scenario_name}_{demo_id}"
             success, msg = ctx.client.upload_chunks_to_document(
                 file_name=file_name,
                 repo_id=team_id,
-                chunks_data=chunk_data
+                chunks_data=chunk_data,
+                dek=scenario_dek  # Reuse same DEK for all episodes in scenario
             )
             
             if success:
@@ -273,3 +278,94 @@ def upload_scenario(team_id, scenario_name, scenario_dir, description, force):
     if success_count > 0:
         click.echo(click.style(f"✅ Successfully uploaded {success_count} demo(s) for scenario '{scenario_name}'", fg="green"))
 
+
+@data.command(name='download-scenario')
+@click.argument('team-id')
+@click.argument('scenario-name')
+@click.option('--output-dir', type=click.Path(), default='./downloads', help="출력 디렉토리 (기본값: ./downloads)")
+@click.option('--overwrite', is_flag=True, help="기존 파일 덮어쓰기")
+def download_scenario(team_id, scenario_name, output_dir, overwrite):
+    """
+    시나리오 단위로 여러 데모를 다운로드 및 복호화
+    
+    같은 시나리오의 모든 에피소드를 다운로드하여 로컬에 저장합니다.
+    모든 에피소드는 동일한 DEK(Data Encryption Key)로 암호화되어 있습니다.
+    """
+    ctx = CLIContext()
+    ctx.ensure_private_key()
+    
+    output_path = Path(output_dir)
+    scenario_path = output_path / scenario_name
+    scenario_path.mkdir(parents=True, exist_ok=True)
+    
+    click.echo(f"[+] Downloading scenario '{scenario_name}' to {scenario_path}...")
+    
+    try:
+        # 1. Get all documents in team
+        documents, msg = ctx.client.list_documents(team_id)
+        if documents is None:
+            click.echo(click.style(f"❌ Failed to list documents: {msg}", fg="red"))
+            return
+        
+        # 2. Filter documents by scenario prefix
+        scenario_docs = [
+            doc for doc in documents
+            if doc.get('fileName', '').startswith(f"{scenario_name}_")
+        ]
+        
+        if not scenario_docs:
+            click.echo(click.style(f"❌ No episodes found for scenario '{scenario_name}'", fg="red"))
+            return
+        
+        click.echo(f"[+] Found {len(scenario_docs)} episode(s) in scenario")
+        
+        # 3. Download each episode
+        success_count = 0
+        fail_count = 0
+        
+        for doc in scenario_docs:
+            file_name = doc.get('fileName')
+            # Extract demo_id from file_name (e.g., "pick_cube_demo_0" → "demo_0")
+            demo_id = file_name.replace(f"{scenario_name}_", "")
+            
+            demo_dir = scenario_path / demo_id
+            demo_file = demo_dir / 'processed_demo.npz'
+            
+            # Check if already exists
+            if demo_file.exists() and not overwrite:
+                click.echo(f"  ⏭️  Skipping {demo_id} (already exists, use --overwrite)")
+                continue
+            
+            click.echo(f"\n[+] Downloading {demo_id}...")
+            
+            try:
+                # Download and decrypt chunks
+                chunks, msg = ctx.client.download_chunks_from_document(
+                    file_name=file_name,
+                    repo_id=team_id
+                )
+                
+                if chunks is None:
+                    click.echo(click.style(f"  ❌ Failed: {msg}", fg="red"))
+                    fail_count += 1
+                    continue
+                
+                # Convert chunks back to NPZ
+                demo_dir.mkdir(parents=True, exist_ok=True)
+                chunks_to_npz(chunks, str(demo_file))
+                
+                click.echo(click.style(f"  ✅ Downloaded: {demo_file}", fg="green"))
+                success_count += 1
+            
+            except Exception as e:
+                click.echo(click.style(f"  ❌ Error: {e}", fg="red"))
+                fail_count += 1
+        
+        # Summary
+        click.echo(f"\n{'='*60}")
+        click.echo(f"Scenario download complete: {success_count} succeeded, {fail_count} failed")
+        if success_count > 0:
+            click.echo(click.style(f"✅ Successfully downloaded {success_count} demo(s) for scenario '{scenario_name}'", fg="green"))
+    
+    except Exception as e:
+        click.echo(click.style(f"❌ Failed to download scenario: {e}", fg="red"))
