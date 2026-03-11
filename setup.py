@@ -15,7 +15,9 @@ setup(
         'h5py',
         'Pillow',
         'torch',
-        'torchvision'
+        'torchvision',
+        'python-dotenv',  # .env 파일 로드
+        'boto3'  # AWS S3 접근
     ],
     entry_points='''
         [console_scripts]

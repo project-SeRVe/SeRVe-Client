@@ -7,6 +7,8 @@ Session에서 토큰을 받아와 인증 헤더에 사용.
 
 import json
 import requests
+import boto3
+from botocore.exceptions import ClientError, NoCredentialsError
 from typing import Optional, Dict, Any, List, Tuple
 
 
@@ -350,7 +352,6 @@ class ApiClient:
         try:
             resp = self.session.post(
                 f"{self.core_service_url}/api/teams/{team_id}/tasks",
-                f"{self.server_url}/api/teams/{team_id}/tasks",
                 json={
                     "fileName": file_name,
                     "fileType": file_type,
@@ -368,7 +369,6 @@ class ApiClient:
         try:
             resp = self.session.get(
                 f"{self.core_service_url}/api/teams/{team_id}/tasks",
-                f"{self.server_url}/api/teams/{team_id}/tasks",
                 headers=self._get_headers(access_token)
             )
             return self._handle_response(resp)
@@ -380,19 +380,62 @@ class ApiClient:
         try:
             resp = self.session.get(
                 f"{self.core_service_url}/api/tasks/{task_id}/data",
-                f"{self.server_url}/api/tasks/{task_id}/data",
                 headers=self._get_headers(access_token)
             )
             return self._handle_response(resp)
         except Exception as e:
             return False, f"태스크 다운로드 오류: {str(e)}"
 
+    def download_from_s3(self, object_key: str, aws_access_key_id: Optional[str] = None, 
+                         aws_secret_access_key: Optional[str] = None,
+                         region_name: str = 'ap-northeast-2',
+                         bucket_name: str = 'servis-artifacts') -> Tuple[bool, Optional[bytes]]:
+        """
+        S3에서 직접 데이터 다운로드 (boto3 사용)
+        
+        Args:
+            object_key: S3 객체 키 (team-id/task-id/task/filename)
+            aws_access_key_id: AWS Access Key ID (환경변수에서 자동 로드 가능)
+            aws_secret_access_key: AWS Secret Access Key
+            region_name: AWS 리전 (기본: ap-northeast-2)
+            bucket_name: S3 버킷 이름 (기본: servis-artifacts)
+        
+        Returns:
+            (success: bool, data: bytes or error_msg: str)
+        """
+        try:
+            # boto3 클라이언트 생성
+            s3_config = {'region_name': region_name}
+            if aws_access_key_id and aws_secret_access_key:
+                s3_config['aws_access_key_id'] = aws_access_key_id
+                s3_config['aws_secret_access_key'] = aws_secret_access_key
+            
+            s3 = boto3.client('s3', **s3_config)
+            
+            # S3에서 객체 다운로드
+            response = s3.get_object(Bucket=bucket_name, Key=object_key)
+            data = response['Body'].read()
+            
+            return True, data
+            
+        except NoCredentialsError:
+            return False, "AWS 자격증명이 설정되지 않았습니다. ~/.aws/credentials 또는 환경변수를 확인하세요."
+        except ClientError as e:
+            error_code = e.response['Error']['Code']
+            if error_code == 'NoSuchKey':
+                return False, f"S3에 파일이 없습니다: {object_key}"
+            elif error_code == 'AccessDenied':
+                return False, f"S3 접근 권한이 없습니다: {bucket_name}/{object_key}"
+            else:
+                return False, f"S3 오류 ({error_code}): {str(e)}"
+        except Exception as e:
+            return False, f"S3 다운로드 오류: {str(e)}"
+
     def delete_task(self, team_id: str, task_id: str, access_token: str) -> Tuple[bool, str]:
         """태스크 삭제"""
         try:
             resp = self.session.delete(
                 f"{self.core_service_url}/api/teams/{team_id}/tasks/{task_id}",
-                f"{self.server_url}/api/teams/{team_id}/tasks/{task_id}",
                 headers=self._get_headers(access_token)
             )
             success, _ = self._handle_response(resp)
@@ -419,7 +462,6 @@ class ApiClient:
         try:
             resp = self.session.post(
                 f"{self.core_service_url}/api/teams/{team_id}/demos",
-                f"{self.server_url}/api/teams/{team_id}/demos",
                 json={
                     "fileName": file_name,
                     "demos": demos
