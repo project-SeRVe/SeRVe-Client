@@ -28,12 +28,20 @@ class ServeClient:
         client.upload_document("secret content", repo_id=1)
     """
 
-    def __init__(self, server_url: str = "http://localhost:8080"):
+    def __init__(self, server_url: str = "http://localhost:8080", team_service_url: Optional[str] = None, core_service_url: Optional[str] = None):
         """
         Args:
-            server_url: 서버 URL
+            server_url: Auth 서버 URL (기본값: http://localhost:8080)
+            team_service_url: Team 서비스 URL (기본값: http://localhost:8082)
+            core_service_url: Core 서비스 URL (기본값: http://localhost:8083)
         """
-        self.api = ApiClient(server_url)
+        if team_service_url is None:
+            # 기본값: 포트만 8082로 변경
+            team_service_url = server_url.replace(':8080', ':8082')
+        if core_service_url is None:
+            # 기본값: 포트만 8083으로 변경
+            core_service_url = server_url.replace(':8080', ':8083')
+        self.api = ApiClient(server_url, team_service_url, core_service_url)
         self.crypto = CryptoUtils()
         self.session = Session()
 
@@ -185,17 +193,6 @@ class ServeClient:
         self.session.clear()
         return True, "로그아웃 성공"
 
-    def reset_password(self, email: str, new_password: str) -> Tuple[bool, str]:
-        """비밀번호 재설정"""
-        try:
-            try:
-                private_key = self.session.get_private_key()
-                encrypted_private_key = self.crypto.encrypt_private_key(private_key, new_password)
-            except Exception:
-                encrypted_private_key = None
-            return self.api.reset_password(email, new_password, encrypted_private_key)
-        except Exception as e:
-            return False, f"비밀번호 재설정 오류: {str(e)}"
 
     def withdraw(self) -> Tuple[bool, str]:
         """회원 탈퇴"""
@@ -601,9 +598,12 @@ class ServeClient:
 
         try:
             # 1. 문서 목록 조회하여 fileName → documentId + encryptedDEK 가져오기
-            success, documents = self.api.get_documents(repo_id, self.session.access_token)
+            success, response = self.api.get_documents(repo_id, self.session.access_token)
             if not success:
-                return None, f"문서 목록 조회 실패: {documents}"
+                return None, f"문서 목록 조회 실패: {response}"
+            
+            # Extract documents array from response
+            documents = response.get('documents', []) if isinstance(response, dict) else []
 
             # 2. fileName으로 documentId 및 encryptedDEK 찾기
             document_id = None
@@ -620,20 +620,16 @@ class ServeClient:
             if not encrypted_dek_bytes:
                 return None, f"문서에 암호화된 DEK가 없습니다: {file_name} (Envelope Encryption 미적용)"
 
-            # 3. 동기화 API로 팀의 모든 청크 가져오기 (lastVersion=-1로 전체 조회, version > -1이므로 모든 청크 포함)
-            success, all_chunks = self.api.sync_team_chunks(repo_id, -1, self.session.access_token)
+            # 3. 새 API로 문서의 청크 직접 가져오기
+            success, response = self.api.get_chunks(repo_id, document_id, self.session.access_token)
             if not success:
-                return None, f"청크 동기화 실패: {all_chunks}"
-
-            # 4. 해당 문서의 청크만 필터링 (삭제되지 않은 것만)
-            document_chunks = [
-                chunk for chunk in all_chunks
-                if chunk.get("documentId") == document_id and not chunk.get("isDeleted", False)
-            ]
-
-            if not document_chunks:
+                return None, f"청크 조회 실패: {response}"
+            
+            # Extract chunks array from response
+            all_chunks = response.get('chunks', []) if isinstance(response, dict) else []
+            
+            if not all_chunks:
                 return None, f"문서에 청크가 없습니다: {file_name}"
-
             # 5. 팀 키 가져오기 (KEK - Key Encryption Key)
             team_key = self._ensure_team_key(repo_id)
 
@@ -651,10 +647,9 @@ class ServeClient:
 
             # 7. 각 청크를 DEK로 복호화 (팀 키가 아님!)
             decrypted_chunks = []
-            for chunk in document_chunks:
+            for chunk in all_chunks:
                 chunk_index = chunk["chunkIndex"]
                 encrypted_blob = chunk["encryptedBlob"]
-                version = chunk["version"]
 
                 # byte[] → Base64 변환 (필요시)
                 if isinstance(encrypted_blob, list):
@@ -665,8 +660,7 @@ class ServeClient:
 
                 decrypted_chunks.append({
                     "chunkIndex": chunk_index,
-                    "data": plaintext,
-                    "version": version
+                    "data": plaintext
                 })
 
             # chunkIndex로 정렬
@@ -693,9 +687,12 @@ class ServeClient:
 
         try:
             # 1. 문서 목록 조회하여 fileName → documentId 가져오기
-            success, documents = self.api.get_documents(repo_id, self.session.access_token)
+            success, response = self.api.get_documents(repo_id, self.session.access_token)
             if not success:
-                return None, f"문서 목록 조회 실패: {documents}"
+                return None, f"문서 목록 조회 실패: {response}"
+            
+            # Extract documents array from response
+            documents = response.get('documents', []) if isinstance(response, dict) else []
 
             # 2. fileName으로 documentId 찾기
             document_id = None
@@ -775,9 +772,12 @@ class ServeClient:
 
         try:
             # 1. 문서 정보 가져오기 (encryptedDEK 확인용)
-            success, documents = self.api.get_documents(repo_id, self.session.access_token)
+            success, response = self.api.get_documents(repo_id, self.session.access_token)
             if not success:
-                return None, f"문서 조회 실패: {documents}"
+                return None, f"문서 조회 실패: {response}"
+            
+            # Extract documents array from response
+            documents = response.get('documents', []) if isinstance(response, dict) else []
                 
             document_info = None
             for doc in documents:
@@ -871,9 +871,12 @@ class ServeClient:
         try:
             import base64
             # 0. 문서 목록 먼저 조회 (DEK 찾기용)
-            success, documents = self.api.get_documents(repo_id, self.session.access_token)
+            success, response = self.api.get_documents(repo_id, self.session.access_token)
             if not success:
-                return None, f"문서 메타데이터 동기화 실패: {documents}"
+                return None, f"문서 메타데이터 동기화 실패: {response}"
+            
+            # Extract documents array from response
+            documents = response.get('documents', []) if isinstance(response, dict) else []
                 
             doc_catalogue = {doc["docId"]: doc.get("encryptedDEK") for doc in documents}
 
@@ -971,9 +974,12 @@ class ServeClient:
             raise ValueError("이전 팀 키를 찾을 수 없습니다")
 
         # 2. 모든 문서 조회
-        success, documents = self.api.get_documents(repo_id, self.session.access_token)
+        success, response = self.api.get_documents(repo_id, self.session.access_token)
         if not success:
-            raise RuntimeError(f"문서 목록 조회 실패: {documents}")
+            raise RuntimeError(f"문서 목록 조회 실패: {response}")
+        
+        # Extract documents array from response
+        documents = response.get('documents', []) if isinstance(response, dict) else []
 
         # 3. 각 문서의 DEK 재암호화
         reencrypted_docs = []
@@ -1019,6 +1025,150 @@ class ServeClient:
             if not success:
                 raise RuntimeError(f"DEK 재암호화 실패: {msg}")
 
+    # ==================== Task/Demo API (SeRVe-Core) ====================
+
+    def upload_task(self, team_id: str, file_name: str, npz_data: str) -> Tuple[bool, str]:
+        """
+        단일 태스크 업로드 (NPZ 파일)
+
+        Args:
+            team_id: 팀 ID (UUID 문자열)
+            file_name: 파일명
+            npz_data: NPZ 파일 내용 (평문)
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        self._ensure_authenticated()
+
+        try:
+            # 1. 팀 키 가져오기
+            team_key = self._ensure_team_key(team_id)
+
+            # 2. 데이터 암호화
+            encrypted_blob = self.crypto.encrypt_data(npz_data, team_key)
+
+            # 3. 서버에 업로드
+            return self.api.upload_task(
+                team_id,
+                file_name,
+                "application/octet-stream",
+                encrypted_blob,
+                self.session.access_token
+            )
+
+        except Exception as e:
+            return False, f"태스크 업로드 오류: {str(e)}"
+
+
+    def get_tasks(self, team_id: str) -> Tuple[Optional[List], str]:
+        """
+        태스크 목록 조회
+
+        Args:
+            team_id: 팀 ID
+
+        Returns:
+            (태스크 목록, 메시지)
+        """
+        self._ensure_authenticated()
+        success, data = self.api.get_tasks(team_id, self.session.access_token)
+        return (data, "조회 성공") if success else (None, data)
+
+    def download_task(self, task_id: int, team_id: str) -> Tuple[Optional[str], str]:
+        """
+        태스크 다운로드 및 복호화
+
+        Args:
+            task_id: 태스크 ID
+            team_id: 팀 ID (팀 키 조회용)
+
+        Returns:
+            (복호화된 데이터, 메시지)
+        """
+        self._ensure_authenticated()
+
+        try:
+            # 1. 서버에서 암호화된 데이터 가져오기
+            success, data = self.api.download_task(task_id, self.session.access_token)
+            if not success:
+                return None, data
+
+            # 2. 팀 키 가져오기
+            team_key = self._ensure_team_key(team_id)
+
+            # 3. 복호화
+            encrypted_blob = data.get("encryptedBlob")
+            if not encrypted_blob:
+                return None, "암호화된 데이터가 없습니다"
+
+            decrypted_data = self.crypto.decrypt_data(encrypted_blob, team_key)
+            return decrypted_data, "다운로드 성공"
+
+        except Exception as e:
+            return None, f"태스크 다운로드 오류: {str(e)}"
+
+    def sync_demos(self, team_id: str, last_version: int = 0) -> Tuple[Optional[List[Dict]], str]:
+        """
+        팀 데모 증분 동기화
+
+        Args:
+            team_id: 팀 ID
+            last_version: 마지막 버전 번호
+
+        Returns:
+            (변경된 데모 목록, 메시지)
+            데모 형식: [{"demoId": str, "fileName": str, "demoIndex": int,
+                       "encryptedBlob": str, "version": int, "isDeleted": bool}, ...]
+        """
+        self._ensure_authenticated()
+
+        try:
+            # 1. 서버에서 변경된 데모 가져오기
+            success, demos = self.api.sync_demos(team_id, last_version, self.session.access_token)
+            if not success:
+                return None, demos
+
+            # 2. 팀 키 가져오기
+            team_key = self._ensure_team_key(team_id)
+
+            # 3. 각 데모 복호화
+            decrypted_demos = []
+            for demo in demos:
+                if demo.get("isDeleted"):
+                    # 삭제된 항목은 복호화 안 함
+                    decrypted_demos.append(demo)
+                    continue
+
+                try:
+                    encrypted_blob = demo.get("encryptedBlob")
+                    if encrypted_blob:
+                        decrypted_data = self.crypto.decrypt_data(encrypted_blob, team_key)
+                        demo["decryptedData"] = decrypted_data
+                    decrypted_demos.append(demo)
+                except Exception as e:
+                    print(f"경고: 데모 {demo.get('demoId')} 복호화 실패: {e}")
+                    continue
+
+            return decrypted_demos, "동기화 성공"
+
+        except Exception as e:
+            return None, f"데모 동기화 오류: {str(e)}"
+
+    def delete_demo(self, team_id: str, file_name: str, demo_index: int) -> Tuple[bool, str]:
+        """
+        데모 삭제
+
+        Args:
+            team_id: 팀 ID
+            file_name: 파일명
+            demo_index: 데모 인덱스
+
+        Returns:
+            (성공 여부, 메시지)
+        """
+        self._ensure_authenticated()
+        return self.api.delete_demo(team_id, file_name, demo_index, self.session.access_token)
     # ==================== 디버그 유틸 ====================
 
     def get_session_info(self) -> Dict[str, Any]:
