@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "servis-cli"
+version = "0.1.0"
+description = "SeRViS: Secure Robot VLA Sharing & Inference CLI"
+dependencies = [
+    "typer[all]",
+    "rich",
+    "requests",
+    "tink",
+    "protobuf"
+]
+
+[project.scripts]
+servis = "servis.cli.main:app"
+
+# 👇 이 부분이 추가되었습니다! (servis 폴더만 패키지로 인식해라)
+[tool.setuptools.packages.find]
+include = ["servis", "servis.*"]
