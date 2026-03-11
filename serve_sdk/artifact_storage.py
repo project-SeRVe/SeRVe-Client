@@ -196,3 +196,48 @@ def delete_artifact(object_key: str) -> bool:
         logger.debug(f"Deleted artifact: {artifact_path}")
         return True
     return False
+
+
+def cleanup_orphan_artifacts() -> list[str]:
+    """
+    Remove artifact files not referenced in local.db.
+    
+    Scans ~/.serve/artifacts/ and deletes files without DB records.
+    
+    Returns:
+        List of deleted object keys
+    
+    Examples:
+        >>> cleanup_orphan_artifacts()
+        ['a1b2c3d4e5f6g7h8.npz', 'orphan123456789a.npz']
+    """
+    artifacts_dir = get_artifacts_root()
+    if not artifacts_dir.exists():
+        return []
+    
+    # Get all object keys from DB
+    from serve_sdk.local_db import get_default_db
+    db = get_default_db()
+    
+    try:
+        db_artifacts = db.conn.execute(
+            "SELECT object_key FROM artifact"
+        ).fetchall()
+        db_object_keys = {row["object_key"] for row in db_artifacts}
+    finally:
+        db.close()
+    
+    # Find and delete orphan files
+    orphans = []
+    for file_path in artifacts_dir.glob("*.npz"):
+        object_key = file_path.name
+        
+        if object_key not in db_object_keys:
+            try:
+                file_path.unlink()
+                orphans.append(object_key)
+                logger.info(f"Deleted orphan artifact: {object_key}")
+            except Exception as exc:
+                logger.warning(f"Failed to delete orphan {object_key}: {exc}")
+    
+    return orphans

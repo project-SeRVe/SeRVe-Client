@@ -82,7 +82,7 @@ class LocalDB:
                 approved_at TIMESTAMP,
                 source_repo TEXT,
                 source_episode_index INTEGER,
-                FOREIGN KEY (scenario_id) REFERENCES scenario(scenario_id)
+                FOREIGN KEY (scenario_id) REFERENCES scenario(scenario_id) ON DELETE CASCADE
             )
         """)
         
@@ -102,7 +102,7 @@ class LocalDB:
                 kek_version TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 local_path TEXT,
-                FOREIGN KEY (demo_id) REFERENCES demo(demo_id)
+                FOREIGN KEY (demo_id) REFERENCES demo(demo_id) ON DELETE CASCADE
             )
         """)
         
@@ -569,6 +569,146 @@ class LocalDB:
         """Context manager exit."""
         self.close()
         return False
+
+    def delete_artifact(self, artifact_id: str, delete_file: bool = True) -> bool:
+        """
+        Delete artifact from database and optionally from disk.
+        
+        Args:
+            artifact_id: Artifact UUID
+            delete_file: If True, also delete physical file from ~/.serve/artifacts/
+        
+        Returns:
+            True if deleted, False if not found
+        """
+        self._ensure_connection()
+        
+        # Get artifact details before deletion
+        artifact = self.conn.execute(
+            "SELECT object_key FROM artifact WHERE artifact_id = ?",
+            (artifact_id,)
+        ).fetchone()
+        
+        if not artifact:
+            return False
+        
+        # Delete from database
+        self.conn.execute(
+            "DELETE FROM artifact WHERE artifact_id = ?",
+            (artifact_id,)
+        )
+        self.conn.commit()
+        
+        # Delete physical file if requested
+        if delete_file:
+            try:
+                from serve_sdk.artifact_storage import delete_artifact as delete_file_fn
+                delete_file_fn(artifact["object_key"])
+                logger.info(f"Deleted artifact file: {artifact['object_key']}")
+            except Exception as exc:
+                logger.warning(f"Failed to delete artifact file: {exc}")
+        
+        logger.info(f"Deleted artifact from DB: {artifact_id}")
+        return True
+
+    def delete_demo(self, demo_id: str, delete_files: bool = True) -> bool:
+        """
+        Delete demo and all related artifacts.
+        
+        Args:
+            demo_id: Demo UUID
+            delete_files: If True, also delete physical artifact files
+        
+        Returns:
+            True if deleted, False if not found
+        """
+        self._ensure_connection()
+        
+        # Check if demo exists
+        demo = self.conn.execute(
+            "SELECT demo_id FROM demo WHERE demo_id = ?",
+            (demo_id,)
+        ).fetchone()
+        
+        if not demo:
+            return False
+        
+        # Delete artifact files if requested (before DB deletion)
+        if delete_files:
+            artifacts = self.conn.execute(
+                "SELECT object_key FROM artifact WHERE demo_id = ?",
+                (demo_id,)
+            ).fetchall()
+            
+            from serve_sdk.artifact_storage import delete_artifact as delete_file_fn
+            for artifact in artifacts:
+                try:
+                    delete_file_fn(artifact["object_key"])
+                    logger.debug(f"Deleted artifact file: {artifact['object_key']}")
+                except Exception as exc:
+                    logger.warning(f"Failed to delete artifact file: {exc}")
+        
+        # Delete demo (artifacts cascade via ON DELETE CASCADE)
+        self.conn.execute(
+            "DELETE FROM demo WHERE demo_id = ?",
+            (demo_id,)
+        )
+        self.conn.commit()
+        
+        logger.info(f"Deleted demo from DB: {demo_id}")
+        return True
+
+    def delete_scenario(self, scenario_id: str) -> bool:
+        """
+        Delete scenario and all related demos/artifacts.
+        
+        WARNING: This cascades to all demos and artifacts!
+        
+        Args:
+            scenario_id: Scenario UUID
+        
+        Returns:
+            True if deleted, False if not found
+        """
+        self._ensure_connection()
+        
+        # Check if scenario exists
+        scenario = self.conn.execute(
+            "SELECT scenario_id FROM scenario WHERE scenario_id = ?",
+            (scenario_id,)
+        ).fetchone()
+        
+        if not scenario:
+            return False
+        
+        # Delete all artifact files for demos in this scenario
+        artifacts = self.conn.execute(
+            """
+            SELECT a.object_key
+            FROM artifact a
+            JOIN demo d ON a.demo_id = d.demo_id
+            WHERE d.scenario_id = ?
+            """,
+            (scenario_id,)
+        ).fetchall()
+        
+        from serve_sdk.artifact_storage import delete_artifact as delete_file_fn
+        for artifact in artifacts:
+            try:
+                delete_file_fn(artifact["object_key"])
+                logger.debug(f"Deleted artifact file: {artifact['object_key']}")
+            except Exception as exc:
+                logger.warning(f"Failed to delete artifact file: {exc}")
+        
+        # Delete scenario (demos and artifacts cascade)
+        self.conn.execute(
+            "DELETE FROM scenario WHERE scenario_id = ?",
+            (scenario_id,)
+        )
+        self.conn.commit()
+        
+        logger.info(f"Deleted scenario from DB: {scenario_id}")
+        return True
 
 
 def get_default_db() -> LocalDB:
