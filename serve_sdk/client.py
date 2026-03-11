@@ -1088,20 +1088,38 @@ class ServeClient:
         """
         self._ensure_authenticated()
 
+
         try:
-            # 1. 서버에서 암호화된 데이터 가져오기
+            # 1. 서버에서 Task 메타데이터 가져오기 (objectKey 포함)
             success, data = self.api.download_task(task_id, self.session.access_token)
             if not success:
                 return None, data
 
-            # 2. 팀 키 가져오기
+            # 2. objectKey 확인
+            object_key = data.get("objectKey")
+            if not object_key:
+                # Fallback: 서버가 직접 encryptedBlob 반환하는 경우 (구 버전)
+                encrypted_blob = data.get("encryptedBlob")
+                if not encrypted_blob:
+                    return None, "암호화된 데이터가 없습니다 (objectKey 또는 encryptedBlob 필요)"
+                
+                # Base64 문자열이면 디코딩
+                import base64
+                if isinstance(encrypted_blob, str):
+                    encrypted_blob = base64.b64decode(encrypted_blob)
+            else:
+                # 3. S3에서 직접 다운로드 (boto3)
+                success, content = self.api.download_from_s3(object_key)
+                
+                if not success:
+                    return None, f"S3 다운로드 실패: {content}"
+                
+                encrypted_blob = content
+
+            # 4. 팀 키 가져오기
             team_key = self._ensure_team_key(team_id)
 
-            # 3. 복호화
-            encrypted_blob = data.get("encryptedBlob")
-            if not encrypted_blob:
-                return None, "암호화된 데이터가 없습니다"
-
+            # 5. 복호화
             decrypted_data = self.crypto.decrypt_data(encrypted_blob, team_key)
             return decrypted_data, "다운로드 성공"
 
