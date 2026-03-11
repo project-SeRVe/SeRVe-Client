@@ -3,6 +3,7 @@ import click
 import sqlite3
 import os
 from pathlib import Path
+from serve_sdk.local_db import get_default_db
 from .context import CLIContext
 from .npz_utils import npz_to_chunks, chunks_to_npz
 from .npz_validator import validate_npz
@@ -120,6 +121,15 @@ def download(team_id, task_id, output_file):
         with open(output_file, 'wb') as f:
             f.write(base64.b64decode(npz_data))
         click.echo(click.style(f"✅ NPZ 파일 저장 성공: {output_file}", fg="green"))
+        
+        # Record download in local.db
+        try:
+            db = get_default_db()
+            # Note: We don't have demo_id from server response, so we skip DB recording for now
+            # In a full implementation, the server would return demo metadata
+            db.close()
+        except Exception as exc:
+            click.echo(click.style(f"⚠️ 로컬 DB 기록 실패: {exc}", fg="yellow"))
     except Exception as e:
         click.echo(click.style(f"❌ NPZ 파일 저장 실패: {e}", fg="red"))
         return

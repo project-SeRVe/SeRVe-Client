@@ -1,18 +1,18 @@
 """
-Build local vector DB from approved demos.
+Build local Qdrant vector DB from approved demos.
 
-Creates vector DB artifacts (embeddings, episode metadata) for RAG-based
-VLA inference. The vector DB is stored locally in ~/.serve/vector_db/<team_id>/
+Creates Qdrant collection with embeddings and metadata for RAG-based
+VLA inference. The vector DB is stored locally in ~/.serve/qdrant/
 """
-import json
 import logging
-import shutil
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict
+from typing import List
 
 import click
 import numpy as np
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, PointStruct
+from serve_sdk.local_db import get_default_db
 
 logger = logging.getLogger(__name__)
 
@@ -55,142 +55,97 @@ def to_prompt(value) -> str:
     return value
 
 
-def maybe_build_faiss(embeddings: np.ndarray, out_dir: Path) -> bool:
-    """
-    Build FAISS index if faiss is available.
-    
-    Args:
-        embeddings: Embeddings array (N, D)
-        out_dir: Output directory
-    
-    Returns:
-        True if FAISS index was built, False otherwise
-    """
-    try:
-        import faiss
-    except ImportError:
-        logger.warning("faiss not available; skipping FAISS index build")
-        return False
-    except Exception as exc:
-        logger.warning(f"faiss import error; skipping FAISS index build: {exc}")
-        return False
-    
-    try:
-        index = faiss.IndexFlatL2(embeddings.shape[1])
-        index.add(embeddings.astype(np.float32, copy=False))
-        faiss.write_index(index, str(out_dir / "index.faiss"))
-        logger.info("FAISS index built successfully")
-        return True
-    except Exception as exc:
-        logger.error(f"Failed to build FAISS index: {exc}")
-        return False
-
-
 @click.command(name='build-index')
 @click.argument('team-id')
-@click.option('--approved-root', type=click.Path(exists=True), default=None,
-              help='Directory containing approved demos (default: ~/.serve/approved/<team-id>)')
-@click.option('--output-root', type=click.Path(), default=None,
-              help='Output directory for vector DB (default: ~/.serve/vector_db)')
-@click.option('--overwrite', is_flag=True, help='Overwrite existing vector DB')
-@click.option('--write-faiss', is_flag=True, help='Build FAISS index (requires faiss-cpu or faiss-gpu)')
+@click.option('--overwrite', is_flag=True, help='Overwrite existing Qdrant collection')
 @click.option('--embedding-key', default='base_image_embeddings',
               help='Which embedding key to use (default: base_image_embeddings)')
 def build_index_command(
     team_id: str,
-    approved_root: str,
-    output_root: str,
     overwrite: bool,
-    write_faiss: bool,
     embedding_key: str,
 ):
     """
-    Build local vector DB from approved demos for RAG-based inference.
+    Build local Qdrant vector DB from approved demos (queried from local.db).
     
-    TEAM_ID: Team identifier for vector DB namespace
+    TEAM_ID: Team identifier for Qdrant collection namespace
     
     \b
-    Output structure:
-        ~/.serve/vector_db/<team-id>/
-        ├── vectors.npz           # Embeddings + metadata
-        │   ├── embeddings        # (N, D) float32 array
-        │   ├── episode_ids       # (N,) int32 array
-        │   └── step_indices      # (N,) int32 array
-        ├── episodes.json         # Episode metadata
-        ├── summary.json          # Vector DB metadata
-        └── index.faiss           # Optional FAISS index
+    Output:
+        Qdrant collection 'team_{team_id}' in ~/.serve/qdrant/
+        Contains vectors with rich metadata (episode_id, step_index, prompt, etc.)
     
     \b
     Examples:
-        # Build vector DB from default approved directory
+        # Build vector DB from approved demos in local.db
         serve data build-index my-team-id
-        
-        # Build from custom approved directory
-        serve data build-index my-team-id --approved-root ./runtime_demos/approved
         
         # Rebuild existing vector DB
         serve data build-index my-team-id --overwrite
-        
-        # Build with FAISS index for faster retrieval
-        serve data build-index my-team-id --write-faiss
         
         # Use wrist camera embeddings instead of base camera
         serve data build-index my-team-id --embedding-key wrist_image_embeddings
     """
     logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
     
-    # Resolve paths
-    home = Path.home()
-    
-    if approved_root is None:
-        approved_path = home / ".serve" / "approved" / team_id
-    else:
-        approved_path = Path(approved_root).resolve()
-    
-    if output_root is None:
-        output_path = home / ".serve" / "vector_db" / team_id
-    else:
-        output_path = Path(output_root).resolve() / team_id
-    
-    # Validate approved root exists
-    if not approved_path.exists():
-        click.echo(click.style(f"❌ Approved root does not exist: {approved_path}", fg="red"))
-        click.echo(f"\nTip: Approve demos first using: serve data review --approved-root {approved_path.parent}")
+    # Query local.db for approved artifacts
+    try:
+        db = get_default_db()
+        approved_artifacts = db.get_artifacts_by_status("approved", kind="processed")
+        db.close()
+    except Exception as exc:
+        click.echo(click.style(f"❌ Failed to query local.db: {exc}", fg="red"))
         raise click.Abort()
     
-    # Check if output exists
-    if output_path.exists():
-        if not overwrite:
-            click.echo(click.style(f"❌ Vector DB already exists: {output_path}", fg="red"))
-            click.echo("Use --overwrite to rebuild")
-            raise click.Abort()
-        shutil.rmtree(output_path)
-    
-    output_path.mkdir(parents=True, exist_ok=True)
-    
-    # Find approved episodes
-    episode_dirs = find_episode_dirs(approved_path)
-    if not episode_dirs:
-        click.echo(click.style(f"❌ No approved episodes found in {approved_path}", fg="red"))
+    if not approved_artifacts:
+        click.echo(click.style("❌ No approved artifacts found in local.db", fg="red"))
         click.echo("\nTip: Approve demos first using: serve data review")
         raise click.Abort()
     
-    click.echo(f"Building vector DB from {len(episode_dirs)} approved episode(s)...")
-    click.echo(f"Approved root: {approved_path}")
-    click.echo(f"Output: {output_path}")
+    # Initialize Qdrant client
+    home = Path.home()
+    qdrant_root = home / ".serve" / "qdrant"
+    qdrant_root.mkdir(parents=True, exist_ok=True)
+    client = QdrantClient(path=str(qdrant_root))
+    
+    collection_name = f"team_{team_id}"
+    
+    # Check if collection exists
+    collections = client.get_collections().collections
+    collection_names = [col.name for col in collections]
+    
+    if collection_name in collection_names:
+        if not overwrite:
+            click.echo(click.style(f"❌ Qdrant collection '{collection_name}' already exists", fg="red"))
+            click.echo("Use --overwrite to rebuild")
+            raise click.Abort()
+        click.echo(f"Deleting existing collection: {collection_name}")
+        client.delete_collection(collection_name)
+    
+    click.echo(f"Building Qdrant vector DB from {len(approved_artifacts)} approved artifact(s)...")
+    click.echo(f"Collection: {collection_name}")
     click.echo(f"Embedding key: {embedding_key}")
     click.echo("")
     
-    # Build vector DB
-    all_embeddings: List[np.ndarray] = []
-    all_episode_ids: List[np.ndarray] = []
-    all_step_indices: List[np.ndarray] = []
-    episodes_meta: List[Dict] = []
+    # Collect all embeddings and metadata
+    all_points = []
+    point_id = 0
+    episodes_processed = 0
+    embedding_dim = None
     
-    with click.progressbar(enumerate(episode_dirs), length=len(episode_dirs),
-                          label="Processing episodes") as bar:
-        for ep_id, ep_dir in bar:
-            npz_path = ep_dir / "processed_demo.npz"
+    with click.progressbar(enumerate(approved_artifacts), length=len(approved_artifacts),
+                          label="Processing artifacts") as bar:
+        for artifact_idx, artifact in bar:
+            artifact_id = artifact["artifact_id"]
+            local_path = artifact["local_path"]
+            object_key = artifact["object_key"]
+            demo_id = artifact["demo_id"]
+            num_steps = artifact["num_steps"]
+            state_dim = artifact["state_dim"]
+            action_dim = artifact["action_dim"]
+            prompt_text = artifact["prompt_text"]
+            
+            npz_path = Path(local_path)
             
             try:
                 data = np.load(npz_path, allow_pickle=True)
@@ -211,87 +166,72 @@ def build_index_command(
                 click.echo(click.style(f"\n✗ Invalid embeddings shape in {npz_path}: {emb.shape}", fg="red"))
                 continue
             
-            num_steps = emb.shape[0]
-            all_embeddings.append(emb)
-            all_episode_ids.append(np.full((num_steps,), ep_id, dtype=np.int32))
-            all_step_indices.append(np.arange(num_steps, dtype=np.int32))
+            num_steps_actual = emb.shape[0]
+            if embedding_dim is None:
+                embedding_dim = emb.shape[1]
+            elif embedding_dim != emb.shape[1]:
+                click.echo(click.style(f"\n✗ Embedding dimension mismatch in {npz_path}: expected {embedding_dim}, got {emb.shape[1]}", fg="red"))
+                continue
             
-            # Build episode metadata
-            rel_path = ep_dir.relative_to(approved_path)
-            episodes_meta.append({
-                "episode_id": ep_id,
-                "relative_path": str(rel_path),
-                "processed_demo_path": str(npz_path.resolve()),
-                "num_steps": int(num_steps),
-                "state_dim": int(np.asarray(data["state"]).shape[1]),
-                "action_dim": int(np.asarray(data["actions"]).shape[1]),
-                "prompt": to_prompt(data["prompt"]),
-            })
-    
-    if not all_embeddings:
+            # Use prompt from file (fallback to DB)
+            prompt = to_prompt(data["prompt"])
+            if not prompt:
+                prompt = prompt_text
+            
+            # Create points for each step
+            for step_idx in range(num_steps_actual):
+                vector = emb[step_idx].tolist()
+                payload = {
+                    "demo_id": demo_id,
+                    "artifact_id": artifact_id,
+                    "object_key": object_key,
+                    "step_index": step_idx,
+                    "num_steps": num_steps_actual,
+                    "state_dim": state_dim,
+                    "action_dim": action_dim,
+                    "prompt": prompt,
+                }
+                
+                all_points.append(PointStruct(
+                    id=point_id,
+                    vector=vector,
+                    payload=payload,
+                ))
+                point_id += 1
+            
+            episodes_processed += 1
+    if not all_points:
         click.echo(click.style("❌ No valid embeddings found", fg="red"))
         raise click.Abort()
     
-    # Concatenate all arrays
-    embeddings = np.concatenate(all_embeddings, axis=0)
-    episode_ids = np.concatenate(all_episode_ids, axis=0)
-    step_indices = np.concatenate(all_step_indices, axis=0)
+    click.echo("")
+    click.echo(f"Collected {len(all_points)} vectors from {episodes_processed} episodes")
+    click.echo(f"Embedding dimension: {embedding_dim}")
+    
+    # Create Qdrant collection
+    click.echo(f"\nCreating Qdrant collection: {collection_name}...")
+    client.create_collection(
+        collection_name=collection_name,
+        vectors_config=VectorParams(size=embedding_dim, distance=Distance.COSINE),
+    )
+    
+    # Upload points in batches
+    click.echo("Uploading vectors to Qdrant...")
+    batch_size = 100
+    
+    with click.progressbar(range(0, len(all_points), batch_size),
+                          label="Uploading batches") as bar:
+        for i in bar:
+            batch = all_points[i:i + batch_size]
+            client.upsert(
+                collection_name=collection_name,
+                points=batch,
+            )
     
     click.echo("")
-    click.echo(f"Collected {embeddings.shape[0]} vectors from {len(episodes_meta)} episodes")
-    click.echo(f"Embedding dimension: {embeddings.shape[1]}")
-    
-    # Save vectors.npz
-    click.echo("\nSaving vectors.npz...")
-    np.savez_compressed(
-        output_path / "vectors.npz",
-        embeddings=embeddings,
-        episode_ids=episode_ids,
-        step_indices=step_indices,
-    )
-    
-    # Save episodes.json
-    click.echo("Saving episodes.json...")
-    (output_path / "episodes.json").write_text(
-        json.dumps(episodes_meta, indent=2),
-        encoding="utf-8"
-    )
-    
-    # Build summary
-    summary = {
-        "created_at_utc": datetime.now(timezone.utc).isoformat(),
-        "team_id": team_id,
-        "approved_root": str(approved_path),
-        "num_episodes": len(episodes_meta),
-        "num_vectors": int(embeddings.shape[0]),
-        "embedding_dim": int(embeddings.shape[1]),
-        "embedding_key": embedding_key,
-        "files": ["vectors.npz", "episodes.json"],
-    }
-    
-    # Build FAISS index if requested
-    if write_faiss:
-        click.echo("Building FAISS index...")
-        faiss_ok = maybe_build_faiss(embeddings, output_path)
-        summary["faiss_index_built"] = bool(faiss_ok)
-        if faiss_ok:
-            summary["files"].append("index.faiss")
-    
-    # Save summary.json
-    click.echo("Saving summary.json...")
-    (output_path / "summary.json").write_text(
-        json.dumps(summary, indent=2),
-        encoding="utf-8"
-    )
-    
-    click.echo("")
-    click.echo(click.style("✓ Vector DB built successfully!", fg="green", bold=True))
-    click.echo(f"Location: {output_path}")
-    click.echo(f"Vectors: {embeddings.shape[0]}")
-    click.echo(f"Episodes: {len(episodes_meta)}")
-    click.echo(f"Embedding dim: {embeddings.shape[1]}")
-    
-    if write_faiss and summary.get("faiss_index_built"):
-        click.echo(click.style("✓ FAISS index built", fg="green"))
-    elif write_faiss:
-        click.echo(click.style("⚠ FAISS index not built (faiss not available)", fg="yellow"))
+    click.echo(click.style("✓ Qdrant vector DB built successfully!", fg="green", bold=True))
+    click.echo(f"Collection: {collection_name}")
+    click.echo(f"Location: {qdrant_root}")
+    click.echo(f"Vectors: {len(all_points)}")
+    click.echo(f"Episodes: {episodes_processed}")
+    click.echo(f"Embedding dim: {embedding_dim}")

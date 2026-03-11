@@ -1,8 +1,7 @@
 """
-Vector DB retrieval utilities for RAG-based VLA inference.
+Qdrant vector database client for SeRVe-Client.
 
-Provides Qdrant-based vector similarity search for retrieving relevant demonstrations
-based on visual observations.
+Manages local Qdrant instance for RAG-based VLA inference.
 """
 import logging
 from pathlib import Path
@@ -10,29 +9,43 @@ from typing import List, Dict, Optional, Any
 
 import numpy as np
 from qdrant_client import QdrantClient
-from qdrant_client.models import Filter, FieldCondition, MatchValue
+from qdrant_client.models import (
+    Distance,
+    VectorParams,
+    PointStruct,
+    Filter,
+    FieldCondition,
+    MatchValue,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class LocalVectorDB:
+class LocalQdrantDB:
     """
-    Local Qdrant vector database for RAG retrieval.
+    Local Qdrant database for RAG retrieval.
     
-    Loads Qdrant collection from ~/.serve/qdrant/ and provides similarity search functionality.
+    Uses embedded Qdrant instance (no separate server needed) for edge deployment.
+    Stores vector embeddings with rich metadata for demonstration retrieval.
     """
     
-    def __init__(self, team_id: str, qdrant_root: Optional[Path] = None):
+    def __init__(
+        self,
+        team_id: str,
+        qdrant_root: Optional[Path] = None,
+        collection_name: Optional[str] = None,
+    ):
         """
-        Initialize local Qdrant vector DB.
+        Initialize local Qdrant DB.
         
         Args:
             team_id: Team identifier
             qdrant_root: Root directory for Qdrant storage (default: ~/.serve/qdrant)
+            collection_name: Collection name (default: team_{team_id})
         
         Raises:
-            FileNotFoundError: If Qdrant collection not found
-            ValueError: If Qdrant collection is invalid
+            FileNotFoundError: If Qdrant DB not found
+            ValueError: If Qdrant DB is invalid
         """
         self.team_id = team_id
         
@@ -40,16 +53,13 @@ class LocalVectorDB:
             qdrant_root = Path.home() / ".serve" / "qdrant"
         
         self.qdrant_root = qdrant_root
+        self.qdrant_root.mkdir(parents=True, exist_ok=True)
         
-        if not self.qdrant_root.exists():
-            raise FileNotFoundError(
-                f"Qdrant DB not found at {self.qdrant_root}. "
-                f"Build it first using: serve data build-index {team_id}"
-            )
-        
-        # Initialize Qdrant client
+        # Initialize embedded Qdrant client
         self.client = QdrantClient(path=str(self.qdrant_root))
-        self.collection_name = f"team_{team_id}"
+        
+        # Collection name
+        self.collection_name = collection_name or f"team_{team_id}"
         
         # Check if collection exists
         collections = self.client.get_collections().collections
@@ -79,11 +89,11 @@ class LocalVectorDB:
         
         Returns:
             List of result dicts with keys:
-            - score: float - Similarity score (higher = more similar, cosine)
-            - distance: float - Distance (1 - score, for backward compatibility)
+            - score: float - Similarity score (higher = more similar)
+            - distance: float - L2 distance (for backward compatibility)
             - episode_id: int - Episode identifier
             - step_index: int - Step index within episode
-            - episode_meta: dict - Episode metadata
+            - episode_meta: dict - Episode metadata (from payload)
             - processed_demo_path: str - Path to processed_demo.npz
             - prompt: str - Task prompt
         """
@@ -119,6 +129,8 @@ class LocalVectorDB:
             payload = hit.payload or {}
             
             # Convert cosine similarity to distance (for backward compatibility)
+            # Qdrant returns score (higher = more similar)
+            # We convert to distance (lower = more similar) for consistency
             distance = 1.0 - hit.score if hit.score is not None else 0.0
             
             results.append({
@@ -149,7 +161,8 @@ class LocalVectorDB:
         """
         Search for episodes by prompt text similarity.
         
-        This uses keyword matching. For production, use proper text embeddings.
+        This uses Qdrant's payload search (keyword matching).
+        For semantic search, use proper text embeddings.
         
         Args:
             query_prompt: Query text
@@ -158,10 +171,13 @@ class LocalVectorDB:
         Returns:
             List of episode metadata dicts
         """
+        # Use scroll to get all points and filter by prompt
+        # This is a simple keyword match; for production, use text embeddings
+        
         # Get all unique episodes
         scroll_result = self.client.scroll(
             collection_name=self.collection_name,
-            limit=10000,
+            limit=10000,  # Get all points
             with_payload=True,
             with_vectors=False,
         )
@@ -220,6 +236,7 @@ class LocalVectorDB:
         Returns:
             Episode metadata dict or None if not found
         """
+        # Scroll with filter
         scroll_result = self.client.scroll(
             collection_name=self.collection_name,
             scroll_filter=Filter(
@@ -250,17 +267,21 @@ class LocalVectorDB:
             "prompt": payload.get("prompt"),
         }
     
-    def load_demo(self, processed_demo_path: str) -> Optional[Dict]:
+    def load_demo(self, episode_id: int) -> Optional[Dict]:
         """
-        Load processed_demo.npz from path.
+        Load processed_demo.npz for episode.
         
         Args:
-            processed_demo_path: Path to processed_demo.npz
+            episode_id: Episode identifier
         
         Returns:
             Dict with npz data arrays or None if not found
         """
-        demo_path = Path(processed_demo_path)
+        ep_meta = self.get_episode(episode_id)
+        if ep_meta is None:
+            return None
+        
+        demo_path = Path(ep_meta.get("processed_demo_path", ""))
         if not demo_path.exists():
             logger.warning(f"Demo file not found: {demo_path}")
             return None
@@ -285,7 +306,7 @@ class LocalVectorDB:
         Get database statistics.
         
         Returns:
-            Dict with stats: num_vectors, num_episodes, embedding_dim, distance
+            Dict with stats: num_vectors, num_episodes, embedding_dim
         """
         collection_info = self.client.get_collection(self.collection_name)
         

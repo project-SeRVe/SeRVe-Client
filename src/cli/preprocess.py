@@ -17,6 +17,8 @@ from PIL import Image
 
 from .image_utils import resize_with_pad, ensure_uint8_image
 from .dinov2_utils import load_dinov2, embed_with_batches, create_placeholder_embeddings, EMBED_DIM
+from serve_sdk.local_db import get_default_db
+from serve_sdk.artifact_storage import store_artifact
 
 logger = logging.getLogger(__name__)
 
@@ -353,6 +355,50 @@ def process_demo_folder(
     }
     (demo_dir / "episode_meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     logger.info(f"Saved: {out_file}")
+
+    # Record in local database
+    try:
+        db = get_default_db()
+        
+        # Get or create scenario
+        scenario_id = db.get_or_create_scenario(prompt)
+        
+        # Determine demo status based on directory structure
+        demo_status = "pending"
+        if "/approved/" in str(demo_dir):
+            demo_status = "approved"
+        elif "/rejected/" in str(demo_dir):
+            demo_status = "rejected"
+        
+        # Create demo record
+        demo_id = db.create_demo(
+            scenario_id=scenario_id,
+            status="pending",  # Always start as pending
+            num_steps=num_steps,
+            state_dim=int(state.shape[1]),
+            action_dim=int(actions.shape[1]),
+            image_h=224,
+            image_w=224,
+            embed_dim=int(base_emb.shape[1]) if not use_placeholder_embeddings else None,
+            embed_model_id="dinov2" if not use_placeholder_embeddings else "placeholder"
+        )
+        
+        # Store artifact in ~/.serve/artifacts/ with object-key based naming
+        object_key, artifact_path = store_artifact(out_file, demo_id)
+        
+        # Create artifact record
+        db.create_artifact(
+            demo_id=demo_id,
+            kind="processed",
+            object_key=object_key,
+            local_path=str(artifact_path)
+        )
+        
+        db.close()
+        logger.debug(f"Recorded demo {demo_id} in local.db")
+    except Exception as exc:
+        logger.warning(f"Failed to record in local.db: {exc}")
+        # Don't fail the entire preprocessing if DB fails
 
 
 def _iter_demo_folders(root: Path) -> List[Path]:

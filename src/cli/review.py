@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional, Dict, List
 
 import click
-
+from serve_sdk.local_db import get_default_db
 logger = logging.getLogger(__name__)
 
 
@@ -128,48 +128,42 @@ def build_review_record(
 
 
 @click.command(name='review')
-@click.option('--pending-root', type=click.Path(exists=True), default='runtime_demos/pending',
-              help='Directory containing pending demos')
-@click.option('--approved-root', type=click.Path(), default='runtime_demos/approved',
-              help='Directory for approved demos')
-@click.option('--rejected-root', type=click.Path(), default='runtime_demos/rejected',
-              help='Directory for rejected demos')
 @click.option('--log-path', type=click.Path(), default='runtime_demos/review_log.jsonl',
               help='Path to review log file')
 @click.option('--reviewer', default=None, help='Reviewer name (default: $USER)')
 @click.option('--reason-required', is_flag=True, help='Require reason for all decisions')
-@click.option('--overwrite', is_flag=True, help='Overwrite existing approved/rejected demos')
 @click.option('--dry-run', is_flag=True, help='Show what would be done without making changes')
 @click.option('--limit', type=int, default=None, help='Max number of pending episodes to review')
+@click.option('--status', type=click.Choice(['pending', 'approved', 'rejected']), default='pending',
+              help='Status of demos to review (default: pending)')
 def review_command(
-    pending_root: str,
-    approved_root: str,
-    rejected_root: str,
     log_path: str,
     reviewer: Optional[str],
     reason_required: bool,
-    overwrite: bool,
     dry_run: bool,
     limit: Optional[int],
+    status: str,
 ):
     """
-    Manual O/X review loop for processed demos.
+    Manual O/X review loop for demos from local.db.
     
-    Allows manual inspection and approval/rejection of processed_demo.npz files.
-    Approved demos can be uploaded or used for vector DB building.
-    Rejected demos are archived separately.
+    Queries local.db for demos by status (pending/approved/rejected).
+    Updates demo status in database - no file movements.
     
     \b
     Decision keys:
-        [o] approve - Move to approved directory
-        [x] reject - Move to rejected directory
-        [s] skip - Skip this demo (leave in pending)
+        [o] approve - Mark as approved in local.db
+        [x] reject - Mark as rejected in local.db
+        [s] skip - Skip this demo (no change)
         [q] quit - Exit review loop
     
     \b
     Examples:
         # Review pending demos
-        serve data review --pending-root ./runtime_demos/pending
+        serve data review
+        
+        # Review approved demos (for re-review)
+        serve data review --status approved
         
         # Review with required reasons
         serve data review --reason-required
@@ -182,31 +176,40 @@ def review_command(
     """
     logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
     
-    # Resolve paths
-    pending_path = Path(pending_root).resolve()
-    approved_path = Path(approved_root).resolve()
-    rejected_path = Path(rejected_root).resolve()
-    log_file = Path(log_path).resolve()
-    
     # Get reviewer name
     if reviewer is None:
         reviewer = os.environ.get("USER", "unknown")
     
-    # Validate pending root exists
-    if not pending_path.exists():
-        click.echo(click.style(f"❌ Pending root does not exist: {pending_path}", fg="red"))
+    # Query local.db for demos by status
+    try:
+        db = get_default_db()
+        # Get artifacts with matching demo status
+        cursor = db.conn.execute(
+            """
+            SELECT a.artifact_id, a.local_path, a.object_key, d.demo_id, d.status, d.num_steps, s.prompt_text
+            FROM artifact a
+            JOIN demo d ON a.demo_id = d.demo_id
+            JOIN scenario s ON d.scenario_id = s.scenario_id
+            WHERE d.status = ? AND a.kind = 'processed'
+            ORDER BY d.created_at DESC
+            """,
+            (status,)
+        )
+        rows = cursor.fetchall()
+        if limit is not None:
+            rows = rows[:limit]
+        db.close()
+    except Exception as exc:
+        click.echo(click.style(f"❌ Failed to query local.db: {exc}", fg="red"))
         raise click.Abort()
     
-    # Find pending episodes
-    episode_dirs = find_episode_dirs(pending_path)
-    if limit is not None:
-        episode_dirs = episode_dirs[:limit]
-    
-    if not episode_dirs:
-        click.echo("No pending episodes to review.")
+    if not rows:
+        click.echo(f"No {status} demos to review.")
         return
     
-    click.echo(f"Found {len(episode_dirs)} pending episode(s) in {pending_path}")
+    log_file = Path(log_path).resolve()
+    
+    click.echo(f"Found {len(rows)} {status} demo(s)")
     click.echo("")
     click.echo("Decision keys: [o] approve, [x] reject, [s] skip, [q] quit")
     click.echo(f"Reviewer: {reviewer}")
@@ -215,30 +218,31 @@ def review_command(
     click.echo("")
     
     # Review loop
-    for idx, episode_dir in enumerate(episode_dirs, start=1):
-        rel_path = episode_dir.relative_to(pending_path)
-        meta = read_optional_json(episode_dir / "episode_meta.json")
+    for idx, row in enumerate(rows, start=1):
+        artifact_id = row["artifact_id"]
+        local_path = row["local_path"]
+        object_key = row["object_key"]
+        demo_id = row["demo_id"]
+        current_status = row["status"]
+        num_steps = row["num_steps"]
+        prompt_text = row["prompt_text"]
         
-        # Extract metadata
-        num_steps = meta.get("num_steps") if isinstance(meta, dict) else None
-        prompt = None
-        if isinstance(meta, dict):
-            prompt = meta.get("task_description") or meta.get("prompt")
-        
-        # Display episode info
-        click.echo(f"[{idx}/{len(episode_dirs)}] {rel_path}")
+        # Display demo info
+        click.echo(f"[{idx}/{len(rows)}] Demo {demo_id}")
+        click.echo(f"  Object key: {object_key}")
+        click.echo(f"  Status: {current_status}")
         if num_steps is not None:
             click.echo(f"  Steps: {num_steps}")
-        if prompt:
-            click.echo(f"  Prompt: {prompt}")
+        if prompt_text:
+            click.echo(f"  Prompt: {prompt_text}")
         
-        # Check for processed_demo.npz
-        npz_file = episode_dir / "processed_demo.npz"
-        if npz_file.exists():
-            size_mb = npz_file.stat().st_size / (1024 * 1024)
+        # Check artifact file
+        artifact_path = Path(local_path)
+        if artifact_path.exists():
+            size_mb = artifact_path.stat().st_size / (1024 * 1024)
             click.echo(f"  NPZ size: {size_mb:.2f} MB")
         else:
-            click.echo(click.style("  ⚠ processed_demo.npz not found!", fg="yellow"))
+            click.echo(click.style(f"  ⚠ Artifact file not found: {artifact_path}", fg="yellow"))
         
         # Decision loop
         while True:
@@ -262,41 +266,39 @@ def review_command(
                 click.echo(click.style("Reason is required", fg="red"))
                 continue
             
-            # Determine target
-            decision = "approved" if decision_input == "o" else "rejected"
-            target_root = approved_path if decision == "approved" else rejected_path
-            target_dir = target_root / rel_path
+            # Determine new status
+            new_status = "approved" if decision_input == "o" else "rejected"
             
-            # Move episode
-            try:
-                move_episode(episode_dir, target_dir, overwrite=overwrite, dry_run=dry_run)
-                
-                # Log decision
-                record = build_review_record(
-                    reviewer=reviewer,
-                    decision=decision,
-                    reason=reason,
-                    source=episode_dir,
-                    target=target_dir,
-                    rel_path=rel_path,
-                    episode_meta=meta,
-                )
-                append_log(log_file, record, dry_run=dry_run)
-                
-                # Display result
-                status_color = "green" if decision == "approved" else "yellow"
-                action_text = "Would move" if dry_run else "Moved"
-                click.echo(click.style(f"  ✓ {action_text} → {decision}: {target_dir}", fg=status_color))
-                break
-                
-            except FileExistsError as e:
-                click.echo(click.style(f"  ✗ {e}", fg="red"))
-                click.echo("  Use --overwrite to replace existing demos")
-                continue
-            except Exception as e:
-                click.echo(click.style(f"  ✗ Error: {e}", fg="red"))
-                logger.exception("Failed to move episode")
-                break
+            # Update local.db status
+            if not dry_run:
+                try:
+                    db = get_default_db()
+                    db.update_demo_status(demo_id, new_status)
+                    db.close()
+                    logger.debug(f"Updated demo {demo_id} status: {current_status} → {new_status}")
+                except Exception as exc:
+                    click.echo(click.style(f"  ✗ Failed to update local.db: {exc}", fg="red"))
+                    logger.exception("Failed to update demo status")
+                    break
+            
+            # Log decision
+            record = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "reviewer": reviewer,
+                "decision": new_status,
+                "reason": reason,
+                "demo_id": demo_id,
+                "artifact_id": artifact_id,
+                "object_key": object_key,
+                "previous_status": current_status,
+            }
+            append_log(log_file, record, dry_run=dry_run)
+            
+            # Display result
+            status_color = "green" if new_status == "approved" else "yellow"
+            action_text = "Would update" if dry_run else "Updated"
+            click.echo(click.style(f"  ✓ {action_text} status: {current_status} → {new_status}", fg=status_color))
+            break
         
         # Handle quit
         if decision_input == "q":

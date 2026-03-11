@@ -93,7 +93,7 @@ serve data review --pending-root ./raw-demos
 
 ```bash
 # 로컬 벡터 DB 빌드
-serve data build-index <team-id> --write-faiss
+serve data build-index <team-id>
 
 # Few-Shot 추론
 serve reasoning few-shot <team-id> franka "pick up the red cube" --k 5
@@ -218,7 +218,7 @@ DEK (Data Encryption Key)
     ↓
 사용자 쿼리
     ↓
-유사 데모 검색 (FAISS)
+유사 데모 검색 (Qdrant)
     ↓
 Few-Shot 컨텍스트 생성
     ↓

@@ -17,7 +17,8 @@ setup(
         'torch',
         'torchvision',
         'python-dotenv',  # .env 파일 로드
-        'boto3'  # AWS S3 접근
+        'boto3',  # AWS S3 접근
+        'qdrant-client',  # Qdrant vector database
     ],
     entry_points='''
         [console_scripts]

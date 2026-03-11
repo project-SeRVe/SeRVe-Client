@@ -61,12 +61,12 @@ def few_shot(team_id: str, robot: str, text: str, k: int, vector_db_root: str):
         vdb_root = Path(vector_db_root) if vector_db_root else None
         vector_db = LocalVectorDB(team_id, vdb_root)
         
-        stats = vector_db.stats()
+        stats = vector_db.get_stats()
         click.echo(f"Loaded vector DB:")
         click.echo(f"  - Episodes: {stats['num_episodes']}")
         click.echo(f"  - Vectors: {stats['num_vectors']}")
         click.echo(f"  - Embedding dim: {stats['embedding_dim']}")
-        click.echo(f"  - FAISS index: {'Yes' if stats['has_faiss'] else 'No'}")
+        click.echo(f"  - Distance: {stats['distance']}")
         click.echo("")
         
     except FileNotFoundError as e:
@@ -177,7 +177,7 @@ def db_info(team_id: str, vector_db_root: str):
         vdb_root = Path(vector_db_root) if vector_db_root else None
         vector_db = LocalVectorDB(team_id, vdb_root)
         
-        stats = vector_db.stats()
+        stats = vector_db.get_stats()
         
         click.echo("=" * 60)
         click.echo(f"Vector DB Information: {team_id}")
@@ -185,18 +185,15 @@ def db_info(team_id: str, vector_db_root: str):
         click.echo(f"Episodes:      {stats['num_episodes']}")
         click.echo(f"Vectors:       {stats['num_vectors']}")
         click.echo(f"Embedding Dim: {stats['embedding_dim']}")
-        click.echo(f"FAISS Index:   {'Available' if stats['has_faiss'] else 'Not available'}")
-        click.echo(f"Created At:    {stats['created_at']}")
+        click.echo(f"Distance:      {stats['distance']}")
         click.echo("")
         
         # Show episode list
         click.echo("Episodes:")
-        for ep in vector_db.episodes[:10]:  # Show first 10
+        episodes = vector_db.search_by_prompt("", k=10)  # Get first 10 episodes
+        for ep in episodes:
             click.echo(f"  {ep['episode_id']}: {ep.get('prompt', 'N/A')}")
             click.echo(f"     Steps: {ep['num_steps']}, Path: {ep['relative_path']}")
-        
-        if len(vector_db.episodes) > 10:
-            click.echo(f"  ... and {len(vector_db.episodes) - 10} more episodes")
         
     except FileNotFoundError as e:
         click.echo(click.style(f"❌ {e}", fg="red"))
