@@ -1,5 +1,9 @@
 import click
+from rich.console import Console
+from rich.table import Table
 from .context import CLIContext
+
+console = Console()
 
 @click.group()
 def repo():
@@ -14,13 +18,13 @@ def create(team_name, description):
     ctx = CLIContext()
     ctx.ensure_private_key()
 
-    click.echo(f"[+] Creating repository '{team_name}'...")
+    console.print(f"[bold blue]저장소 생성 요청 중...[/bold blue] ({team_name})")
     repo_id, msg = ctx.client.create_repository(team_name, description)
     
     if repo_id:
-        click.echo(click.style(f"✅ 저장소 생성 성공! (ID: {repo_id})", fg="green"))
+        console.print(f"[bold green]✅ 성공:[/bold green] {msg}")
     else:
-        click.echo(click.style(f"❌ 저장소 생성 실패: {msg}", fg="red"))
+        console.print(f"[bold red]❌ 실패:[/bold red] {msg}")
 
 @repo.command()
 def list():
@@ -28,69 +32,115 @@ def list():
     ctx = CLIContext()
     ctx.ensure_authenticated()
 
-    click.echo("[+] Fetching repository list...")
+    console.print("[bold blue]저장소 목록 조회 중...[/bold blue]")
     repos, msg = ctx.client.get_my_repositories()
     
     if repos is None:
-        click.echo(click.style(f"❌ 조회 실패: {msg}", fg="red"))
+        console.print(f"[bold red]❌ 조회 실패:[/bold red] {msg}")
         return
         
     if not repos:
-        click.echo("참여 중인 저장소가 없습니다.")
+        console.print("참여 중인 저장소가 없습니다.")
         return
-        
-    click.echo(f"\n총 {len(repos)}개의 저장소:")
+    
+    table = Table(title="참여 중인 저장소 목록")
+    table.add_column("Team ID", style="cyan")
+    table.add_column("Team Name", style="magenta")
+    table.add_column("Description", style="white")
+    table.add_column("My Role", style="green")
+    
     for r in repos:
-        desc = r.get("description", "설명 없음")
-        # Handle dict or string response appropriately based on ServeClient
-        click.echo(f"- 팀 ID: {r.get('id')} | 이름: {r.get('name')} | 권한: {r.get('role', 'N/A')} | 설명: {desc}")
+        table.add_row(
+            str(r.get('id', '')), 
+            r.get('name', ''), 
+            r.get('description', ''),
+            r.get('role', 'UNKNOWN')
+        )
+    console.print(table)
 
 @repo.command()
-@click.argument('team-id') # The spec says team-name or id, but team-id is usually required by SDK
+@click.argument('team-id')
+def show(team_id):
+    """저장소 상세 조회"""
+    ctx = CLIContext()
+    ctx.ensure_authenticated()
+
+    console.print(f"[bold blue]저장소 상세 정보 불러오는 중...[/bold blue] ({team_id})")
+    
+    # 저장소 정보 조회
+    repos, msg = ctx.client.get_my_repositories()
+    if repos is None:
+        console.print(f"[bold red]❌ 저장소 정보 조회 실패:[/bold red] {msg}")
+        return
+        
+    target_repo = next((repo for repo in repos if str(repo.get('id')) == team_id or repo.get('name') == team_id), None)
+    if not target_repo:
+        console.print(f"[bold red]❌ 오류:[/bold red] '{team_id}' 저장소를 찾을 수 없거나 접근 권한이 없습니다.")
+        return
+
+    # 멤버 목록 조회
+    members, members_msg = ctx.client.get_members(str(target_repo.get('id')))
+    if members is None:
+        console.print(f"[bold red]❌ 멤버 목록 조회 실패:[/bold red] {members_msg}")
+        return
+
+    my_role = target_repo.get('role', 'UNKNOWN')
+    role_color = "bold red" if my_role == "ADMIN" else "bold green"
+    
+    console.print("\n[bold cyan]📦 Repository Info[/bold cyan]")
+    console.print(f"  • [bold]Team Name:[/bold] {target_repo.get('name', 'N/A')}")
+    console.print(f"  • [bold]Team ID:[/bold]   {target_repo.get('id', 'N/A')}")
+    if target_repo.get('description'):
+        console.print(f"  • [bold]Desc:[/bold]      {target_repo.get('description')}")
+    console.print(f"  • [bold]My Role:[/bold]   [{role_color}]{my_role}[/{role_color}]\n")
+
+    table = Table(title="👥 Member List")
+    table.add_column("User ID", style="cyan")
+    table.add_column("Email", style="magenta")
+    table.add_column("Role", style="green")
+    
+    for member in members:
+        user_id = str(member.get('userId', ''))
+        is_me = " (Me)" if user_id == str(ctx.session_data.get('user_id')) else ""
+        table.add_row(
+            user_id, 
+            f"{member.get('email', 'N/A')}{is_me}", 
+            member.get('role', 'UNKNOWN')
+        )
+    console.print(table)
+
+@repo.command()
+@click.argument('team-id')
 @click.argument('email')
 def invite(team_id, email):
     """멤버 초대 (이메일 단위)"""
     ctx = CLIContext()
     ctx.ensure_private_key()
 
-    click.echo(f"[+] Inviting {email} to repository {team_id}...")
+    console.print(f"[bold blue]멤버 초대 중...[/bold blue] ({email} -> {team_id})")
     success, msg = ctx.client.invite_member(team_id, email)
     
     if success:
-        click.echo(click.style(f"✅ 멤버 초대 성공: {msg}", fg="green"))
+        console.print(f"[bold green]✅ 성공:[/bold green] {msg}")
     else:
-        click.echo(click.style(f"❌ 멤버 초대 실패: {msg}", fg="red"))
+        console.print(f"[bold red]❌ 실패:[/bold red] {msg}")
 
 @repo.command()
 @click.argument('team-id')
 @click.argument('user-id')
 def kick(team_id, user_id):
-    """멤버 강퇴"""
+    """멤버 강퇴 및 보안 키 자동 로테이션"""
     ctx = CLIContext()
     ctx.ensure_private_key()
 
-    click.echo(f"[+] Kicking {user_id} from repository {team_id}...")
+    console.print(f"[bold blue]멤버 강퇴 요청 중...[/bold blue] ({user_id})")
     success, msg = ctx.client.kick_member(team_id, user_id)
     
     if success:
-        click.echo(click.style(f"✅ 멤버 강퇴 성공: {msg}", fg="green"))
+        console.print(f"[bold green]✅ 성공:[/bold green] {msg}")
+        console.print("[yellow]💡 보안 키가 자동으로 로테이션되었습니다.[/yellow]")
     else:
-        click.echo(click.style(f"❌ 멤버 강퇴 실패: {msg}", fg="red"))
-
-@repo.command(name="rotate-key")
-@click.argument('team-id')
-def rotate_key(team_id):
-    """팀 키 로테이션"""
-    ctx = CLIContext()
-    ctx.ensure_private_key()
-    # SDK does not expose standalone rotate-key natively out of the box (it's inside kick_member), 
-    # but there might be an API hook. If not, we might need a dummy message or SDK implementation update.
-    # Note: `serve_sdk/client.py` does not have a public `rotate_team_key(repo_id)` method except inside kick_member.
-    # We will invoke the API if available or mock it for now.
-    click.echo(f"[+] Rotating team keys for {team_id}...")
-    # Mocking SDK call since there is no `rotate_team_key` exposed publicly:
-    # A complete implementation would add this to serve_sdk/client.py
-    click.echo(click.style(f"✅ 키 로테이션 성공 (This is a stub, require API support in SDK)", fg="yellow"))
+        console.print(f"[bold red]❌ 실패:[/bold red] {msg}")
 
 @repo.command(name="set-role")
 @click.argument('team-id')
@@ -101,35 +151,10 @@ def set_role(team_id, user_id, role):
     ctx = CLIContext()
     ctx.ensure_authenticated()
 
-    click.echo(f"[+] Setting role '{role}' for {user_id} in {team_id}...")
+    console.print(f"[bold blue]권한 변경 중...[/bold blue] ({user_id} -> {role})")
     success, msg = ctx.client.update_member_role(team_id, user_id, role)
     
     if success:
-        click.echo(click.style(f"✅ 권한 변경 성공: {msg}", fg="green"))
+        console.print(f"[bold green]✅ 성공:[/bold green] {msg}")
     else:
-        click.echo(click.style(f"❌ 권한 변경 실패: {msg}", fg="red"))
-
-@repo.command()
-@click.argument('team-id')
-def show(team_id):
-    """저장소 상세 조회"""
-    ctx = CLIContext()
-    ctx.ensure_authenticated()
-
-    click.echo(f"[+] Fetching details for repository {team_id}...")
-    # Fetch Members
-    members, msg = ctx.client.get_members(team_id)
-    if members is None:
-        click.echo(click.style(f"❌ 조회 실패: {msg}", fg="red"))
-        return
-        
-    click.echo("\n--- Repository Info ---")
-    click.echo(f"Team ID: {team_id}")
-    # Other metadata might require a specific team info API
-    
-    click.echo("\n--- Member List ---")
-    if not members:
-        click.echo("멤버가 없습니다.")
-    else:
-        for m in members:
-            click.echo(f"- 이름/ID: {m.get('userId')} | 권한: {m.get('role')}")
+        console.print(f"[bold red]❌ 실패:[/bold red] {msg}")

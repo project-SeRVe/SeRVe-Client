@@ -25,12 +25,16 @@ class ApiClient:
     - 비즈니스 로직 (ServeClient가 담당)
     """
 
-    def __init__(self, server_url: str):
+    def __init__(self, server_url: str, team_service_url: Optional[str] = None, core_service_url: Optional[str] = None):
         """
         Args:
-            server_url: 서버 기본 URL (예: http://localhost:8080)
+            server_url: Auth 서버 기본 URL (예: http://localhost:8080)
+            team_service_url: Team 서버 URL (예: http://localhost:8082). 미지정 시 server_url 사용.
+            core_service_url: Core 서버 URL (예: http://localhost:8083). 미지정 시 server_url 사용.
         """
         self.server_url = server_url.rstrip('/')
+        self.team_service_url = (team_service_url or server_url).rstrip('/')
+        self.core_service_url = (core_service_url or server_url).rstrip('/')
         self.session = requests.Session()
 
     def _get_headers(self, access_token: Optional[str] = None) -> Dict[str, str]:
@@ -104,21 +108,6 @@ class ApiClient:
         except Exception as e:
             return False, f"로그인 오류: {str(e)}"
 
-    def reset_password(self, email: str, new_password: str, encrypted_private_key: str = None) -> Tuple[bool, str]:
-        """비밀번호 재설정"""
-        try:
-            payload = {"email": email, "newPassword": new_password}
-            if encrypted_private_key:
-                payload["encryptedPrivateKey"] = encrypted_private_key
-                
-            resp = self.session.post(
-                f"{self.server_url}/auth/reset-password",
-                json=payload
-            )
-            success, _ = self._handle_response(resp)
-            return success, "비밀번호 재설정 성공" if success else "비밀번호 재설정 실패"
-        except Exception as e:
-            return False, f"비밀번호 재설정 오류: {str(e)}"
 
     def withdraw(self, access_token: str) -> Tuple[bool, str]:
         """회원 탈퇴"""
@@ -172,7 +161,7 @@ class ApiClient:
         """
         try:
             resp = self.session.post(
-                f"{self.server_url}/api/repositories",
+                f"{self.team_service_url}/api/repositories",
                 json={
                     "name": name,
                     "description": description,
@@ -189,7 +178,7 @@ class ApiClient:
         """내 저장소 목록 조회"""
         try:
             resp = self.session.get(
-                f"{self.server_url}/api/repositories",
+                f"{self.team_service_url}/api/repositories",
                 params={"userId": user_id},
                 headers=self._get_headers(access_token)
             )
@@ -210,7 +199,7 @@ class ApiClient:
         """
         try:
             resp = self.session.get(
-                f"{self.server_url}/api/repositories/{repo_id}/keys",
+                f"{self.team_service_url}/api/repositories/{repo_id}/keys",
                 params={"userId": user_id},
                 headers=self._get_headers(access_token)
             )
@@ -222,7 +211,7 @@ class ApiClient:
         """저장소 삭제"""
         try:
             resp = self.session.delete(
-                f"{self.server_url}/api/repositories/{repo_id}",
+                f"{self.team_service_url}/api/repositories/{repo_id}",
                 params={"userId": user_id},
                 headers=self._get_headers(access_token)
             )
@@ -244,7 +233,7 @@ class ApiClient:
         """
         try:
             resp = self.session.post(
-                f"{self.server_url}/api/teams/{repo_id}/members",
+                f"{self.team_service_url}/api/teams/{repo_id}/members",
                 json={
                     "email": email,
                     "encryptedTeamKey": encrypted_team_key
@@ -265,7 +254,7 @@ class ApiClient:
         """멤버 목록 조회"""
         try:
             resp = self.session.get(
-                f"{self.server_url}/api/teams/{repo_id}/members",
+                f"{self.team_service_url}/api/teams/{repo_id}/members",
                 headers=self._get_headers(access_token)
             )
             return self._handle_response(resp)
@@ -293,7 +282,7 @@ class ApiClient:
         """
         try:
             resp = self.session.delete(
-                f"{self.server_url}/api/teams/{repo_id}/members/{target_user_id}",
+                f"{self.team_service_url}/api/teams/{repo_id}/members/{target_user_id}",
                 params={"adminId": admin_id},
                 headers=self._get_headers(access_token)
             )
@@ -307,7 +296,7 @@ class ApiClient:
         """멤버 권한 변경"""
         try:
             resp = self.session.put(
-                f"{self.server_url}/api/teams/{repo_id}/members/{target_user_id}",
+                f"{self.team_service_url}/api/teams/{repo_id}/members/{target_user_id}",
                 params={"adminId": admin_id},
                 json={"role": new_role},
                 headers=self._get_headers(access_token)
@@ -332,7 +321,7 @@ class ApiClient:
         """
         try:
             resp = self.session.post(
-                f"{self.server_url}/api/teams/{repo_id}/members/rotate-keys",
+                f"{self.team_service_url}/api/teams/{repo_id}/members/rotate-keys",
                 json={"memberKeys": member_keys},
                 headers=self._get_headers(access_token)
             )
@@ -341,165 +330,116 @@ class ApiClient:
         except Exception as e:
             return False, f"키 로테이션 오류: {str(e)}"
 
-    # ==================== 문서 API ====================
+    # ==================== Task API (SeRVe-Core) ====================
 
-    def upload_document(self, encrypted_content: str, repo_id: str,
-                       access_token: str, file_name: str = "document.txt",
-                       file_type: str = "text/plain") -> Tuple[bool, Any]:
+    def upload_task(self, team_id: str, file_name: str, file_type: str,
+                   encrypted_blob: str, access_token: str) -> Tuple[bool, Any]:
         """
-        암호화된 문서 업로드
+        암호화된 태스크 업로드
 
         Args:
-            encrypted_content: 이미 팀 키로 암호화된 내용 (Base64)
-            repo_id: 저장소 ID (UUID 문자열)
-            file_name: 파일명 (기본값: document.txt)
-            file_type: 파일 타입 (기본값: text/plain)
+            team_id: 팀 ID (UUID 문자열)
+            file_name: 파일명
+            file_type: 파일 타입
+            encrypted_blob: 암호화된 내용 (Base64)
+            access_token: 인증 토큰
 
         Returns:
-            (성공 여부, 문서 ID 또는 에러 메시지)
+            (성공 여부, 응답 데이터 또는 에러 메시지)
         """
         try:
             resp = self.session.post(
-                f"{self.server_url}/api/teams/{repo_id}/documents",
+                f"{self.core_service_url}/api/teams/{team_id}/tasks",
+                f"{self.server_url}/api/teams/{team_id}/tasks",
                 json={
                     "fileName": file_name,
                     "fileType": file_type,
-                    "encryptedBlob": encrypted_content
+                    "encryptedBlob": encrypted_blob
                 },
                 headers=self._get_headers(access_token)
             )
             success, data = self._handle_response(resp)
-            if success:
-                # 서버는 void를 반환하므로 데이터가 없거나 빈 응답일 수 있음
-                # 성공 시 응답에서 doc_id를 추출할 수 없으므로 성공 메시지만 반환
-                return True, "문서 업로드 성공"
-            return False, data
+            return success, "태스크 업로드 성공" if success else data
         except Exception as e:
-            return False, f"문서 업로드 오류: {str(e)}"
+            return False, f"태스크 업로드 오류: {str(e)}"
 
-    # [DEPRECATED] 다운로드 기능 제거 - Federated Model에서는 동기화만 사용
-    def get_document(self, doc_id: str, access_token: str) -> Tuple[bool, Optional[Dict]]:
-        """
-        [사용 중단] 문서 다운로드 (Federated Model에서 지원하지 않음)
-
-        대신 sync_team_chunks()를 사용하세요.
-        """
-        return False, "다운로드 기능은 Federated Model에서 지원하지 않습니다. sync_team_chunks()를 사용하세요."
-
-    def get_documents(self, repo_id: str, access_token: str) -> Tuple[bool, Optional[List]]:
-        """
-        문서 목록 조회
-
-        Args:
-            repo_id: 저장소 ID (UUID 문자열)
-
-        Returns:
-            (성공 여부, 문서 목록 또는 에러 메시지)
-        """
+    def get_tasks(self, team_id: str, access_token: str) -> Tuple[bool, Optional[List]]:
+        """태스크 목록 조회"""
         try:
             resp = self.session.get(
-                f"{self.server_url}/api/teams/{repo_id}/documents",
+                f"{self.core_service_url}/api/teams/{team_id}/tasks",
+                f"{self.server_url}/api/teams/{team_id}/tasks",
                 headers=self._get_headers(access_token)
             )
             return self._handle_response(resp)
         except Exception as e:
-            return False, f"문서 목록 조회 오류: {str(e)}"
+            return False, f"태스크 목록 조회 오류: {str(e)}"
 
-    def delete_document(self, repo_id: str, doc_id: str, access_token: str) -> Tuple[bool, str]:
-        """
-        문서 삭제
+    def download_task(self, task_id: int, access_token: str) -> Tuple[bool, Optional[Dict]]:
+        """태스크 데이터 다운로드"""
+        try:
+            resp = self.session.get(
+                f"{self.core_service_url}/api/tasks/{task_id}/data",
+                f"{self.server_url}/api/tasks/{task_id}/data",
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"태스크 다운로드 오류: {str(e)}"
 
-        Args:
-            repo_id: 저장소 ID (UUID 문자열)
-            doc_id: 문서 ID
-
-        Returns:
-            (성공 여부, 메시지)
-        """
+    def delete_task(self, team_id: str, task_id: str, access_token: str) -> Tuple[bool, str]:
+        """태스크 삭제"""
         try:
             resp = self.session.delete(
-                f"{self.server_url}/api/teams/{repo_id}/documents/{doc_id}",
+                f"{self.core_service_url}/api/teams/{team_id}/tasks/{task_id}",
+                f"{self.server_url}/api/teams/{team_id}/tasks/{task_id}",
                 headers=self._get_headers(access_token)
             )
             success, _ = self._handle_response(resp)
-            return success, "문서 삭제 성공" if success else "문서 삭제 실패"
+            return success, "태스크 삭제 성공" if success else "태스크 삭제 실패"
         except Exception as e:
-            return False, f"문서 삭제 오류: {str(e)}"
+            return False, f"태스크 삭제 오류: {str(e)}"
 
-    def reencrypt_document_keys(self, team_id: str, documents: List[Dict[str, str]],
-                                access_token: str) -> Tuple[bool, str]:
+    # ==================== Demo API (SeRVe-Core) ====================
+
+    def upload_demos(self, team_id: str, file_name: str, demos: List[Dict[str, Any]],
+                    access_token: str) -> Tuple[bool, str]:
         """
-        문서 DEK 재암호화 (Envelope Encryption, 키 로테이션용)
-
-        Args:
-            team_id: 팀 ID
-            documents: 문서 목록 [{"documentId": str, "newEncryptedDEK": str (Base64)}, ...]
-            access_token: 인증 토큰
-
-        Returns:
-            (성공 여부, 메시지)
-        """
-        try:
-            resp = self.session.post(
-                f"{self.server_url}/api/teams/{team_id}/documents/reencrypt-keys",
-                json={"documents": documents},
-                headers=self._get_headers(access_token)
-            )
-            success, data = self._handle_response(resp)
-            return success, "DEK 재암호화 성공" if success else f"DEK 재암호화 실패: {data}"
-        except Exception as e:
-            return False, f"DEK 재암호화 오류: {str(e)}"
-
-    # ==================== 벡터 청크 API ====================
-
-    def upload_chunks(self, team_id: str, file_name: str, chunks: List[Dict[str, Any]],
-                     access_token: str, encrypted_dek: Optional[str] = None) -> Tuple[bool, str]:
-        """
-        벡터 청크 배치 업로드 (Envelope Encryption 지원)
+        벡터 데모 배치 업로드
 
         Args:
             team_id: 팀 ID (UUID 문자열)
-            file_name: 파일명 (문서 식별용)
-            chunks: 청크 목록 [{"chunkIndex": int, "encryptedBlob": str (Base64)}, ...]
+            file_name: 파일명 (시나리오 식별용)
+            demos: 데모 목록 [{"demoIndex": int, "encryptedBlob": str (Base64)}, ...]
             access_token: 인증 토큰
-            encrypted_dek: 팀 키로 암호화된 DEK (Base64, Envelope Encryption용)
 
         Returns:
             (성공 여부, 메시지)
         """
         try:
-            payload = {"fileName": file_name, "chunks": chunks}
-
-            # Envelope Encryption: encryptedDEK 추가
-            if encrypted_dek:
-                payload["encryptedDEK"] = encrypted_dek
-
             resp = self.session.post(
-                f"{self.server_url}/api/teams/{team_id}/chunks",
-                json=payload,
+                f"{self.core_service_url}/api/teams/{team_id}/demos",
+                f"{self.server_url}/api/teams/{team_id}/demos",
+                json={
+                    "fileName": file_name,
+                    "demos": demos
+                },
                 headers=self._get_headers(access_token)
             )
             success, data = self._handle_response(resp)
-            return success, "청크 업로드 성공" if success else f"청크 업로드 실패: {data}"
+            return success, "데모 업로드 성공" if success else f"데모 업로드 실패: {data}"
         except Exception as e:
-            return False, f"청크 업로드 오류: {str(e)}"
+            return False, f"데모 업로드 오류: {str(e)}"
 
-    # [DEPRECATED] 다운로드 기능 제거 - Federated Model에서는 동기화만 사용
-    def download_chunks(self, team_id: str, file_name: str, access_token: str) -> Tuple[bool, Optional[List[Dict]]]:
+    def delete_demo(self, team_id: str, file_name: str, demo_index: int,
+                   access_token: str) -> Tuple[bool, str]:
         """
-        [사용 중단] 문서의 모든 청크 다운로드 (Federated Model에서 지원하지 않음)
-
-        대신 sync_team_chunks()를 사용하세요.
-        """
-        return False, "청크 다운로드는 Federated Model에서 지원하지 않습니다. sync_team_chunks()를 사용하세요."
-
-    def delete_chunk(self, doc_id: str, chunk_index: int, access_token: str) -> Tuple[bool, str]:
-        """
-        특정 청크 삭제 (논리적 삭제)
+        특정 데모 삭제
 
         Args:
-            doc_id: 문서 ID (UUID 문자열)
-            chunk_index: 청크 인덱스
+            team_id: 팀 ID (UUID 문자열)
+            file_name: 파일명
+            demo_index: 데모 인덱스
             access_token: 인증 토큰
 
         Returns:
@@ -507,60 +447,34 @@ class ApiClient:
         """
         try:
             resp = self.session.delete(
-                f"{self.server_url}/api/documents/{doc_id}/chunks/{chunk_index}",
+                f"{self.server_url}/api/teams/{team_id}/demos/{demo_index}",
+                params={"fileName": file_name},
                 headers=self._get_headers(access_token)
             )
             success, _ = self._handle_response(resp)
-            return success, "청크 삭제 성공" if success else "청크 삭제 실패"
+            return success, "데모 삭제 성공" if success else "데모 삭제 실패"
         except Exception as e:
-            return False, f"청크 삭제 오류: {str(e)}"
+            return False, f"데모 삭제 오류: {str(e)}"
 
-    def sync_document_chunks(self, doc_id: str, last_version: int,
-                            access_token: str) -> Tuple[bool, Optional[List[Dict]]]:
+    def sync_demos(self, team_id: str, last_version: int,
+                  access_token: str) -> Tuple[bool, Optional[List[Dict]]]:
         """
-        문서별 증분 청크 동기화
+        팀 데모 증분 동기화
 
         Args:
-            doc_id: 문서 ID (UUID 문자열)
+            team_id: 팀 ID (UUID 문자열)
             last_version: 마지막으로 알려진 버전 번호
             access_token: 인증 토큰
 
         Returns:
-            (성공 여부, 변경된 청크 목록 또는 에러 메시지)
-            청크 형식: [{"documentId": str, "chunkId": str, "chunkIndex": int,
-                        "encryptedBlob": bytes, "version": int, "isDeleted": bool}, ...]
+            (성공 여부, 변경된 데모 목록 또는 에러 메시지)
         """
         try:
             resp = self.session.get(
-                f"{self.server_url}/api/documents/{doc_id}/chunks/sync",
-                params={"lastVersion": last_version},
-                headers=self._get_headers(access_token)
-            )
-            return self._handle_response(resp)
-        except Exception as e:
-            return False, f"청크 동기화 오류: {str(e)}"
-
-    def sync_team_chunks(self, team_id: str, last_version: int,
-                        access_token: str) -> Tuple[bool, Optional[List[Dict]]]:
-        """
-        팀 전체 증분 청크 동기화
-
-        Args:
-            team_id: 팀/저장소 ID (UUID 문자열)
-            last_version: 마지막으로 알려진 버전 번호
-            access_token: 인증 토큰
-
-        Returns:
-            (성공 여부, 변경된 청크 목록 또는 에러 메시지)
-            청크 형식: [{"documentId": str, "chunkId": str, "chunkIndex": int,
-                        "encryptedBlob": bytes, "version": int, "isDeleted": bool}, ...]
-        """
-        try:
-            resp = self.session.get(
-                f"{self.server_url}/api/sync/chunks",
+                f"{self.server_url}/api/sync/demos",
                 params={"teamId": team_id, "lastVersion": last_version},
                 headers=self._get_headers(access_token)
             )
             return self._handle_response(resp)
         except Exception as e:
-            return False, f"팀 청크 동기화 오류: {str(e)}"
+            return False, f"데모 동기화 오류: {str(e)}"

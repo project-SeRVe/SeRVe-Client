@@ -85,37 +85,6 @@ def login():
 
     click.echo(click.style(f"\n✅ Login Successful!\n   Target Server: {ctx.client.api.server_url}\n   User ID: {ctx.client.session.user_id}\n   (Warning: Private key is loaded in RAM. Do not share this session.)", fg="green"))
 
-@auth.command(name="reset-pw")
-def reset_password():
-    """비밀번호 재설정"""
-    ctx = CLIContext()
-    ctx.ensure_authenticated()
-    
-    current_password = click.prompt("> 현재 비밀번호를 입력하세요", hide_input=True)
-    if not ctx.ensure_private_key(current_password):
-        sys.exit(1)
-        
-    click.echo("[+] 현재 비밀번호 검증 및 개인키 복호화... 성공 ✅\n")
-    
-    new_pw = click.prompt("> 새로운 비밀번호 입력", hide_input=True)
-    confirm_pw = click.prompt("> 새로운 비밀번호 확인", hide_input=True)
-    
-    if new_pw != confirm_pw:
-        click.echo(click.style("에러: 새로운 비밀번호가 일치하지 않습니다.", fg="red"))
-        sys.exit(1)
-        
-    click.echo("\n[+] 개인키를 새 비밀번호로 재암호화 중... 완료")
-    click.echo("[+] 서버에 변경 사항 저장 중... 완료")
-    
-    # SDK API 연동 
-    # 현재 SDK에 비밀번호 '변경' 시 개인키 재암호화 후 업로드하는 기능은 reset_password API가 있으나
-    # 정확한 서명 등은 ServeClient.reset_password에 맞춰 파라미터 전달
-    success, msg = ctx.client.reset_password(ctx.client.session.email, new_pw)
-    if success:
-        click.echo(click.style("\n✅ 비밀번호 변경이 완료되었습니다.", fg="green"))
-    else:
-        click.echo(click.style(f"\n❌ 비밀번호 변경 실패: {msg}", fg="red"))
-
 
 @auth.command(name="delete-account")
 @click.option("--force", is_flag=True, help="확인 절차 없이 즉시 삭제")
