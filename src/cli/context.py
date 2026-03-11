@@ -9,6 +9,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from serve_sdk.client import ServeClient
 
 import os
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 class CLIContext:
     def __init__(self):

@@ -57,7 +57,7 @@ def upload(team_id, task_name, data_id, npz_file, description, robot_id):
     success, msg = ctx.client.upload_task(
         team_id=team_id,
         file_name=task_name,
-        data=npz_base64
+        npz_data=npz_base64
     )
     
     if success:
@@ -79,7 +79,7 @@ def list(team_id):
         click.echo(click.style(f"❌ 목록 조회 실패: {msg}", fg="red"))
         return
         
-    if not docs:
+    if not tasks:
         click.echo("저장소에 task가 없습니다.")
         return
         
@@ -97,64 +97,32 @@ def list(team_id):
 
 @data.command()
 @click.argument('team-id')
-@click.argument('task-name')
-@click.argument('data-id')
+@click.argument('task-id', type=int)
 @click.option('--output', 'output_file', required=True, help="다운로드할 NPZ 파일 경로")
-@click.option('--db-url', help="저장할 로컬 데이터베이스 연결 URL (기본값: sqlite:///local.db)", default="sqlite:///local.db")
-def download(team_id, task_name, data_id, output_file, db_url):
-    """데모 데이터 다운로드"""
+def download(team_id, task_id, output_file):
+    """태스크 데이터 다운로드"""
     ctx = CLIContext()
     ctx.ensure_private_key()
 
-    click.echo(f"[+] Downloading data {data_id} and saving to '{output_file}'...")
-    # Download and decrypt chunks from server
-    chunks, msg = ctx.client.download_chunks_from_document(f"{task_name}_{data_id}", team_id)
+    click.echo(f"[+] Downloading task {task_id} and saving to '{output_file}'...")
     
-    if chunks is None:
+    # Download task using Task API
+    npz_data, msg = ctx.client.download_task(task_id, team_id)
+    
+    if npz_data is None:
         click.echo(click.style(f"❌ 다운로드 실패: {msg}", fg="red"))
         return
     
-    # Reconstruct NPZ file from chunks
+    # Save NPZ file
     try:
-        click.echo(f"[+] Reconstructing NPZ file from {len(chunks)} chunks...")
-        chunks_to_npz(chunks, output_file)
-        click.echo(click.style(f"✅ NPZ 파일 복원 성공: {output_file}", fg="green"))
+        import base64
+        click.echo(f"[+] Saving NPZ file...")
+        with open(output_file, 'wb') as f:
+            f.write(base64.b64decode(npz_data))
+        click.echo(click.style(f"✅ NPZ 파일 저장 성공: {output_file}", fg="green"))
     except Exception as e:
-        click.echo(click.style(f"❌ NPZ 파일 복원 실패: {e}", fg="red"))
+        click.echo(click.style(f"❌ NPZ 파일 저장 실패: {e}", fg="red"))
         return
-    
-    # Save to local database tracking
-    db_path = "local.db"
-    if db_url.startswith("sqlite:///"):
-        parsed_path = db_url.replace("sqlite:///", "")
-        db_path = parsed_path
-        
-    try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        # Create table if it doesn't exist
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS downloaded_data (
-                team_id TEXT,
-                task_name TEXT,
-                data_id TEXT,
-                output_file TEXT,
-                download_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(team_id, data_id)
-            )
-        ''')
-        # Insert or replace record
-        cursor.execute('''
-            INSERT OR REPLACE INTO downloaded_data (team_id, task_name, data_id, output_file)
-            VALUES (?, ?, ?, ?)
-        ''', (team_id, task_name, data_id, output_file))
-        
-        conn.commit()
-        conn.close()
-        click.echo(click.style(f"✅ 로컬 DB 기록 완료!", fg="green"))
-    except Exception as e:
-        click.echo(click.style(f"⚠️ 데이터베이스 기록 중 오류 발생: {e}", fg="yellow"))
-
 @data.command()
 @click.argument('team-id')
 @click.argument('db-url')
