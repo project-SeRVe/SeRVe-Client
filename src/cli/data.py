@@ -2,6 +2,7 @@ import builtins
 import click
 import sqlite3
 import os
+import json
 from pathlib import Path
 from serve_sdk.local_db import get_default_db
 from .context import CLIContext
@@ -25,114 +26,141 @@ data.add_command(build_index_command)
 
 @data.command()
 @click.argument('team-id')
-@click.argument('task-name')
-@click.argument('data-id')
-@click.option('--file', 'npz_file', required=True, help="로봇 trajectory npz 파일 경로")
-@click.option('--description', help="작업에 대한 설명", default="")
-@click.option('--robot-id', help="작업의 출처(로봇 id)", default="")
-def upload(team_id, task_name, data_id, npz_file, description, robot_id):
-    """단일 Task 데이터 업로드"""
-    ctx = CLIContext()
-    ctx.ensure_private_key()  # Requires private key for encryption
-
-    click.echo(f"[+] Uploading NPZ file '{npz_file}' as task for repository {team_id}...")
+@click.argument('npz-file', type=click.Path(exists=True))
+@click.option('--prompt', help="Scenario 식별용 프롬프트 (미지정시 episode_meta.json의 task_description 사용)")
+@click.option('--kind', default="processed", help="Artifact 종류 (processed/raw)")
+def upload(team_id, npz_file, prompt, kind):
+    """
+    Artifact 업로드 (새 서버 스펙)
     
-    # Check if file exists
-    if not os.path.exists(npz_file):
-        click.echo(click.style(f"❌ 파일을 찾을 수 없습니다: {npz_file}", fg="red"))
-        return
-    
-    try:
-        # Read NPZ file and encode to base64
-        click.echo("[+] Reading NPZ file...")  
-        with open(npz_file, 'rb') as f:
-            npz_binary = f.read()
-        import base64
-        npz_base64 = base64.b64encode(npz_binary).decode('utf-8')
-        click.echo(f"[+] NPZ file size: {len(npz_binary)} bytes")
-    except Exception as e:
-        click.echo(click.style(f"❌ NPZ 파일 읽기 실패: {e}", fg="red"))
-        return
-    
-    # Upload via SDK
-    success, msg = ctx.client.upload_task(
-        team_id=team_id,
-        file_name=task_name,
-        npz_data=npz_base64
-    )
-    
-    if success:
-        click.echo(click.style(f"✅ Task 업로드 성공!", fg="green"))
-    else:
-        click.echo(click.style(f"❌ Task 업로드 실패: {msg}", fg="red"))
-
-@data.command()
-@click.argument('team-id')
-def list(team_id):
-    """Task 목록 조회"""
-    ctx = CLIContext()
-    ctx.ensure_authenticated()
-
-    click.echo(f"[+] Fetching task list for repository {team_id}...")
-    tasks, msg = ctx.client.get_tasks(team_id)
-    
-    if tasks is None:
-        click.echo(click.style(f"❌ 목록 조회 실패: {msg}", fg="red"))
-        return
-        
-    if not tasks:
-        click.echo("저장소에 task가 없습니다.")
-        return
-        
-    # TODO: Check local database for downloaded status (if needed)
-    # For now, just display the task list
-            
-    click.echo("\n--- Task List ---")
-    for task in tasks:
-        file_name = task.get("fileName", "Unknown")
-        task_id = task.get("id", "Unknown")
-        uploader = task.get("uploaderId", "Unknown")
-        date = task.get("uploadedAt", "Unknown")
-        
-        click.echo(f"  [{task_id}] {file_name}")
-
-@data.command()
-@click.argument('team-id')
-@click.argument('task-id', type=int)
-@click.option('--output', 'output_file', required=True, help="다운로드할 NPZ 파일 경로")
-def download(team_id, task_id, output_file):
-    """태스크 데이터 다운로드"""
+    NPZ 파일과 같은 디렉토리의 episode_meta.json에서 메타데이터를 읽어
+    서버에 전송하고, presigned URL로 S3에 직접 업로드합니다.
+    """
     ctx = CLIContext()
     ctx.ensure_private_key()
 
-    click.echo(f"[+] Downloading task {task_id} and saving to '{output_file}'...")
+    click.echo(f"[+] Uploading artifact '{npz_file}' to team {team_id}...")
     
-    # Download task using Task API
-    npz_data, msg = ctx.client.download_task(task_id, team_id)
-    
-    if npz_data is None:
-        click.echo(click.style(f"❌ 다운로드 실패: {msg}", fg="red"))
-        return
-    
-    # Save NPZ file
     try:
-        import base64
-        click.echo(f"[+] Saving NPZ file...")
-        with open(output_file, 'wb') as f:
-            f.write(base64.b64decode(npz_data))
-        click.echo(click.style(f"✅ NPZ 파일 저장 성공: {output_file}", fg="green"))
+        npz_path = Path(npz_file)
+        meta_path = npz_path.parent / "episode_meta.json"
         
-        # Record download in local.db
-        try:
-            db = get_default_db()
-            # Note: We don't have demo_id from server response, so we skip DB recording for now
-            # In a full implementation, the server would return demo metadata
-            db.close()
-        except Exception as exc:
-            click.echo(click.style(f"⚠️ 로컬 DB 기록 실패: {exc}", fg="yellow"))
-    except Exception as e:
-        click.echo(click.style(f"❌ NPZ 파일 저장 실패: {e}", fg="red"))
+        if not meta_path.exists():
+            click.echo(click.style(f"❌ episode_meta.json 파일을 찾을 수 없습니다: {meta_path}", fg="red"))
+            return
+        
+        click.echo(f"[+] Reading metadata from {meta_path}...")
+        with open(meta_path, 'r') as f:
+            meta = json.load(f)
+        
+        prompt_text = prompt if prompt else meta.get('task_description')
+        if not prompt_text:
+            click.echo(click.style("❌ --prompt 옵션 또는 episode_meta.json의 task_description이 필요합니다", fg="red"))
+            return
+        
+        num_steps = meta.get('num_steps')
+        state_dim = meta.get('state_dim')
+        action_dim = meta.get('action_dim')
+        
+        image_size = meta.get('image_size', [])
+        image_h = image_size[0] if len(image_size) > 0 else None
+        image_w = image_size[1] if len(image_size) > 1 else None
+        
+        embed_dim = None
+        embed_model_id = None
+        
+        click.echo(f"  - Task: {prompt_text}")
+        click.echo(f"  - Steps: {num_steps}, State: {state_dim}, Action: {action_dim}")
+        click.echo(f"  - Image: {image_h}x{image_w}")
+        if meta.get('source_repo'):
+            click.echo(f"  - Source: {meta['source_repo']} (episode {meta.get('source_episode_index', 'N/A')})")
+        
+    except json.JSONDecodeError as e:
+        click.echo(click.style(f"❌ episode_meta.json 파싱 실패: {e}", fg="red"))
         return
+    except Exception as e:
+        click.echo(click.style(f"❌ 메타데이터 읽기 실패: {e}", fg="red"))
+        return
+    
+    success, artifact_id = ctx.client.upload_artifact(
+        team_id=team_id,
+        npz_path=npz_file,
+        prompt_text=prompt_text,
+        num_steps=num_steps,
+        state_dim=state_dim,
+        action_dim=action_dim,
+        image_h=image_h,
+        image_w=image_w,
+        embed_dim=embed_dim,
+        embed_model_id=embed_model_id,
+        kind=kind
+    )
+    
+    if success:
+        click.echo(click.style(f"✅ Artifact 업로드 성공!", fg="green"))
+        click.echo(f"   Artifact ID: {artifact_id}")
+    else:
+        click.echo(click.style(f"❌ 업로드 실패: {artifact_id}", fg="red"))
+
+@data.command()
+@click.argument('demo-id')
+def list(demo_id):
+    """
+    Demo의 Artifact 목록 조회 (새 서버 스펙)
+    
+    특정 Demo에 속한 Artifact 목록을 조회합니다.
+    Note: 현재 서버는 Team 전체 Artifact 목록 조회 API가 없어 Demo ID가 필요합니다.
+    """
+    ctx = CLIContext()
+    ctx.ensure_authenticated()
+
+    click.echo(f"[+] Fetching artifact list for demo {demo_id}...")
+    
+    success, result = ctx.client.get_demo_artifacts(demo_id)
+    
+    if not success:
+        click.echo(click.style(f"❌ 목록 조회 실패: {result}", fg="red"))
+        return
+    
+    artifacts = result
+    
+    if not artifacts:
+        click.echo("Demo에 artifact가 없습니다.")
+        return
+    
+    click.echo("\n--- Artifact List ---")
+    for artifact in artifacts:
+        artifact_id = artifact.get("artifactId", "Unknown")
+        kind = artifact.get("kind", "Unknown")
+        size = artifact.get("size", 0)
+        created_at = artifact.get("createdAt", "Unknown")
+        
+        click.echo(f"  [{artifact_id}]")
+        click.echo(f"    Kind: {kind}")
+        click.echo(f"    Size: {size} bytes")
+        click.echo(f"    Created: {created_at}")
+
+@data.command()
+@click.argument('artifact-id')
+@click.option('--output', 'output_file', required=True, help="다운로드할 NPZ 파일 경로")
+def download(artifact_id, output_file):
+    """
+    Artifact 다운로드 (새 서버 스펙)
+    
+    서버에서 presigned URL을 발급받아 S3에서 직접 다운로드합니다.
+    """
+    ctx = CLIContext()
+    ctx.ensure_authenticated()
+
+    click.echo(f"[+] Downloading artifact {artifact_id} to '{output_file}'...")
+    
+    success, result = ctx.client.download_artifact(artifact_id, output_file)
+    
+    if success:
+        click.echo(click.style(f"✅ Artifact 다운로드 성공!", fg="green"))
+        click.echo(f"   Saved to: {result}")
+    else:
+        click.echo(click.style(f"❌ 다운로드 실패: {result}", fg="red"))
 @data.command()
 @click.argument('team-id')
 @click.argument('db-url')

@@ -1187,6 +1187,169 @@ class ServeClient:
         """
         self._ensure_authenticated()
         return self.api.delete_demo(team_id, file_name, demo_index, self.session.access_token)
+
+    # ==================== Artifact API (새 서버 스펙) ====================
+
+    def upload_artifact(
+        self,
+        team_id: str,
+        npz_path: str,
+        prompt_text: str,
+        num_steps: Optional[int] = None,
+        state_dim: Optional[int] = None,
+        action_dim: Optional[int] = None,
+        image_h: Optional[int] = None,
+        image_w: Optional[int] = None,
+        embed_dim: Optional[int] = None,
+        embed_model_id: Optional[str] = None,
+        kind: str = "processed",
+        sha256: Optional[str] = None,
+        size: Optional[int] = None,
+        enc_algo: Optional[str] = None,
+        nonce: Optional[str] = None,
+        dek_wrapped_by_kek: Optional[str] = None,
+        kek_version: Optional[str] = None
+    ) -> Tuple[bool, str]:
+        """
+        새로운 Artifact 업로드 플로우 (서버 스펙 준수)
+        
+        1. 서버에 메타데이터 전송하여 presigned URL 발급
+        2. Presigned URL로 S3에 직접 업로드
+        
+        Args:
+            team_id: 팀 ID
+            npz_path: 업로드할 NPZ 파일 경로
+            prompt_text: Scenario 식별용 프롬프트 (필수)
+            num_steps ~ kek_version: Demo 메타데이터 (선택)
+            
+        Returns:
+            (성공 여부, artifactId 또는 에러 메시지)
+        """
+        self._ensure_authenticated()
+        
+        try:
+            from pathlib import Path
+            import requests
+            
+            npz_file = Path(npz_path)
+            if not npz_file.exists():
+                return False, f"파일이 존재하지 않습니다: {npz_path}"
+            
+            filename = npz_file.name
+            
+            if size is None:
+                size = npz_file.stat().st_size
+            
+            if sha256 is None:
+                import hashlib
+                with open(npz_file, 'rb') as f:
+                    sha256 = hashlib.sha256(f.read()).hexdigest()
+            
+            success, resp_data = self.api.upload_artifact_request(
+                team_id=team_id,
+                prompt_text=prompt_text,
+                filename=filename,
+                num_steps=num_steps,
+                state_dim=state_dim,
+                action_dim=action_dim,
+                image_h=image_h,
+                image_w=image_w,
+                embed_dim=embed_dim,
+                embed_model_id=embed_model_id,
+                kind=kind,
+                sha256=sha256,
+                size=size,
+                artifact_version="1",
+                enc_algo=enc_algo,
+                nonce=nonce,
+                dek_wrapped_by_kek=dek_wrapped_by_kek,
+                kek_version=kek_version,
+                access_token=self.session.access_token
+            )
+            
+            if not success:
+                return False, resp_data
+            
+            presigned_url = resp_data.get('presignedUrl')
+            artifact_id = resp_data.get('artifactId')
+            
+            if not presigned_url or not artifact_id:
+                return False, f"서버 응답 오류: presignedUrl 또는 artifactId 없음"
+            
+            with open(npz_file, 'rb') as f:
+                upload_resp = requests.put(presigned_url, data=f)
+            
+            if upload_resp.status_code not in [200, 201]:
+                return False, f"S3 업로드 실패 (HTTP {upload_resp.status_code})"
+            
+            return True, artifact_id
+            
+        except Exception as e:
+            return False, f"Artifact 업로드 오류: {str(e)}"
+
+    def download_artifact(self, artifact_id: str, output_path: Optional[str] = None) -> Tuple[bool, str]:
+        """
+        Artifact 다운로드 (Presigned URL 사용)
+        
+        1. 서버에서 presigned URL 발급
+        2. Presigned URL로 S3에서 다운로드
+        
+        Args:
+            artifact_id: Artifact ID
+            output_path: 저장할 파일 경로 (None이면 bytes 반환)
+            
+        Returns:
+            (성공 여부, 파일 경로 또는 에러 메시지)
+        """
+        self._ensure_authenticated()
+        
+        try:
+            import requests
+            
+            success, resp_data = self.api.get_artifact_presigned_url(
+                artifact_id, self.session.access_token
+            )
+            
+            if not success:
+                return False, resp_data
+            
+            presigned_url = resp_data.get('presignedUrl')
+            if not presigned_url:
+                return False, "서버 응답 오류: presignedUrl 없음"
+            
+            download_resp = requests.get(presigned_url)
+            
+            if download_resp.status_code != 200:
+                return False, f"S3 다운로드 실패 (HTTP {download_resp.status_code})"
+            
+            if output_path:
+                from pathlib import Path
+                output_file = Path(output_path)
+                output_file.parent.mkdir(parents=True, exist_ok=True)
+                
+                with open(output_file, 'wb') as f:
+                    f.write(download_resp.content)
+                
+                return True, str(output_file)
+            else:
+                return True, download_resp.content
+            
+        except Exception as e:
+            return False, f"Artifact 다운로드 오류: {str(e)}"
+
+    def get_demo_artifacts(self, demo_id: str) -> Tuple[bool, Any]:
+        """
+        Demo에 속한 Artifact 목록 조회
+        
+        Args:
+            demo_id: Demo ID
+            
+        Returns:
+            (성공 여부, Artifact 목록 또는 에러 메시지)
+        """
+        self._ensure_authenticated()
+        return self.api.get_demo_artifacts(demo_id, self.session.access_token)
+
     # ==================== 디버그 유틸 ====================
 
     def get_session_info(self) -> Dict[str, Any]:

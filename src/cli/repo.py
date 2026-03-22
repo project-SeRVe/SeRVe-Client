@@ -49,12 +49,18 @@ def list():
     table.add_column("Description", style="white")
     table.add_column("My Role", style="green")
     
+    my_user_id = ctx.session_data.get('user_id')
+    
     for r in repos:
+        role = r.get('role')
+        if not role:
+            role = 'ADMIN' if str(r.get('ownerId')) == str(my_user_id) else 'MEMBER'
+        
         table.add_row(
             str(r.get('id', '')), 
             r.get('name', ''), 
             r.get('description', ''),
-            r.get('role', 'UNKNOWN')
+            role
         )
     console.print(table)
 
@@ -84,7 +90,11 @@ def show(team_id):
         console.print(f"[bold red]❌ 멤버 목록 조회 실패:[/bold red] {members_msg}")
         return
 
-    my_role = target_repo.get('role', 'UNKNOWN')
+    my_user_id = ctx.session_data.get('user_id')
+    my_role = target_repo.get('role')
+    if not my_role:
+        my_role = 'ADMIN' if str(target_repo.get('ownerId')) == str(my_user_id) else 'MEMBER'
+    
     role_color = "bold red" if my_role == "ADMIN" else "bold green"
     
     console.print("\n[bold cyan]📦 Repository Info[/bold cyan]")

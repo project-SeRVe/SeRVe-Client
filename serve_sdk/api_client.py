@@ -520,3 +520,155 @@ class ApiClient:
             return self._handle_response(resp)
         except Exception as e:
             return False, f"데모 동기화 오류: {str(e)}"
+
+    # ==================== Artifact API (SeRVe-Core) ====================
+
+    def upload_artifact_request(
+        self,
+        team_id: str,
+        prompt_text: str,
+        filename: str,
+        num_steps: Optional[int] = None,
+        state_dim: Optional[int] = None,
+        action_dim: Optional[int] = None,
+        image_h: Optional[int] = None,
+        image_w: Optional[int] = None,
+        embed_dim: Optional[int] = None,
+        embed_model_id: Optional[str] = None,
+        kind: str = "processed",
+        sha256: Optional[str] = None,
+        size: Optional[int] = None,
+        artifact_version: str = "1",
+        enc_algo: Optional[str] = None,
+        nonce: Optional[str] = None,
+        dek_wrapped_by_kek: Optional[str] = None,
+        kek_version: Optional[str] = None,
+        access_token: str = None
+    ) -> Tuple[bool, Any]:
+        """
+        Artifact 업로드 요청 (Presigned URL 발급)
+        
+        서버에 업로드 의사를 알리면, 서버가 Scenario/Demo를 자동으로 생성하고
+        S3 업로드용 presigned URL을 반환합니다.
+        
+        Args:
+            team_id: 팀 ID (UUID 문자열)
+            prompt_text: Scenario 식별용 프롬프트 (필수)
+            filename: S3에 저장될 파일명 (필수)
+            num_steps: 데모 스텝 수
+            state_dim: State 차원
+            action_dim: Action 차원
+            image_h: 이미지 높이
+            image_w: 이미지 너비
+            embed_dim: 임베딩 차원
+            embed_model_id: 임베딩 모델 ID
+            kind: Artifact 종류 ("processed" 또는 "raw")
+            sha256: 파일 무결성 검증용 해시
+            size: 파일 크기 (bytes)
+            artifact_version: 버전 식별자
+            enc_algo: 암호화 알고리즘
+            nonce: 암호화 nonce
+            dek_wrapped_by_kek: 래핑된 DEK
+            kek_version: KEK 버전
+            access_token: 인증 토큰
+            
+        Returns:
+            (성공 여부, 응답 데이터)
+            응답 데이터: {"artifactId": str, "presignedUrl": str, "objectKey": str}
+        """
+        try:
+            # Request body 구성 (서버 스펙에 맞춤)
+            body = {
+                "promptText": prompt_text,
+                "teamId": team_id,
+                "filename": filename,
+                "kind": kind,
+                "artifactVersion": artifact_version
+            }
+            
+            # Optional 필드 추가
+            if num_steps is not None:
+                body["numSteps"] = num_steps
+            if state_dim is not None:
+                body["stateDim"] = state_dim
+            if action_dim is not None:
+                body["actionDim"] = action_dim
+            if image_h is not None:
+                body["imageH"] = image_h
+            if image_w is not None:
+                body["imageW"] = image_w
+            if embed_dim is not None:
+                body["embedDim"] = embed_dim
+            if embed_model_id is not None:
+                body["embedModelId"] = embed_model_id
+            if sha256 is not None:
+                body["sha256"] = sha256
+            if size is not None:
+                body["size"] = size
+            if enc_algo is not None:
+                body["encAlgo"] = enc_algo
+            if nonce is not None:
+                body["nonce"] = nonce
+            if dek_wrapped_by_kek is not None:
+                body["dekWrappedByKek"] = dek_wrapped_by_kek
+            if kek_version is not None:
+                body["kekVersion"] = kek_version
+            
+            resp = self.session.post(
+                f"{self.core_service_url}/api/artifacts/upload-request",
+                json=body,
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"Artifact 업로드 요청 오류: {str(e)}"
+
+    def get_artifact_presigned_url(
+        self,
+        artifact_id: str,
+        access_token: str
+    ) -> Tuple[bool, Any]:
+        """
+        Artifact 다운로드용 Presigned URL 발급
+        
+        Args:
+            artifact_id: Artifact ID (UUID 문자열)
+            access_token: 인증 토큰
+            
+        Returns:
+            (성공 여부, 응답 데이터)
+            응답 데이터: {"artifactId": str, "presignedUrl": str}
+        """
+        try:
+            resp = self.session.get(
+                f"{self.core_service_url}/api/artifacts/{artifact_id}/presigned-url",
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"Presigned URL 발급 오류: {str(e)}"
+
+    def get_demo_artifacts(
+        self,
+        demo_id: str,
+        access_token: str
+    ) -> Tuple[bool, Any]:
+        """
+        Demo에 속한 Artifact 목록 조회
+        
+        Args:
+            demo_id: Demo ID (UUID 문자열)
+            access_token: 인증 토큰
+            
+        Returns:
+            (성공 여부, Artifact 목록)
+            목록 형식: [{"artifactId": str, "demoId": str, "kind": str, ...}, ...]
+        """
+        try:
+            resp = self.session.get(
+                f"{self.core_service_url}/api/demos/{demo_id}/artifacts",
+                headers=self._get_headers(access_token)
+            )
+            return self._handle_response(resp)
+        except Exception as e:
+            return False, f"Demo Artifact 목록 조회 오류: {str(e)}"
