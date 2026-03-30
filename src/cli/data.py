@@ -35,6 +35,7 @@ def upload(team_id, npz_file, prompt, kind):
     
     NPZ 파일과 같은 디렉토리의 episode_meta.json에서 메타데이터를 읽어
     서버에 전송하고, presigned URL로 S3에 직접 업로드합니다.
+    업로드 성공 시 ~/.serve/demos/<artifact_id>/processed_demo.npz 에도 저장됩니다.
     """
     ctx = CLIContext()
     ctx.ensure_private_key()
@@ -99,6 +100,14 @@ def upload(team_id, npz_file, prompt, kind):
     if success:
         click.echo(click.style(f"✅ Artifact 업로드 성공!", fg="green"))
         click.echo(f"   Artifact ID: {artifact_id}")
+        
+        # 업로드한 파일을 통합 demos 디렉토리에도 복사
+        import shutil
+        demos_dir = Path.home() / ".serve" / "demos" / artifact_id
+        demos_dir.mkdir(parents=True, exist_ok=True)
+        dest_npz = demos_dir / "processed_demo.npz"
+        shutil.copy2(npz_file, dest_npz)
+        click.echo(f"   Saved locally: {dest_npz}")
     else:
         click.echo(click.style(f"❌ 업로드 실패: {artifact_id}", fg="red"))
 
@@ -142,19 +151,38 @@ def list(demo_id):
 
 @data.command()
 @click.argument('artifact-id')
-@click.option('--output', 'output_file', required=True, help="다운로드할 NPZ 파일 경로")
-def download(artifact_id, output_file):
+@click.option('--output', 'output_dir', default=None, type=click.Path(),
+              help="저장할 디렉토리 경로 (기본값: ~/.serve/demos/<artifact-id>/)")
+def download(artifact_id, output_dir):
     """
     Artifact 다운로드 (새 서버 스펙)
     
     서버에서 presigned URL을 발급받아 S3에서 직접 다운로드합니다.
+    지정한 디렉토리 안에 processed_demo.npz 파일로 저장됩니다.
+    미지정 시 ~/.serve/demos/<artifact-id>/processed_demo.npz 에 저장됩니다.
+    
+    \b
+    Examples:
+        # 기본 경로 (recommended)
+        serve data download <artifact-id>
+        → ~/.serve/demos/<artifact-id>/processed_demo.npz
+        
+        # 경로 직접 지정
+        serve data download <artifact-id> --output ./my_demos/demo_0/
+        → ./my_demos/demo_0/processed_demo.npz
     """
     ctx = CLIContext()
     ctx.ensure_authenticated()
 
-    click.echo(f"[+] Downloading artifact {artifact_id} to '{output_file}'...")
+    if output_dir is None:
+        save_dir = Path.home() / ".serve" / "demos" / artifact_id
+    else:
+        save_dir = Path(output_dir)
+
+    output_path = save_dir / "processed_demo.npz"
+    click.echo(f"[+] Downloading artifact {artifact_id} to '{output_path}'...")
     
-    success, result = ctx.client.download_artifact(artifact_id, output_file)
+    success, result = ctx.client.download_artifact(artifact_id, str(output_path))
     
     if success:
         click.echo(click.style(f"✅ Artifact 다운로드 성공!", fg="green"))

@@ -62,11 +62,12 @@ def few_shot(team_id: str, robot: str, text: str, k: int, vector_db_root: str):
         vector_db = LocalVectorDB(team_id, vdb_root)
         
         stats = vector_db.get_stats()
-        click.echo(f"Loaded vector DB:")
+        click.echo(f"Loaded FAISS index:")
         click.echo(f"  - Episodes: {stats['num_episodes']}")
         click.echo(f"  - Vectors: {stats['num_vectors']}")
         click.echo(f"  - Embedding dim: {stats['embedding_dim']}")
         click.echo(f"  - Distance: {stats['distance']}")
+        click.echo(f"  - Embedding key: {stats.get('embedding_key', 'unknown')}")
         click.echo("")
         
     except FileNotFoundError as e:
@@ -180,12 +181,14 @@ def db_info(team_id: str, vector_db_root: str):
         stats = vector_db.get_stats()
         
         click.echo("=" * 60)
-        click.echo(f"Vector DB Information: {team_id}")
+        click.echo(f"FAISS Index: {team_id}")
         click.echo("=" * 60)
-        click.echo(f"Episodes:      {stats['num_episodes']}")
-        click.echo(f"Vectors:       {stats['num_vectors']}")
-        click.echo(f"Embedding Dim: {stats['embedding_dim']}")
-        click.echo(f"Distance:      {stats['distance']}")
+        click.echo(f"Location  : {stats['index_dir']}")
+        click.echo(f"Episodes  : {stats['num_episodes']}")
+        click.echo(f"Vectors   : {stats['num_vectors']}")
+        click.echo(f"Embed Dim : {stats['embedding_dim']}")
+        click.echo(f"Distance  : {stats['distance']}")
+        click.echo(f"Emb Key   : {stats.get('embedding_key', 'unknown')}")
         click.echo("")
         
         # Show episode list
